@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 export function SiteHeader() {
   const items = useCartStore((state) => state.items);
+  
   const { data: session } = useSession();
 
   const [mounted, setMounted] = useState(false);

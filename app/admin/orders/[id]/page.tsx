@@ -84,6 +84,12 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                           Qty: {item.quantity} × $
                           {Number(item.unitPrice).toFixed(2)}
                         </p>
+                        {item.notes && (
+                          <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 whitespace-pre-wrap">
+                            <p className="mb-1 font-semibold">Selections / Add-ons</p>
+                            {item.notes}
+                          </div>
+                        )}
                       </div>
 
                       <p className="font-medium">
@@ -101,9 +107,17 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               <div className="mt-4 space-y-4 text-sm">
                 <div>
                   <p className="font-medium">Allergy Notes</p>
-                  <p className="mt-1 text-neutral-700">
-                    {order.allergyNotes || "None provided."}
-                  </p>
+
+                  {order.allergyNotes ? (
+                    <div className="mt-2 rounded-xl border-2 border-red-500 bg-red-50 p-4 text-red-900">
+                      <p className="text-xs font-bold uppercase text-red-700">
+                        Allergy Alert
+                      </p>
+                      <p className="mt-2">{order.allergyNotes}</p>
+                    </div>
+                  ) : (
+                    <p className="mt-1 text-neutral-700">None provided.</p>
+                  )}
                 </div>
 
                 <div>
