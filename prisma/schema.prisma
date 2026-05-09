@@ -111,10 +111,60 @@ model MenuItem {
   categoryId  String
   category    MenuCategory @relation(fields: [categoryId], references: [id])
 
-  orderItems  OrderItem[]
+  orderItems    OrderItem[]
+
+  allergens     MenuItemAllergen[]
+  optionGroups  MenuItemOptionGroup[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+model Allergen {
+  id        String   @id @default(cuid())
+  name      String   @unique
+
+  menuItems MenuItemAllergen[]
+
+  createdAt DateTime @default(now())
+}
+
+model MenuItemAllergen {
+  id          String    @id @default(cuid())
+
+  menuItemId  String
+  allergenId  String
+
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  allergen    Allergen  @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+  @@unique([menuItemId, allergenId])
+}
+
+model MenuItemOptionGroup {
+  id          String   @id @default(cuid())
+
+  menuItemId  String
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  name        String
+  required    Boolean  @default(false)
+  multiple    Boolean  @default(false)
+
+  choices     MenuItemOptionChoice[]
+
+  createdAt   DateTime @default(now())
+}
+
+model MenuItemOptionChoice {
+  id              String                 @id @default(cuid())
+
+  optionGroupId   String
+  optionGroup     MenuItemOptionGroup   @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  name            String
+  priceDelta      Decimal                @db.Decimal(10,2) @default(0)
+
+  createdAt       DateTime @default(now())
 }
 
 model Order {

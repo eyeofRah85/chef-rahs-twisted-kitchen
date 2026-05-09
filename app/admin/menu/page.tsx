@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { MenuItemForm } from "@/components/admin/MenuItemForm";
+import { MenuItemCustomizationEditor } from "@/components/admin/MenuItemCustomizationEditor";
 
 export default async function AdminMenuPage() {
   try {
@@ -11,11 +12,35 @@ export default async function AdminMenuPage() {
   }
 
   const categories = await prisma.menuCategory.findMany({
-    orderBy: { sortOrder: "asc" },
-    include: {
-      items: {
-        orderBy: { createdAt: "desc" },
+  orderBy: { sortOrder: "asc" },
+
+  include: {
+    items: {
+      orderBy: {
+        createdAt: "desc",
       },
+
+      include: {
+        allergens: {
+          include: {
+            allergen: true,
+          },
+        },
+
+        optionGroups: {
+          include: {
+            choices: true,
+          },
+        },
+      },
+    },
+  },
+});
+
+const allergens =
+  await prisma.allergen.findMany({
+    orderBy: {
+      name: "asc",
     },
   });
 
@@ -64,6 +89,10 @@ export default async function AdminMenuPage() {
                           >
                             {item.available ? "Available" : "Unavailable"}
                           </p>
+                          <MenuItemCustomizationEditor
+                            menuItemId={item.id}
+                            allergens={allergens}
+                          />
 
                           {item.seasonal && (
                             <p className="mt-1 text-amber-700">Seasonal</p>
