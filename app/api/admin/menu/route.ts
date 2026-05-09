@@ -1,0 +1,53 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-guards";
+
+export async function POST(request: Request) {
+  try {
+    await requireAdmin();
+
+    const formData = await request.formData();
+
+    const name = String(formData.get("name") ?? "").trim();
+    const description = String(formData.get("description") ?? "").trim();
+    const price = Number(formData.get("price") ?? 0);
+    const categoryName = String(formData.get("category") ?? "").trim();
+    const available = formData.get("available") === "on";
+    const seasonal = formData.get("seasonal") === "on";
+
+    if (!name || !description || !categoryName || price <= 0) {
+      return NextResponse.json(
+        { error: "Name, description, category, and valid price are required." },
+        { status: 400 },
+      );
+    }
+
+    const category = await prisma.menuCategory.upsert({
+      where: { name: categoryName },
+      update: {},
+      create: {
+        name: categoryName,
+      },
+    });
+
+    const item = await prisma.menuItem.create({
+      data: {
+        name,
+        description,
+        price,
+        available,
+        seasonal,
+        categoryId: category.id,
+      },
+    });
+
+    return NextResponse.json(item);
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { error: "Failed to create menu item." },
+      { status: 500 },
+    );
+  }
+}

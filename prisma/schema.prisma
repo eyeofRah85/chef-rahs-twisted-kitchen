@@ -91,7 +91,7 @@ model VerificationToken {
 
 model MenuCategory {
   id        String     @id @default(cuid())
-  name      String
+  name      String     @unique
   sortOrder Int        @default(0)
   items     MenuItem[]
 
