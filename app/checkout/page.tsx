@@ -4,8 +4,18 @@ import { useCheckoutStore } from "@/store/checkout-store";
 import { useCartStore } from "@/store/cart-store";
 import { calculateTip } from "@/lib/order-calculations";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function CheckoutPage() {
+  const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    if (!mounted) {
+      return null;
+    }
   const details = useCheckoutStore((state) => state.details);
   const updateField = useCheckoutStore((state) => state.updateField);
 
@@ -28,6 +38,10 @@ const tipAmount = calculateTip(
   subtotal,
   details.tipType,
   details.customTipAmount,
+);
+
+const resetCheckout = useCheckoutStore(
+  (state) => state.resetCheckout,
 );
 
 const total =
@@ -191,6 +205,7 @@ const total =
     const order = await response.json();
 
     clearCart();
+    resetCheckout();
 
     router.push(`/orders/${order.id}`);
   }}

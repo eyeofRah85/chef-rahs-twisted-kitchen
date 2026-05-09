@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { CheckoutDetails } from "@/types/order";
 
 type CheckoutState = {
@@ -23,19 +24,26 @@ const defaultCheckout: CheckoutDetails = {
   customTipAmount: 0,
 };
 
-export const useCheckoutStore = create<CheckoutState>((set) => ({
-  details: defaultCheckout,
-
-  updateField: (field, value) =>
-    set((state) => ({
-      details: {
-        ...state.details,
-        [field]: value,
-      },
-    })),
-
-  resetCheckout: () =>
-    set({
+export const useCheckoutStore = create<CheckoutState>()(
+  persist(
+    (set) => ({
       details: defaultCheckout,
+
+      updateField: (field, value) =>
+        set((state) => ({
+          details: {
+            ...state.details,
+            [field]: value,
+          },
+        })),
+
+      resetCheckout: () =>
+        set({
+          details: defaultCheckout,
+        }),
     }),
-}));
+    {
+      name: "chef-rahs-checkout",
+    },
+  ),
+);
