@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useCartStore } from "@/store/cart-store";
 import { useSession } from "next-auth/react";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export function SiteHeader() {
   const items = useCartStore((state) => state.items);
@@ -42,8 +43,15 @@ export function SiteHeader() {
             )}
           </Link>
 
-          <Link href="/account">Account</Link>
-          <Link href="/login">Sign In</Link>
+          {session?.user ? (
+            <>
+              <Link href="/account">Account</Link>
+
+              <LogoutButton />
+            </>
+          ) : (
+            <Link href="/login">Sign In</Link>
+          )}
 
           {(role === "ADMIN" || role === "OWNER") && (
             <Link href="/admin" className="rounded-full border px-4 py-2 text-sm">
