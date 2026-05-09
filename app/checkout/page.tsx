@@ -5,6 +5,13 @@ import { useCartStore } from "@/store/cart-store";
 import { calculateTip } from "@/lib/order-calculations";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  calculateDeliveryFee,
+  calculateLateFee,
+} from "@/lib/business-rules";
+import {
+  validateRequestedDate,
+} from "@/lib/business-rules";
 
 export default function CheckoutPage() {
 
@@ -35,9 +42,12 @@ const subtotal = items.reduce(
 );
 
 const deliveryFee =
-  details.orderType === "delivery" ? 10 : 0;
+  calculateDeliveryFee(
+    details.orderType,
+  );
 
-const lateFee = 0;
+const lateFee =
+  calculateLateFee();
 
 const tipAmount = calculateTip(
   subtotal,
@@ -178,43 +188,65 @@ const total =
               />
             </div>
           )}
-
+            {lateFee > 0 && (
+              <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+                Orders placed after Thursday 5PM include a $10 late fee.
+              </div>
+            )}
           <button
-  type="button"
-  onClick={async () => {
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+            type="button"
+            onClick={async () => {
+              if (!details.requestedDateTime) {
+                alert("Please choose a requested date and time.");
+                return;
+              }
 
-      body: JSON.stringify({
-        items,
-        checkout: details,
-        subtotal,
-        deliveryFee,
-        lateFee,
-        tipAmount,
-        total,
-      }),
-    });
+              const requestedDate = new Date(details.requestedDateTime);
 
-    if (!response.ok) {
-      alert("Failed to submit order.");
-      return;
-    }
+              if (Number.isNaN(requestedDate.getTime())) {
+                alert("Please choose a valid requested date and time.");
+                return;
+              }
 
-    const order = await response.json();
+              const validation = validateRequestedDate(requestedDate);
 
-    clearCart();
-    resetCheckout();
+              if (!validation.valid) {
+                alert(validation.error);
+                return;
+              }
 
-    router.push(`/orders/${order.id}`);
-  }}
-  className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white"
->
-  Submit Order
-</button>
+              const response = await fetch("/api/orders", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  items,
+                  checkout: details,
+                  subtotal,
+                  deliveryFee,
+                  lateFee,
+                  tipAmount,
+                  total,
+                }),
+              });
+
+              if (!response.ok) {
+                alert("Failed to submit order.");
+                return;
+              }
+
+              const order = await response.json();
+
+              clearCart();
+              resetCheckout();
+
+              router.push(`/orders/${order.id}`);
+            }}
+            className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white"
+          >
+            Submit Order
+          </button>
         </form>
 
         <div className="mt-10 rounded-2xl bg-neutral-100 p-5">
