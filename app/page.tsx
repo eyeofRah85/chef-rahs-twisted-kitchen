@@ -24,7 +24,12 @@ export default function HomePage() {
           >
             View Menu
           </Link>
-
+          <Link
+            href="/cart"
+            className="rounded-xl border border-neutral-300 px-6 py-3 font-medium"
+          >
+            View Cart
+          </Link>
           <Link
             href="/catering"
             className="rounded-xl border border-black px-6 py-3 font-medium"

@@ -1,4 +1,5 @@
 import type { MenuItem } from "@/types/menu";
+import { AddToCartButton } from "@/components/cart/AddToCartButton";
 
 type MenuCardProps = {
   item: MenuItem;
@@ -42,12 +43,7 @@ export function MenuCard({ item }: MenuCardProps) {
         </p>
       ) : null}
 
-      <button
-        disabled={!item.available}
-        className="w-full rounded-xl bg-black px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
-      >
-        {item.available ? "Add to Order" : "Choose Substitute"}
-      </button>
+      <AddToCartButton item={item} />
     </div>
   );
 }
