@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth-guards";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AdminPage() {
   try {
@@ -29,28 +30,24 @@ export default async function AdminPage() {
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {[
-            "Orders",
-            "Menu Manager",
-            "Seasonal Items",
-            "Catering Requests",
-            "Customers",
-            "Reports",
-            "Business Settings",
-            "Payment Settings",
-            "Notifications",
+            { label: "Orders", href: "/admin/orders" },
+            { label: "Menu Manager", href: "/admin/menu" },
+            { label: "Seasonal Items", href: "/admin/menu" },
+            { label: "Catering Requests", href: "/admin/catering" },
+            { label: "Customers", href: "/admin/customers" },
+            { label: "Reports", href: "/admin/reports" },
+            { label: "Business Settings", href: "/admin/settings" },
+            { label: "Payment Settings", href: "/admin/payments" },
+            { label: "Notifications", href: "/admin/notifications" },
           ].map((item) => (
-            <div
-              key={item}
-              className="rounded-2xl border bg-white p-6 shadow-sm"
+            <Link
+              key={item.label}
+              href={item.href}
+              className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
-              <h2 className="text-xl font-semibold">
-                {item}
-              </h2>
-
-              <p className="mt-2 text-sm text-neutral-600">
-                Coming soon.
-              </p>
-            </div>
+              <h2 className="text-xl font-semibold">{item.label}</h2>
+              <p className="mt-2 text-sm text-neutral-600">Open section.</p>
+            </Link>
           ))}
         </div>
       </div>

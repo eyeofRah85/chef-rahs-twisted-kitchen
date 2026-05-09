@@ -1,0 +1,189 @@
+import { redirect, notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-guards";
+import { UpdateOrderStatusForm } from "@/components/admin/UpdateOrderStatusForm";
+
+type PageProps = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export default async function AdminOrderDetailsPage({ params }: PageProps) {
+  try {
+    await requireAdmin();
+  } catch {
+    redirect("/");
+  }
+
+  const { id } = await params;
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      items: true,
+      statusHistory: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    notFound();
+  }
+
+  return (
+    <main className="min-h-screen bg-neutral-50 px-6 py-12">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-8">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
+            Admin Order
+          </p>
+          <h1 className="mt-3 text-4xl font-bold">Order Details</h1>
+          <p className="mt-3 text-sm text-neutral-600">{order.id}</p>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <section className="space-y-6">
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Customer</h2>
+              <div className="mt-4 space-y-2 text-sm">
+                <p>
+                  <strong>Name:</strong> {order.customerName}
+                </p>
+                <p>
+                  <strong>Email:</strong> {order.customerEmail}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {order.customerPhone ?? "Not provided"}
+                </p>
+                <p>
+                  <strong>Order Type:</strong> {order.orderType}
+                </p>
+                <p>
+                  <strong>Requested:</strong>{" "}
+                  {order.requestedDateTime
+                    ? order.requestedDateTime.toLocaleString()
+                    : "Not provided"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Items</h2>
+
+              <div className="mt-5 space-y-3">
+                {order.items.map((item) => (
+                  <div key={item.id} className="rounded-xl border p-4">
+                    <div className="flex justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold">{item.name}</h3>
+                        <p className="text-sm text-neutral-600">
+                          Qty: {item.quantity} × $
+                          {Number(item.unitPrice).toFixed(2)}
+                        </p>
+                      </div>
+
+                      <p className="font-medium">
+                        ${Number(item.lineTotal).toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Notes</h2>
+
+              <div className="mt-4 space-y-4 text-sm">
+                <div>
+                  <p className="font-medium">Allergy Notes</p>
+                  <p className="mt-1 text-neutral-700">
+                    {order.allergyNotes || "None provided."}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-medium">Substitution Preference</p>
+                  <p className="mt-1 text-neutral-700">
+                    {order.substitutionPreference || "None provided."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside className="space-y-6">
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Status</h2>
+              <p className="mt-3 rounded-full bg-neutral-100 px-3 py-2 text-center text-sm font-medium">
+                {order.status}
+              </p>
+
+              <div className="mt-6">
+                <UpdateOrderStatusForm
+                  orderId={order.id}
+                  currentStatus={order.status}
+                />
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Totals</h2>
+
+              <div className="mt-5 space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>${Number(order.subtotal).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Delivery Fee</span>
+                  <span>${Number(order.deliveryFee).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Late Fee</span>
+                  <span>${Number(order.lateFee).toFixed(2)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span>Tip</span>
+                  <span>${Number(order.tipAmount).toFixed(2)}</span>
+                </div>
+
+                <div className="border-t pt-3 text-base font-bold">
+                  <div className="flex justify-between">
+                    <span>Total</span>
+                    <span>${Number(order.total).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">History</h2>
+
+              <div className="mt-5 space-y-3">
+                {order.statusHistory.map((history) => (
+                  <div key={history.id} className="border-l-2 pl-3 text-sm">
+                    <p className="font-medium">{history.status}</p>
+                    <p className="text-xs text-neutral-500">
+                      {history.createdAt.toLocaleString()}
+                    </p>
+                    {history.note && (
+                      <p className="mt-1 text-neutral-700">{history.note}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+  );
+}

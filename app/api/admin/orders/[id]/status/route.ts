@@ -1,0 +1,51 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth-guards";
+import { OrderStatus } from "@prisma/client";
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function PATCH(request: Request, context: RouteContext) {
+  try {
+    await requireAdmin();
+
+    const { id } = await context.params;
+    const body = await request.json();
+
+    const status = body.status as OrderStatus;
+    const note = String(body.note ?? "").trim();
+
+    if (!Object.values(OrderStatus).includes(status)) {
+      return NextResponse.json(
+        { error: "Invalid order status." },
+        { status: 400 },
+      );
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: {
+        status,
+        statusHistory: {
+          create: {
+            status,
+            note: note || `Status changed to ${status}.`,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(updatedOrder);
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      { error: "Failed to update order status." },
+      { status: 500 },
+    );
+  }
+}
