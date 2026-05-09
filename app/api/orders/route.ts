@@ -60,13 +60,14 @@ export async function POST(request: Request) {
         total,
 
         items: {
-  create: items.map((item: any) => ({
-    name: item.name,
-    quantity: item.quantity,
-    unitPrice: item.price,
-    lineTotal: item.price * item.quantity,
-  })),
-},
+          create: items.map((item: any) => ({
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            lineTotal: item.price * item.quantity,
+          })),
+        },
 
         statusHistory: {
           create: {
