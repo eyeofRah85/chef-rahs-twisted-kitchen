@@ -30,6 +30,8 @@ export function SiteHeader() {
           >
             Admin
           </Link>
+          <Link href="/account">Account</Link>
+          <Link href="/login">Sign In</Link>
         </nav>
       </div>
     </header>
