@@ -50,6 +50,18 @@ export function CartSummary() {
                 </p>
                 <p className="mt-2 font-medium">${item.price.toFixed(2)}</p>
               </div>
+              {item.selectedOptions?.length ? (
+                <ul className="mt-3 space-y-1 text-sm text-neutral-600">
+                  {item.selectedOptions.map((option, index) => (
+                    <li key={`${option.groupName}-${option.choiceName}-${index}`}>
+                      {option.groupName}: {option.choiceName}
+                      {option.priceDelta > 0
+                        ? ` (+$${option.priceDelta.toFixed(2)})`
+                        : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
 
               <button
                 onClick={() => removeItem(item.cartId)}

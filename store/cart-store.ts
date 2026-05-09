@@ -3,6 +3,12 @@
 import { create } from "zustand";
 import type { MenuItem } from "@/types/menu";
 
+export type SelectedCartOption = {
+  groupName: string;
+  choiceName: string;
+  priceDelta: number;
+};
+
 export type CartItem = {
   cartId: string;
   menuItemId: string;
@@ -10,14 +16,17 @@ export type CartItem = {
   price: number;
   quantity: number;
   category: string;
-  selectedOptions?: string[];
+  selectedOptions?: SelectedCartOption[];
   allergyNotes?: string;
   substitutionPreference?: string;
 };
 
 type CartState = {
   items: CartItem[];
-  addItem: (item: MenuItem) => void;
+  addItem: (
+    item: MenuItem,
+    selectedOptions?: SelectedCartOption[],
+  ) => void;
   removeItem: (cartId: string) => void;
   increaseQuantity: (cartId: string) => void;
   decreaseQuantity: (cartId: string) => void;
@@ -29,20 +38,26 @@ type CartState = {
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
 
-  addItem: (item) => {
-    const cartItem: CartItem = {
-      cartId: crypto.randomUUID(),
-      menuItemId: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      category: item.category,
-    };
+addItem: (item, selectedOptions = []) => {
+  const optionsTotal = selectedOptions.reduce(
+    (total, option) => total + option.priceDelta,
+    0,
+  );
 
-    set((state) => ({
-      items: [...state.items, cartItem],
-    }));
-  },
+  const cartItem: CartItem = {
+    cartId: crypto.randomUUID(),
+    menuItemId: item.id,
+    name: item.name,
+    price: item.price + optionsTotal,
+    quantity: 1,
+    category: item.category,
+    selectedOptions,
+  };
+
+  set((state) => ({
+    items: [...state.items, cartItem],
+  }));
+},
 
   removeItem: (cartId) => {
     set((state) => ({

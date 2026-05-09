@@ -2,18 +2,30 @@ import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 
 export default async function MenuPage() {
-  const categories = await prisma.menuCategory.findMany({
-    orderBy: {
-      sortOrder: "asc",
-    },
-    include: {
-      items: {
-        orderBy: {
-          createdAt: "desc",
+const categories = await prisma.menuCategory.findMany({
+  orderBy: {
+    sortOrder: "asc",
+  },
+  include: {
+    items: {
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        allergens: {
+          include: {
+            allergen: true,
+          },
+        },
+        optionGroups: {
+          include: {
+            choices: true,
+          },
         },
       },
     },
-  });
+  },
+});
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -50,7 +62,21 @@ export default async function MenuPage() {
                       imageUrl: item.imageUrl ?? undefined,
                       available: item.available,
                       seasonal: item.seasonal,
-                      allergens: [],
+                      allergens: item.allergens.map((entry) => ({
+                        id: entry.allergen.id,
+                        name: entry.allergen.name,
+                      })),
+                      optionGroups: item.optionGroups.map((group) => ({
+                        id: group.id,
+                        name: group.name,
+                        required: group.required,
+                        multiple: group.multiple,
+                        choices: group.choices.map((choice) => ({
+                          id: choice.id,
+                          name: choice.name,
+                          priceDelta: Number(choice.priceDelta),
+                        })),
+                      })),
                     }}
                   />
                 ))}

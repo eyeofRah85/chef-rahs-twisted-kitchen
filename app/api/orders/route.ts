@@ -60,14 +60,26 @@ export async function POST(request: Request) {
         total,
 
         items: {
-          create: items.map((item: any) => ({
-            menuItemId: item.menuItemId,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.price,
-            lineTotal: item.price * item.quantity,
-          })),
-        },
+        create: items.map((item: any) => ({
+          menuItemId: item.menuItemId,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          lineTotal: item.price * item.quantity,
+          notes: item.selectedOptions?.length
+            ? item.selectedOptions
+                .map(
+                  (option: any) =>
+                    `${option.groupName}: ${option.choiceName}${
+                      option.priceDelta > 0
+                        ? ` (+$${option.priceDelta.toFixed(2)})`
+                        : ""
+                    }`,
+                )
+                .join("\n")
+            : null,
+        })),
+      },
 
         statusHistory: {
           create: {

@@ -1,18 +1,21 @@
-export type Allergen=
-|"Dairy"
-|"Egg"
-|"Fish"
-|"Shellfish"
-|"Tree Nuts"
-|"Peanuts"
-|"Wheat"
-|"Soy"
-|"Sesame"
+export type Allergen = {
+  id: string;
+  name: string;
+};
 
-export type MenuItemOption ={
-    name:string;
-    priceDelta?: number;
-}
+export type MenuItemOptionChoice = {
+  id: string;
+  name: string;
+  priceDelta: number;
+};
+
+export type MenuItemOptionGroup = {
+  id: string;
+  name: string;
+  required: boolean;
+  multiple: boolean;
+  choices: MenuItemOptionChoice[];
+};
 
 export type MenuItem = {
   id: string;
@@ -24,9 +27,5 @@ export type MenuItem = {
   available: boolean;
   seasonal?: boolean;
   allergens?: Allergen[];
-  options?: {
-    groupName: string;
-    required?: boolean;
-    choices: MenuItemOption[];
-  }[];
+  optionGroups?: MenuItemOptionGroup[];
 };

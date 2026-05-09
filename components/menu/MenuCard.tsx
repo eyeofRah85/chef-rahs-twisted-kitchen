@@ -39,7 +39,7 @@ export function MenuCard({ item }: MenuCardProps) {
 
       {item.allergens?.length ? (
         <p className="mb-4 text-xs text-gray-500">
-          Allergens: {item.allergens.join(", ")}
+          Allergens: {item.allergens.map((a) => a.name).join(", ")}
         </p>
       ) : null}
 
