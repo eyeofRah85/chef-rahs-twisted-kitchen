@@ -89,6 +89,36 @@ const allergens =
                           >
                             {item.available ? "Available" : "Unavailable"}
                           </p>
+                          {item.optionGroups.length > 0 && (
+                            <div className="mt-5 rounded-xl bg-neutral-100 p-4">
+                              <h4 className="font-semibold">Options</h4>
+
+                              <div className="mt-3 space-y-3">
+                                {item.optionGroups.map((group) => (
+                                  <div key={group.id} className="text-sm">
+                                    <p className="font-medium">
+                                      {group.name}{" "}
+                                      <span className="text-xs text-neutral-500">
+                                        {group.required ? "Required" : "Optional"} ·{" "}
+                                        {group.multiple ? "Multiple" : "Single"}
+                                      </span>
+                                    </p>
+
+                                    <ul className="mt-1 list-inside list-disc text-neutral-600">
+                                      {group.choices.map((choice) => (
+                                        <li key={choice.id}>
+                                          {choice.name}
+                                          {Number(choice.priceDelta) > 0
+                                            ? ` (+$${Number(choice.priceDelta).toFixed(2)})`
+                                            : ""}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                           <MenuItemCustomizationEditor
                             menuItemId={item.id}
                             allergens={allergens}
