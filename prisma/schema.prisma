@@ -36,6 +36,16 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum MenuItemType {
+  PLATE
+  A_LA_CARTE
+  MEAL_PLAN
+  CATERING
+  DESSERT
+  SIDE
+  OTHER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -107,6 +117,10 @@ model MenuItem {
   available   Boolean  @default(true)
   seasonal    Boolean  @default(false)
   imageUrl    String?
+  
+  type                        MenuItemType @default(PLATE)
+  requiresApproval            Boolean      @default(false)
+  customerInstructionsEnabled Boolean      @default(false)
 
   categoryId  String
   category    MenuCategory @relation(fields: [categoryId], references: [id])
@@ -119,6 +133,7 @@ model MenuItem {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
 model Allergen {
   id        String   @id @default(cuid())
   name      String   @unique

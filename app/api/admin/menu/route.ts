@@ -14,6 +14,10 @@ export async function POST(request: Request) {
     const categoryName = String(formData.get("category") ?? "").trim();
     const available = formData.get("available") === "on";
     const seasonal = formData.get("seasonal") === "on";
+    const type = String(formData.get("type") ?? "PLATE");
+    const requiresApproval = formData.get("requiresApproval") === "on";
+    const customerInstructionsEnabled = formData.get("customerInstructionsEnabled") === "on";
+
 
     if (!name || !description || !categoryName || price <= 0) {
       return NextResponse.json(
@@ -37,6 +41,9 @@ export async function POST(request: Request) {
         price,
         available,
         seasonal,
+        type: type as any,
+        requiresApproval,
+        customerInstructionsEnabled,
         categoryId: category.id,
       },
     });

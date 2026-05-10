@@ -72,6 +72,30 @@ export function MenuItemForm() {
           Seasonal
         </label>
 
+        <select
+          name="type"
+          className="w-full rounded-xl border px-4 py-3"
+          defaultValue="PLATE"
+        >
+          <option value="PLATE">Plate</option>
+          <option value="A_LA_CARTE">A La Carte</option>
+          <option value="MEAL_PLAN">Meal Plan</option>
+          <option value="CATERING">Catering</option>
+          <option value="DESSERT">Dessert</option>
+          <option value="SIDE">Side</option>
+          <option value="OTHER">Other</option>
+        </select>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input name="requiresApproval" type="checkbox" />
+          Requires chef approval
+        </label>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input name="customerInstructionsEnabled" type="checkbox" />
+          Allow customer instructions
+        </label>
+
         <button
           disabled={saving}
           className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"

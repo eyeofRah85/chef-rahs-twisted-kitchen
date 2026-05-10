@@ -38,6 +38,7 @@ const categories = await prisma.menuCategory.findMany({
           <h1 className="mt-3 text-4xl font-bold">Order Menu</h1>
 
           <p className="mt-3 max-w-2xl text-neutral-700">
+            Food is prepared using blended or coconut oils, minimally processed sugars and the freshest ingredients! 
             Choose from seasonal plates, a la carte items, desserts, and
             catering options. Allergy notes and substitutions will be collected
             during checkout.

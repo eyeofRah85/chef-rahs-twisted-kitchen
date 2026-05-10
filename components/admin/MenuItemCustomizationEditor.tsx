@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { optionGroupTemplates } from "@/data/option-templates";
+
 
 type Allergen = {
   id: string;
@@ -23,7 +25,8 @@ export function MenuItemCustomizationEditor({
   allergens,
 }: Props) {
   const router = useRouter();
-
+  
+  const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [required, setRequired] = useState(false);
@@ -130,13 +133,40 @@ export function MenuItemCustomizationEditor({
 
       <section className="border-t pt-5">
         <h4 className="font-semibold">Add Option Group</h4>
+      <select
+        value={selectedTemplate}
+        onChange={(e) => {
+          const templateName = e.target.value;
+          setSelectedTemplate(templateName);
 
-        <input
+          const template = optionGroupTemplates.find(
+            (item) => item.name === templateName,
+          );
+
+          if (!template) return;
+
+          setGroupName(template.name);
+          setRequired(template.required);
+          setMultiple(template.multiple);
+          setChoices(template.choices);
+        }}
+        className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
+      >
+        <option value="">Choose an option template</option>
+
+        {optionGroupTemplates.map((template) => (
+          <option key={template.name} value={template.name}>
+            {template.name}
+          </option>
+        ))}
+      </select>
+      <h4 className="font-semibold">Add Option Group</h4>
+        {/* <input
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
           placeholder="Group name, e.g. Spice Level"
           className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
-        />
+        /> */}
 
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
           <label className="flex items-center gap-2">
