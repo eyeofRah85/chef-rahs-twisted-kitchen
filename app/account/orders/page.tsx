@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { ReorderButton } from "@/components/account/ReorderButton";
 
 export default async function AccountOrdersPage() {
   const session = await auth();
@@ -89,6 +90,15 @@ export default async function AccountOrdersPage() {
                   >
                     View Details
                   </Link>
+                  <ReorderButton
+                    items={order.items.map((item) => ({
+                        menuItemId: item.menuItemId,
+                        name: item.name,
+                        quantity: item.quantity,
+                        unitPrice: Number(item.unitPrice),
+                        notes: item.notes,
+                    }))}
+                    />
                 </div>
               </div>
 

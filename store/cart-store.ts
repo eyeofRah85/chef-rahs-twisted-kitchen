@@ -22,6 +22,14 @@ export type CartItem = {
   substitutionPreference?: string;
 };
 
+export type RecoveredOrderItem = {
+  menuItemId: string | null;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  notes: string | null;
+};
+
 type CartState = {
   items: CartItem[];
   addItem: (item: MenuItem, selectedOptions?: SelectedCartOption[]) => void;
@@ -31,12 +39,38 @@ type CartState = {
   clearCart: () => void;
   subtotal: () => number;
   itemCount: () => number;
+  addRecoveredItem: (item: RecoveredOrderItem) => void;
 };
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      
+      addRecoveredItem: (item) => {
+        set((state) => ({
+          items: [
+            ...state.items,
+            {
+              cartId: crypto.randomUUID(),
+              menuItemId: item.menuItemId ?? "",
+              name: item.name,
+              price: item.unitPrice,
+              quantity: item.quantity,
+              category: "Reorder",
+              selectedOptions: item.notes
+                ? [
+                    {
+                      groupName: "Previous Selections",
+                      choiceName: item.notes,
+                      priceDelta: 0,
+                    },
+                  ]
+                : [],
+            },
+          ],
+        }));
+      },
 
       addItem: (item, selectedOptions = []) => {
         const optionsTotal = selectedOptions.reduce(
