@@ -46,6 +46,46 @@ enum MenuItemType {
   OTHER
 }
 
+enum CateringStatus {
+  NEW
+  REVIEWING
+  QUOTED
+  APPROVED
+  DEPOSIT_DUE
+  DEPOSIT_PAID
+  COMPLETED
+  CANCELLED
+}
+
+model CateringRequest {
+  id              String         @id @default(cuid())
+
+  userId          String?
+  user            User?          @relation(fields: [userId], references: [id])
+
+  name            String
+  email           String
+  phone           String?
+
+  eventDate       DateTime?
+  eventType       String?
+  guestCount      Int?
+  location        String?
+
+  requestedMenu   String?
+  allergyNotes    String?
+  specialRequests String?
+
+  status          CateringStatus @default(NEW)
+
+  estimatedTotal  Decimal?       @db.Decimal(10, 2)
+  depositAmount   Decimal?       @db.Decimal(10, 2)
+  depositPaidAt   DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -58,6 +98,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   orders        Order[]
+  cateringRequests CateringRequest[]
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
