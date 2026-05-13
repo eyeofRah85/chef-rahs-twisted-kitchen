@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { UpdateOrderStatusForm } from "@/components/admin/UpdateOrderStatusForm";
+import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 
 type PageProps = {
   params: Promise<{
@@ -205,6 +206,11 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                     ? order.paidAt.toLocaleString()
                     : "Not paid"}
                 </p>
+                {order.paymentStatus !== "PAID" && (
+                  <div className="mt-5">
+                    <MarkOrderPaidButton orderId={order.id} />
+                  </div>
+                )}
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 
 export default async function AdminPaymentsPage() {
   try {
@@ -80,6 +81,7 @@ export default async function AdminPaymentsPage() {
                 <th className="p-4">Customer</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Pay By</th>
+                <th className="p-4"></th>
                 <th className="p-4">Total</th>
                 <th className="p-4">Order</th>
               </tr>
@@ -111,6 +113,10 @@ export default async function AdminPaymentsPage() {
                     ${Number(order.total).toFixed(2)}
                   </td>
 
+                    <td className="p-4">
+                        <MarkOrderPaidButton orderId={order.id} />
+                    </td>
+
                   <td className="p-4">
                     <Link
                       href={`/admin/orders/${order.id}`}
@@ -124,7 +130,7 @@ export default async function AdminPaymentsPage() {
 
               {paymentDueOrders.length === 0 && (
                 <tr>
-                  <td className="p-6 text-center text-neutral-500" colSpan={5}>
+                  <td className="p-6 text-center text-neutral-500" colSpan={6}>
                     No outstanding payments.
                   </td>
                 </tr>
