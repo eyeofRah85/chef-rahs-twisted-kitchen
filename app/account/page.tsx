@@ -16,7 +16,7 @@ export default async function AccountPage() {
     },
     include: {
       orders: {
-        take: 5,
+        take: 3,
         orderBy: {
           createdAt: "desc",
         },
@@ -46,7 +46,7 @@ export default async function AccountPage() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Account
+            Account Dashboard
           </p>
 
           <h1 className="mt-3 text-4xl font-bold">
@@ -54,48 +54,113 @@ export default async function AccountPage() {
           </h1>
 
           <p className="mt-3 text-neutral-700">
-            View your recent orders, payment status, and order progress.
+            Track active orders, review payment status, and access your full
+            order history.
           </p>
         </div>
 
         <section className="grid gap-5 md:grid-cols-3">
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Recent Orders</p>
+          <Link
+            href="/account/orders"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <p className="text-sm text-neutral-500">Recent Orders Shown</p>
             <p className="mt-3 text-4xl font-bold">{user.orders.length}</p>
-          </div>
+          </Link>
 
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <Link
+            href="/account/orders"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
             <p className="text-sm text-neutral-500">Active Orders</p>
             <p className="mt-3 text-4xl font-bold">{activeOrders.length}</p>
-          </div>
+          </Link>
 
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          <Link
+            href="/account/orders"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
             <p className="text-sm text-neutral-500">Payments Due</p>
             <p className="mt-3 text-4xl font-bold">{unpaidOrders.length}</p>
-          </div>
+          </Link>
+        </section>
+
+        {unpaidOrders.length > 0 && (
+          <section className="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950 shadow-sm">
+            <h2 className="text-2xl font-semibold">Payment Reminder</h2>
+
+            <p className="mt-2">
+              You have {unpaidOrders.length} order
+              {unpaidOrders.length === 1 ? "" : "s"} with payment still due.
+            </p>
+
+            <Link
+              href="/account/orders"
+              className="mt-5 inline-flex rounded-xl bg-black px-5 py-3 text-sm font-medium text-white"
+            >
+              View Payment Details
+            </Link>
+          </section>
+        )}
+
+        <section className="mt-10 grid gap-6 md:grid-cols-3">
+          <Link
+            href="/account/orders"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <h2 className="text-xl font-semibold">Full Order History</h2>
+            <p className="mt-2 text-sm text-neutral-600">
+              View all previous orders, payment status, and reorder meals.
+            </p>
+          </Link>
+
+          <Link
+            href="/menu"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <h2 className="text-xl font-semibold">Browse Menu</h2>
+            <p className="mt-2 text-sm text-neutral-600">
+              Start a new order from the seasonal menu and meal plans.
+            </p>
+          </Link>
+
+          <Link
+            href="/catering"
+            className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <h2 className="text-xl font-semibold">Catering Requests</h2>
+            <p className="mt-2 text-sm text-neutral-600">
+              Request catering for events, gatherings, and custom meals.
+            </p>
+          </Link>
         </section>
 
         <section className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">Recent Orders</h2>
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-semibold">Recent Activity</h2>
+              <p className="mt-1 text-sm text-neutral-600">
+                Showing your latest 3 orders.
+              </p>
+            </div>
 
-            <Link href="/account/orders" className="text-sm font-medium underline">
-              View all
+            <Link
+              href="/account/orders"
+              className="text-sm font-medium underline"
+            >
+              View Full Order History
             </Link>
           </div>
 
           <div className="space-y-4">
             {user.orders.map((order) => (
-              <Link
+              <div
                 key={order.id}
-                href={`/orders/${order.id}`}
-                className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                className="rounded-xl border p-4 transition hover:bg-neutral-50"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold">
-                      {order.orderType} Order
-                    </p>
+                    <p className="font-semibold">{order.orderType} Order</p>
 
                     <p className="mt-1 text-sm text-neutral-600">
                       {order.items.length} item
@@ -109,6 +174,12 @@ export default async function AccountPage() {
                         ? order.requestedDateTime.toLocaleString()
                         : "Not provided"}
                     </p>
+
+                    {order.paymentStatus && (
+                      <p className="mt-2 text-xs font-medium text-amber-700">
+                        Payment: {order.paymentStatus}
+                      </p>
+                    )}
                   </div>
 
                   <div className="text-right">
@@ -120,19 +191,20 @@ export default async function AccountPage() {
                       ${Number(order.total).toFixed(2)}
                     </p>
 
-                    {order.paymentStatus && (
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {order.paymentStatus}
-                      </p>
-                    )}
+                    <Link
+                      href={`/orders/${order.id}`}
+                      className="mt-3 inline-flex rounded-xl border px-4 py-2 text-xs font-medium"
+                    >
+                      View Details
+                    </Link>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
 
             {user.orders.length === 0 && (
               <div className="rounded-xl bg-neutral-100 p-6 text-center">
-                <p className="font-medium">No orders yet.</p>
+                <p className="font-medium">No recent activity yet.</p>
 
                 <Link
                   href="/menu"
