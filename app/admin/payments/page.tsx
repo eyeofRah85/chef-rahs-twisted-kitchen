@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 
 export default async function AdminPaymentsPage() {
@@ -8,9 +10,28 @@ export default async function AdminPaymentsPage() {
     redirect("/");
   }
 
+  const paymentDueOrders = await prisma.order.findMany({
+    where: {
+      paymentStatus: {
+        in: ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"],
+      },
+    },
+    orderBy: {
+      payByDate: "asc",
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  const totalDue = paymentDueOrders.reduce(
+    (sum, order) => sum + Number(order.total),
+    0,
+  );
+
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
             Admin
@@ -24,67 +45,93 @@ export default async function AdminPaymentsPage() {
           </p>
         </div>
 
-        <div className="grid gap-6">
-          <section className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold">Current Payment Methods</h2>
+        <section className="grid gap-5 md:grid-cols-3">
+          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+            <p className="text-sm text-neutral-500">Payments Due</p>
+            <p className="mt-3 text-4xl font-bold">
+              {paymentDueOrders.length}
+            </p>
+          </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border bg-neutral-50 p-5">
-                <p className="text-sm text-neutral-500">Manual Invoice</p>
+          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+            <p className="text-sm text-neutral-500">Outstanding Total</p>
+            <p className="mt-3 text-4xl font-bold">
+              ${totalDue.toFixed(2)}
+            </p>
+          </div>
 
-                <p className="mt-3 text-lg font-semibold">Enabled</p>
+          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+            <p className="text-sm text-neutral-500">Stripe</p>
+            <p className="mt-3 text-2xl font-bold">Coming Soon</p>
+          </div>
+        </section>
 
-                <p className="mt-2 text-sm text-neutral-600">
-                  Customers can submit orders and pay by a specified date.
-                </p>
-              </div>
+        <section className="mt-10 overflow-hidden rounded-2xl border bg-white shadow-sm">
+          <div className="border-b p-6">
+            <h2 className="text-2xl font-semibold">Outstanding Payments</h2>
+            <p className="mt-2 text-sm text-neutral-600">
+              Orders that still need manual payment, offline payment, or invoice follow-up.
+            </p>
+          </div>
 
-              <div className="rounded-xl border bg-neutral-50 p-5">
-                <p className="text-sm text-neutral-500">Offline / Cash Payment</p>
+          <table className="w-full text-left text-sm">
+            <thead className="bg-neutral-100">
+              <tr>
+                <th className="p-4">Customer</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Pay By</th>
+                <th className="p-4">Total</th>
+                <th className="p-4">Order</th>
+              </tr>
+            </thead>
 
-                <p className="mt-3 text-lg font-semibold">Enabled</p>
+            <tbody>
+              {paymentDueOrders.map((order) => (
+                <tr key={order.id} className="border-t">
+                  <td className="p-4">
+                    <div className="font-medium">{order.customerName}</div>
+                    <div className="text-xs text-neutral-500">
+                      {order.customerEmail}
+                    </div>
+                  </td>
 
-                <p className="mt-2 text-sm text-neutral-600">
-                  Offline payments can be tracked manually through the order
-                  workflow.
-                </p>
-              </div>
+                  <td className="p-4">
+                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                      {order.paymentStatus}
+                    </span>
+                  </td>
 
-              <div className="rounded-xl border bg-neutral-50 p-5 opacity-70">
-                <p className="text-sm text-neutral-500">Stripe Integration</p>
+                  <td className="p-4 text-neutral-600">
+                    {order.payByDate
+                      ? order.payByDate.toLocaleDateString()
+                      : "Not set"}
+                  </td>
 
-                <p className="mt-3 text-lg font-semibold">Coming Soon</p>
+                  <td className="p-4 font-semibold">
+                    ${Number(order.total).toFixed(2)}
+                  </td>
 
-                <p className="mt-2 text-sm text-neutral-600">
-                  Online card payments and automated payment capture.
-                </p>
-              </div>
+                  <td className="p-4">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="font-medium underline"
+                    >
+                      View Order
+                    </Link>
+                  </td>
+                </tr>
+              ))}
 
-              <div className="rounded-xl border bg-neutral-50 p-5 opacity-70">
-                <p className="text-sm text-neutral-500">Deposit Automation</p>
-
-                <p className="mt-3 text-lg font-semibold">Coming Soon</p>
-
-                <p className="mt-2 text-sm text-neutral-600">
-                  Catering deposit invoices and automated reminders.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-semibold">Planned Features</h2>
-
-            <ul className="mt-5 list-inside list-disc space-y-2 text-neutral-700">
-              <li>Stripe Checkout Sessions</li>
-              <li>Deposit invoice generation</li>
-              <li>Payment reminder emails</li>
-              <li>Partial payments</li>
-              <li>Refund tracking</li>
-              <li>Automatic payment reconciliation</li>
-            </ul>
-          </section>
-        </div>
+              {paymentDueOrders.length === 0 && (
+                <tr>
+                  <td className="p-6 text-center text-neutral-500" colSpan={5}>
+                    No outstanding payments.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </section>
       </div>
     </main>
   );
