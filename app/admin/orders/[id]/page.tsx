@@ -179,6 +179,36 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
             </div>
 
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Payment</h2>
+
+              <div className="mt-5 space-y-3 text-sm">
+                <p>
+                  <strong>Provider:</strong>{" "}
+                  {order.paymentProvider ?? "Not set"}
+                </p>
+
+                <p>
+                  <strong>Status:</strong>{" "}
+                  {order.paymentStatus ?? "Not set"}
+                </p>
+
+                <p>
+                  <strong>Pay By:</strong>{" "}
+                  {order.payByDate
+                    ? order.payByDate.toLocaleDateString()
+                    : "Not set"}
+                </p>
+
+                <p>
+                  <strong>Paid At:</strong>{" "}
+                  {order.paidAt
+                    ? order.paidAt.toLocaleString()
+                    : "Not paid"}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">History</h2>
 
               <div className="mt-5 space-y-3">

@@ -22,6 +22,9 @@ const defaultCheckout: CheckoutDetails = {
   substitutionPreference: "",
   tipType: "none",
   customTipAmount: 0,
+
+  paymentMethod: "manual",
+  payByDate: "",
 };
 
 export const useCheckoutStore = create<CheckoutState>()(

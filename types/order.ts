@@ -7,6 +7,8 @@ export type TipType =
   | "20"
   | "custom";
 
+export type PaymentMethod = "manual" | "cash" | "stripe";
+
 export type CheckoutDetails = {
   orderType: OrderType;
   requestedDateTime: string;
@@ -14,4 +16,7 @@ export type CheckoutDetails = {
   substitutionPreference: string;
   tipType: TipType;
   customTipAmount?: number;
+
+  paymentMethod: PaymentMethod;
+  payByDate: string;
 };

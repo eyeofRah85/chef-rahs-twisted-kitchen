@@ -71,6 +71,17 @@ export async function POST(request: Request) {
         tipAmount,
         total,
 
+        payByDate: checkout.payByDate
+          ? new Date(checkout.payByDate)
+          : null,
+
+        paymentProvider: checkout.paymentMethod,
+
+        paymentStatus:
+          checkout.paymentMethod === "cash"
+            ? "OFFLINE_PAYMENT_DUE"
+            : "PAY_BY_DATE",
+
         items: {
         create: items.map((item: any) => ({
           menuItemId: item.menuItemId,

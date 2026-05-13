@@ -41,6 +41,8 @@ export default async function AdminOrdersPage() {
                 <th className="p-4">Status</th>
                 <th className="p-4">Items</th>
                 <th className="p-4">Total</th>
+                <th className="p-4">Payment</th>
+                <th className="p-4">Pay By</th>
                 <th className="p-4">Created</th>
                 <th className="p-4"></th>
               </tr>
@@ -69,7 +71,17 @@ export default async function AdminOrdersPage() {
                   <td className="p-4 font-medium">
                     ${Number(order.total).toFixed(2)}
                   </td>
+                  <td className="p-4">
+                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                      {order.paymentStatus ?? "N/A"}
+                    </span>
+                  </td>
 
+                  <td className="p-4 text-neutral-600">
+                    {order.payByDate
+                      ? order.payByDate.toLocaleDateString()
+                      : "-"}
+                  </td>
                   <td className="p-4 text-neutral-600">
                     {order.createdAt.toLocaleDateString()}
                   </td>
@@ -87,7 +99,7 @@ export default async function AdminOrdersPage() {
 
               {orders.length === 0 && (
                 <tr>
-                  <td className="p-6 text-center text-neutral-500" colSpan={7}>
+                  <td className="p-6 text-center text-neutral-500" colSpan={9}>
                     No orders yet.
                   </td>
                 </tr>

@@ -22,6 +22,7 @@ const router = useRouter();
 
 const items = useCartStore((state) => state.items);
 const clearCart = useCartStore((state) => state.clearCart);
+
 const resetCheckout = useCheckoutStore(
   (state) => state.resetCheckout,
 );
@@ -193,6 +194,40 @@ const total =
                 Orders placed after Thursday 5PM include a $10 late fee.
               </div>
             )}
+            <div>
+            <label className="block text-sm font-medium">Payment Method</label>
+            <select
+              value={details.paymentMethod}
+              onChange={(e) =>
+                updateField("paymentMethod", e.target.value as any)
+              }
+              className="mt-2 w-full rounded-xl border px-4 py-3"
+            >
+              <option value="manual">Pay Later / Manual Invoice</option>
+              <option value="cash">Cash / Offline Payment</option>
+              <option value="stripe" disabled>
+                Online Card Payment — Coming Soon
+              </option>
+            </select>
+
+            <p className="mt-2 text-xs text-neutral-500">
+              Online card payments will be added later. For now, orders can be submitted
+              with manual payment tracking.
+            </p>
+          </div>
+
+          {details.paymentMethod === "manual" && (
+            <div>
+              <label className="block text-sm font-medium">Pay By Date</label>
+
+              <input
+                type="date"
+                value={details.payByDate}
+                onChange={(e) => updateField("payByDate", e.target.value)}
+                className="mt-2 w-full rounded-xl border px-4 py-3"
+              />
+            </div>
+          )}
           <button
             type="button"
             onClick={async () => {
@@ -213,6 +248,11 @@ const total =
               if (!validation.valid) {
                 alert(validation.error);
                 return;
+              }
+
+              if (details.paymentMethod === "manual" && !details.payByDate) {
+              alert("Please choose a pay-by date.");
+              return;
               }
 
               const response = await fetch("/api/orders", {
