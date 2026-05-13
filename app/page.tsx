@@ -5,19 +5,58 @@ export default function HomePage() {
     <main className="min-h-screen bg-neutral-50">
       <section className="mx-auto flex max-w-6xl flex-col px-6 py-20">
         <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-          Chef Rah&apos;s Twisted Kitchen
+          {/* Chef Rah&apos;s Twisted Kitchen */}
+          GOURMET CHEF AT YOU DINNER TABLE
         </p>
 
         <h1 className="max-w-3xl text-5xl font-bold tracking-tight text-neutral-950">
-          Elegant comfort food with a creative twist.
+          {/* Elegant comfort food with a creative twist. */}
+          Try our fresh and healthy meals today!
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg text-neutral-700">
-          Order seasonal plates, a la carte favorites, pickup, delivery, and
+          Order seasonal meal plans, a la carte favorites, pickup, delivery, and
           catering from Chef Rah&apos;s Twisted Kitchen.
         </p>
+        
+        <section className="mt-10 flex flex-col items-start gap-10 md:flex-row">
+          <div> 
+            <div>
+              <img className="stock1" src="PERSONAL-CHEF.jpg" alt="PERSONAL CHEF"/>
+            </div>
+            <div className="homepage-card mt-10 rounded-2xl border bg-white p-6 shadow-sm ">
+              <ol className="mt-4 space-y-2 pl-5 text-neutral-700">
+                <span>All the best parts about dining out in the comfort of your own home! 
+                  Personal Chef services ranging from weekly family-style meal prep, special occasions, romantic date nights & more! 
+                </span>
+              </ol>
+            </div>
+          </div>
+          <div>
+                 <div>
+              <img className="stock1" src="MEAL-PREP.jpg" alt="MEAL PREP"/>
+            </div>
+            <div className="homepage-card mt-10 rounded-2xl border bg-white p-6 shadow-sm ">
+              <ol className="mt-4 space-y-2 pl-5 text-neutral-700">
+                <span>Health-focused, fully prepared meals consisting of low carb, minimally processed foods that are rich in flavor. Geared toward maintaining weight or helping reach goal weight. Offering, Low Carb, Paleo, Pescatarian, Vegetarian & Vegan. 
+                </span>
+              </ol>
+            </div>
+          </div>
 
-        <div className="mt-8 flex gap-4">
+          <div>
+                 <div>
+              <img className="stock1" src="CATERING.jpg" alt="CATERING"/>
+            </div>
+            <div className="homepage-card mt-10 rounded-2xl border bg-white p-6 shadow-sm ">
+              <ol className="mt-4 space-y-2 pl-5 text-neutral-700">
+                <span> Menu creation customized with specific needs for your event, whether big or small. Small office parties, weddings, rehearsal dinners, graduation parties & more.  
+                </span>
+              </ol>
+            </div>
+          </div>
+        </section>
+        {/* <div className="mt-8 flex gap-4">
           <Link
             href="/menu"
             className="rounded-xl bg-black px-6 py-3 font-medium text-white"
@@ -36,7 +75,7 @@ export default function HomePage() {
           >
             Catering
           </Link>
-        </div>
+        </div> */}
 
         <div className="mt-12 rounded-2xl border bg-white p-6 shadow-sm">
           <h2 className="text-xl font-semibold">Ordering Rules</h2>

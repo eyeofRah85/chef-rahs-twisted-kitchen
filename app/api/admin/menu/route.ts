@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +19,27 @@ export async function POST(request: Request) {
     const type = String(formData.get("type") ?? "PLATE");
     const requiresApproval = formData.get("requiresApproval") === "on";
     const customerInstructionsEnabled = formData.get("customerInstructionsEnabled") === "on";
+    const image = formData.get("imageUrl") as File | null;
+
+    let imageUrl: string | null = null;
+
+    if (image && image.size > 0) {
+      const bytes = await image.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "menu");
+      await mkdir(uploadDir, { recursive: true });
+
+      const safeFileName = `${Date.now()}-${image.name
+        .replaceAll(" ", "-")
+        .replace(/[^a-zA-Z0-9.-]/g, "")}`;
+
+      const filePath = path.join(uploadDir, safeFileName);
+
+      await writeFile(filePath, buffer);
+
+      imageUrl = `/uploads/menu/${safeFileName}`;
+    }
 
 
     if (!name || !description || !categoryName || price <= 0) {
@@ -45,6 +68,7 @@ export async function POST(request: Request) {
         requiresApproval,
         customerInstructionsEnabled,
         categoryId: category.id,
+        imageUrl,
       },
     });
 

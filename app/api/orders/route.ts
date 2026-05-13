@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     );
 
     const total = subtotal + deliveryFee + lateFee + tipAmount;
+    
     const order = await prisma.order.create({
       data: {
         user: {

@@ -7,16 +7,30 @@ type MenuCardProps = {
 
 export function MenuCard({ item }: MenuCardProps) {
   return (
-    <div className="rounded-2xl border bg-white p-5 shadow-sm">
-      <div className="mb-3 flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-xl font-semibold">{item.name}</h3>
-          <p className="mt-1 text-sm text-gray-600">{item.description}</p>
-        </div>
+    <div className="rounded-2xl flex flex-col border bg-white p-5 shadow-sm">
+      <div className="mb-3 flex flex-col items-start gap-4">
+        
+        <img
+          src={item.imageUrl || "/placeholder.png"}
+          alt={item.name}
+          className="h-24 w-24 shrink-0 rounded-xl border object-cover"
+        />
 
-        <span className="whitespace-nowrap text-lg font-bold">
-          ${item.price.toFixed(2)}
-        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="text-xl font-semibold">
+              {item.name}
+            </h3>
+
+            <span className="shrink-0 whitespace-nowrap text-lg font-bold">
+              ${item.price.toFixed(2)}
+            </span>
+          </div>
+
+          <p className="mt-1 text-sm text-gray-600 break-words">
+            {item.description}
+          </p>
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2 text-xs">

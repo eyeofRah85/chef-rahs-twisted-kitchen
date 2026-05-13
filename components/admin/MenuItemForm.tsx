@@ -1,13 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export function MenuItemForm() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [fileName, setFileName] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      setFileName(file.name);
+    }
+  };
 
   async function handleSubmit(formData: FormData) {
+    const image = formData.get("imageUrl") as File | null;
+    console.log(image);
     setSaving(true);
 
     const response = await fetch("/api/admin/menu", {
@@ -22,6 +36,10 @@ export function MenuItemForm() {
       return;
     }
 
+    formRef.current?.reset();
+    setPreview(null);
+    setFileName("");
+
     router.refresh();
   }
 
@@ -30,12 +48,49 @@ export function MenuItemForm() {
       <h2 className="text-2xl font-semibold">Add Menu Item</h2>
 
       <div className="mt-5 space-y-4">
+          <div className="space-y-3">
+            <label className="block text-sm font-medium">
+              Menu Item Image
+            </label>
+
+            <input
+              id="imageUpload"
+              type="file"
+              name="imageUrl"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+
+            <label
+              htmlFor="imageUpload"
+              className="inline-flex cursor-pointer items-center rounded-xl bg-black px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+            >
+              Select Image
+            </label>
+
+            {fileName && (
+              <p className="text-sm text-neutral-600">
+                Selected: {fileName}
+              </p>
+            )}
+
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="h-48 w-full rounded-xl border object-cover"
+              />
+            )}
+        </div>
+
         <input
           name="name"
           placeholder="Item name"
           className="w-full rounded-xl border px-4 py-3"
           required
         />
+
 
         <textarea
           name="description"
@@ -55,13 +110,6 @@ export function MenuItemForm() {
           required
         />
 
-        <input
-          name="category"
-          placeholder="Category, e.g. Plates, A La Carte"
-          className="w-full rounded-xl border px-4 py-3"
-          required
-        />
-
         <label className="flex items-center gap-2 text-sm">
           <input name="available" type="checkbox" defaultChecked />
           Available
@@ -73,13 +121,14 @@ export function MenuItemForm() {
         </label>
 
         <select
-          name="type"
+          name="category"
           className="w-full rounded-xl border px-4 py-3"
-          defaultValue="PLATE"
+          defaultValue="MEAL_PLAN"
+          required
         >
           <option value="PLATE">Plate</option>
-          <option value="A_LA_CARTE">A La Carte</option>
-          <option value="MEAL_PLAN">Meal Plan</option>
+          <option value="A LA CARTE">A La Carte</option>
+          <option value="MEAL PLAN">Meal Plan</option>
           <option value="CATERING">Catering</option>
           <option value="DESSERT">Dessert</option>
           <option value="SIDE">Side</option>
