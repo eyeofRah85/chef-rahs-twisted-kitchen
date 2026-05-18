@@ -18,17 +18,8 @@ export default async function AdminReportsPage() {
   const monthAgo = new Date();
   monthAgo.setMonth(now.getMonth() - 1);
 
-  const [
-    totalRevenueResult,
-    weeklyOrders,
-    monthlyOrders,
-    pendingPayments,
-    cateringRequests,
-    completedOrders,
-    cancelledOrders,
-    topItems,
-  ] = await Promise.all([
-    prisma.order.aggregate({
+  const metricQueries = {
+    totalRevenueResult: prisma.order.aggregate({
       where: {
         status: {
           notIn: ["CANCELLED", "REFUNDED"],
@@ -39,7 +30,7 @@ export default async function AdminReportsPage() {
       },
     }),
 
-    prisma.order.count({
+    weeklyOrders: prisma.order.count({
       where: {
         createdAt: {
           gte: weekAgo,
@@ -47,7 +38,7 @@ export default async function AdminReportsPage() {
       },
     }),
 
-    prisma.order.count({
+    monthlyOrders: prisma.order.count({
       where: {
         createdAt: {
           gte: monthAgo,
@@ -55,7 +46,7 @@ export default async function AdminReportsPage() {
       },
     }),
 
-    prisma.order.count({
+    pendingPayments: prisma.order.count({
       where: {
         paymentStatus: {
           in: ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"],
@@ -63,21 +54,21 @@ export default async function AdminReportsPage() {
       },
     }),
 
-    prisma.cateringRequest.count(),
+    cateringRequests: prisma.cateringRequest.count(),
 
-    prisma.order.count({
+    completedOrders: prisma.order.count({
       where: {
         status: "COMPLETED",
       },
     }),
 
-    prisma.order.count({
+    cancelledOrders: prisma.order.count({
       where: {
         status: "CANCELLED",
       },
     }),
 
-    prisma.orderItem.groupBy({
+    topItems: prisma.orderItem.groupBy({
       by: ["name"],
       _sum: {
         quantity: true,
@@ -89,6 +80,26 @@ export default async function AdminReportsPage() {
       },
       take: 5,
     }),
+  };
+
+  const [
+  totalRevenueResult,
+  weeklyOrders,
+  monthlyOrders,
+  pendingPayments,
+  cateringRequests,
+  completedOrders,
+  cancelledOrders,
+  topItems,
+  ] = await Promise.all([
+    metricQueries.totalRevenueResult,
+    metricQueries.weeklyOrders,
+    metricQueries.monthlyOrders,
+    metricQueries.pendingPayments,
+    metricQueries.cateringRequests,
+    metricQueries.completedOrders,
+    metricQueries.cancelledOrders,
+    metricQueries.topItems,
   ]);
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
