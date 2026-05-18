@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { MenuItemForm } from "@/components/admin/MenuItemForm";
 import { MenuItemCustomizationEditor } from "@/components/admin/MenuItemCustomizationEditor";
 import Link from "next/link"; 
+import { MenuAvailabilityToggle } from "@/components/admin/MenuAvailabilityToggle";
 
 export default async function AdminMenuPage() {
   try {
@@ -131,6 +132,12 @@ const allergens =
                           {item.seasonal && (
                             <p className="mt-1 text-amber-700">Seasonal</p>
                           )}
+
+                          <MenuAvailabilityToggle
+                            menuItemId={item.id}
+                            available={item.available}
+                          />
+                          
                         </div>
                       </div>
                     </div>
