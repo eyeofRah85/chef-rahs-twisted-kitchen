@@ -5,6 +5,7 @@ import { UpdateCateringStatusForm } from "@/components/admin/UpdateCateringStatu
 import { CateringApprovalForm } from "@/components/admin/CateringApprovalForm";
 import Link from "next/link";
 import { CateringQuoteForm } from "@/components/admin/CateringQuoteForm";
+import { MarkDepositPaidButton } from "@/components/admin/MarkDepositPaidButton";
 
 type PageProps = {
   params: Promise<{
@@ -169,7 +170,7 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
                       ? request.depositPaidAt.toLocaleString()
                       : "Not paid"}
                   </p>
-                  
+
                   <div className="mt-6 border-t pt-5">
                     <CateringQuoteForm
                       requestId={request.id}
@@ -180,6 +181,11 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
                         request.depositAmount ? Number(request.depositAmount) : null
                       }
                     />
+                    {request.depositAmount && !request.depositPaidAt && (
+                      <div className="mt-5">
+                        <MarkDepositPaidButton requestId={request.id} />
+                      </div>
+                    )}
                   </div>
               </div>
             </div>
