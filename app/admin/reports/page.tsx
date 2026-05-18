@@ -80,6 +80,18 @@ export default async function AdminReportsPage() {
       },
       take: 5,
     }),
+
+    pendingOrderApprovals: prisma.order.count({
+      where: {
+        approvalStatus: "PENDING",
+      },
+    }),
+
+    pendingCateringApprovals: prisma.cateringRequest.count({
+      where: {
+        approvalStatus: "PENDING",
+      },
+    }),
   };
 
   const [
@@ -91,16 +103,20 @@ export default async function AdminReportsPage() {
   completedOrders,
   cancelledOrders,
   topItems,
-  ] = await Promise.all([
-    metricQueries.totalRevenueResult,
-    metricQueries.weeklyOrders,
-    metricQueries.monthlyOrders,
-    metricQueries.pendingPayments,
-    metricQueries.cateringRequests,
-    metricQueries.completedOrders,
-    metricQueries.cancelledOrders,
-    metricQueries.topItems,
-  ]);
+  pendingOrderApprovals,
+  pendingCateringApprovals,
+] = await Promise.all([
+  metricQueries.totalRevenueResult,
+  metricQueries.weeklyOrders,
+  metricQueries.monthlyOrders,
+  metricQueries.pendingPayments,
+  metricQueries.cateringRequests,
+  metricQueries.completedOrders,
+  metricQueries.cancelledOrders,
+  metricQueries.topItems,
+  metricQueries.pendingOrderApprovals,
+  metricQueries.pendingCateringApprovals,
+]);
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
 
@@ -133,6 +149,14 @@ export default async function AdminReportsPage() {
     {
       label: "Catering Requests",
       value: cateringRequests,
+    },
+    {
+      label: "Order Approvals",
+      value: pendingOrderApprovals,
+    },
+    {
+      label: "Catering Approvals",
+      value: pendingCateringApprovals,
     },
   ];
 
@@ -264,6 +288,20 @@ export default async function AdminReportsPage() {
                   <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
                     {cateringRequests} catering request
                     {cateringRequests === 1 ? "" : "s"} submitted.
+                  </div>
+                )}
+
+                {pendingOrderApprovals > 0 && (
+                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
+                    {pendingOrderApprovals} order
+                    {pendingOrderApprovals === 1 ? "" : "s"} waiting for approval.
+                  </div>
+                )}
+
+                {pendingCateringApprovals > 0 && (
+                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
+                    {pendingCateringApprovals} catering request
+                    {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
                   </div>
                 )}
               </div>
