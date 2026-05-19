@@ -67,7 +67,12 @@ const allergens =
             Add seasonal items, a la carte options, pricing, and availability.
           </p>
         </div>
-
+        <a
+          href="/admin/menu/archived"
+          className="inline-flex rounded-xl border px-4 py-2 text-sm font-medium"
+        >
+          View Archived Items
+        </a>
         <div className="grid gap-8 lg:grid-cols-[380px_1fr]">
           <MenuItemForm />
 
