@@ -28,4 +28,6 @@ export type MenuItem = {
   seasonal?: boolean;
   allergens?: Allergen[];
   optionGroups?: MenuItemOptionGroup[];
+  customerInstructionsEnabled?: boolean;
+  requiresApproval?: boolean;
 };

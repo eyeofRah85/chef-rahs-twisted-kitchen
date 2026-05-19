@@ -14,6 +14,8 @@ type Props = {
 export function MenuItemModal({ item, open, onClose }: Props) {
   const addItem = useCartStore((state) => state.addItem);
   const [selected, setSelected] = useState<Record<string, string[]>>({});
+  const [customerInstructions, setCustomerInstructions] = useState("");
+
 
   if (!open) return null;
 
@@ -69,8 +71,9 @@ export function MenuItemModal({ item, open, onClose }: Props) {
       }
     }
 
-    addItem(item, selectedOptions);
+    addItem(item, selectedOptions, customerInstructions);
     setSelected({});
+    setCustomerInstructions("");
     onClose();
   }
 
@@ -168,6 +171,22 @@ export function MenuItemModal({ item, open, onClose }: Props) {
             </p>
           )}
         </div>
+
+        {item.customerInstructionsEnabled && (
+          <section className="mt-6 rounded-xl border p-4">
+            <label className="block font-semibold">
+              Special Instructions
+            </label>
+
+            <textarea
+              rows={4}
+              value={customerInstructions}
+              onChange={(e) => setCustomerInstructions(e.target.value)}
+              className="mt-3 w-full rounded-xl border px-4 py-3 text-sm"
+              placeholder="Describe your custom meal plan request, substitutions, or preferences."
+            />
+          </section>
+        )}
 
         <div className="mt-8 flex items-center justify-between border-t pt-5">
           <div>

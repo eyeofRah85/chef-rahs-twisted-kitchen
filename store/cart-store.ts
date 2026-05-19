@@ -20,6 +20,8 @@ export type CartItem = {
   selectedOptions?: SelectedCartOption[];
   allergyNotes?: string;
   substitutionPreference?: string;
+  customerInstructions?: string;
+  requiresApproval?: boolean;
 };
 
 export type RecoveredOrderItem = {
@@ -32,7 +34,7 @@ export type RecoveredOrderItem = {
 
 type CartState = {
   items: CartItem[];
-  addItem: (item: MenuItem, selectedOptions?: SelectedCartOption[]) => void;
+  addItem: (item: MenuItem, selectedOptions?: SelectedCartOption[], customerInstructions?: string) => void;
   removeItem: (cartId: string) => void;
   increaseQuantity: (cartId: string) => void;
   decreaseQuantity: (cartId: string) => void;
@@ -72,7 +74,7 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      addItem: (item, selectedOptions = []) => {
+      addItem: (item, selectedOptions = [], customerInstructions = "") => {
         const optionsTotal = selectedOptions.reduce(
           (total, option) => total + option.priceDelta,
           0,
@@ -86,6 +88,8 @@ export const useCartStore = create<CartState>()(
           quantity: 1,
           category: item.category,
           selectedOptions,
+          customerInstructions,
+          requiresApproval: item.requiresApproval,
         };
 
         set((state) => ({

@@ -49,7 +49,7 @@ const categories = await prisma.menuCategory.findMany({
             during checkout.
           </p>
         </div>
-        
+
         <MenuCategoryFilter categories={categories.map((category) => category.name)} />
 
         <div className="space-y-10">
@@ -74,6 +74,8 @@ const categories = await prisma.menuCategory.findMany({
                         id: entry.allergen.id,
                         name: entry.allergen.name,
                       })),
+                      requiresApproval: item.requiresApproval,
+                      customerInstructionsEnabled: item.customerInstructionsEnabled,
                       optionGroups: item.optionGroups.map((group) => ({
                         id: group.id,
                         name: group.name,

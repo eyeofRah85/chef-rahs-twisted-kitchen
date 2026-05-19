@@ -89,9 +89,9 @@ export async function POST(request: Request) {
           quantity: item.quantity,
           unitPrice: item.price,
           lineTotal: item.price * item.quantity,
-          notes: item.selectedOptions?.length
-            ? item.selectedOptions
-                .map(
+          notes: [
+            ...(item.selectedOptions?.length
+              ? item.selectedOptions.map(
                   (option: any) =>
                     `${option.groupName}: ${option.choiceName}${
                       option.priceDelta > 0
@@ -99,8 +99,14 @@ export async function POST(request: Request) {
                         : ""
                     }`,
                 )
-                .join("\n")
-            : null,
+              : []),
+
+            item.customerInstructions
+              ? `Special Instructions: ${item.customerInstructions}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join("\n") || null,
         })),
       },
 

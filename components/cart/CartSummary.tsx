@@ -63,6 +63,13 @@ export function CartSummary() {
                 </ul>
               ) : null}
 
+              {item.customerInstructions && (
+                <div className="mt-3 rounded-xl bg-neutral-100 p-3 text-sm text-neutral-700">
+                  <p className="font-semibold">Special Instructions</p>
+                  <p className="mt-1 whitespace-pre-wrap">{item.customerInstructions}</p>
+                </div>
+              )}
+
               <button
                 onClick={() => removeItem(item.cartId)}
                 className="text-sm text-red-600"
