@@ -6,6 +6,7 @@ import { MenuItemCustomizationEditor } from "@/components/admin/MenuItemCustomiz
 import Link from "next/link"; 
 import { MenuAvailabilityToggle } from "@/components/admin/MenuAvailabilityToggle";
 import { MenuItemEditForm } from "@/components/admin/MenuItemEditForm";
+import { DeleteOptionGroupButton } from "@/components/admin/DeleteOptionGroupButton";
 
 export default async function AdminMenuPage() {
   try {
@@ -109,6 +110,7 @@ const allergens =
                                         {group.multiple ? "Multiple" : "Single"}
                                       </span>
                                     </p>
+                                      <DeleteOptionGroupButton optionGroupId={group.id} />
 
                                     <ul className="mt-1 list-inside list-disc text-neutral-600">
                                       {group.choices.map((choice) => (
