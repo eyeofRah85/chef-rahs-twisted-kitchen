@@ -43,12 +43,14 @@ export async function POST(request: Request) {
     );
 
     const total = subtotal + deliveryFee + lateFee + tipAmount;
-    
+    const requiresApproval = items.some((item: any) => item.requiresApproval);
     const order = await prisma.order.create({
       data: {
         user: {
           connect: {
             email: session.user.email,
+            approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
+            approvedAt: requiresApproval ? null : new Date(),
           },
         },
 

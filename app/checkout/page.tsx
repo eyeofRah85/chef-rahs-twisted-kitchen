@@ -15,53 +15,55 @@ import {
 
 export default function CheckoutPage() {
 
-const details = useCheckoutStore((state) => state.details);
-const updateField = useCheckoutStore((state) => state.updateField);
+  const details = useCheckoutStore((state) => state.details);
+  const updateField = useCheckoutStore((state) => state.updateField);
 
-const router = useRouter();
+  const router = useRouter();
 
-const items = useCartStore((state) => state.items);
-const clearCart = useCartStore((state) => state.clearCart);
+  const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
 
-const resetCheckout = useCheckoutStore(
-  (state) => state.resetCheckout,
-);
-
-const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-const subtotal = items.reduce(
-  (total, item) => total + item.price * item.quantity,
-  0,
-);
-
-const deliveryFee =
-  calculateDeliveryFee(
-    details.orderType,
+  const resetCheckout = useCheckoutStore(
+    (state) => state.resetCheckout,
   );
 
-const lateFee =
-  calculateLateFee();
+  const [mounted, setMounted] = useState(false);
 
-const tipAmount = calculateTip(
-  subtotal,
-  details.tipType,
-  details.customTipAmount,
-);
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    if (!mounted) {
+      return null;
+    }
+
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
+
+  const deliveryFee =
+    calculateDeliveryFee(
+      details.orderType,
+    );
+
+  const lateFee =
+    calculateLateFee();
+
+  const tipAmount = calculateTip(
+    subtotal,
+    details.tipType,
+    details.customTipAmount,
+  );
 
 
-const total =
-  subtotal +
-  deliveryFee +
-  lateFee +
-  tipAmount;
+  const total =
+    subtotal +
+    deliveryFee +
+    lateFee +
+    tipAmount;
+    
+  const requiresApproval = items.some((item) => item.requiresApproval);
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -226,6 +228,12 @@ const total =
                 onChange={(e) => updateField("payByDate", e.target.value)}
                 className="mt-2 w-full rounded-xl border px-4 py-3"
               />
+            </div>
+          )}
+          {requiresApproval && (
+            <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+              One or more items in this order require chef approval. Your order may need
+              review before final confirmation.
             </div>
           )}
           <button

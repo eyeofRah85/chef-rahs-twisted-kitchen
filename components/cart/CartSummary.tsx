@@ -62,7 +62,11 @@ export function CartSummary() {
                   ))}
                 </ul>
               ) : null}
-
+              {item.requiresApproval && (
+                <div className="mt-3 rounded-xl border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
+                  This item requires chef approval before the order is confirmed.
+                </div>
+              )}
               {item.customerInstructions && (
                 <div className="mt-3 rounded-xl bg-neutral-100 p-3 text-sm text-neutral-700">
                   <p className="font-semibold">Special Instructions</p>
