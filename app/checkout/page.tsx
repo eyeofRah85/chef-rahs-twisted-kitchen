@@ -12,9 +12,11 @@ import {
 import {
   validateRequestedDate,
 } from "@/lib/business-rules";
+import { useBusinessSettings } from "@/hooks/useBusinessSettings";
 
 export default function CheckoutPage() {
 
+  const settings = useBusinessSettings();
   const details = useCheckoutStore((state) => state.details);
   const updateField = useCheckoutStore((state) => state.updateField);
 
@@ -43,12 +45,9 @@ export default function CheckoutPage() {
   );
 
   const deliveryFee =
-    calculateDeliveryFee(
-      details.orderType,
-    );
+  details.orderType === "delivery" ? settings.deliveryFee : 0;
 
-  const lateFee =
-    calculateLateFee();
+  const lateFee = calculateLateFee();
 
   const tipAmount = calculateTip(
     subtotal,
