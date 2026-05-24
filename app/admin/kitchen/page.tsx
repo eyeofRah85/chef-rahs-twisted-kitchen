@@ -12,13 +12,10 @@ export default async function KitchenPage() {
 
   const activeOrders = await prisma.order.findMany({
     where: {
+      approvalStatus: "APPROVED",
+
       status: {
-        in: [
-          "PENDING",
-          "ACCEPTED",
-          "PREPARING",
-          "READY",
-        ],
+        in: ["ACCEPTED", "PREPARING", "READY"],
       },
     },
 
@@ -42,7 +39,7 @@ export default async function KitchenPage() {
         </p>
 
         <h1 className="mt-3 text-5xl font-bold">
-          Active Orders
+          Approved Kitchen Orders
         </h1>
       </div>
 
