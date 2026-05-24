@@ -49,8 +49,6 @@ export async function POST(request: Request) {
         user: {
           connect: {
             email: session.user.email,
-            approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
-            approvedAt: requiresApproval ? null : new Date(),
           },
         },
 
@@ -59,13 +57,16 @@ export async function POST(request: Request) {
 
         orderType: checkout.orderType.toUpperCase(),
 
+        status: requiresApproval ? "PENDING" : "ACCEPTED",
+        approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
+        approvedAt: requiresApproval ? null : new Date(),
+
         requestedDateTime: checkout.requestedDateTime
           ? new Date(checkout.requestedDateTime)
           : null,
 
         allergyNotes: checkout.allergyNotes,
-        substitutionPreference:
-          checkout.substitutionPreference,
+        substitutionPreference: checkout.substitutionPreference,
 
         subtotal,
         deliveryFee,
@@ -73,49 +74,47 @@ export async function POST(request: Request) {
         tipAmount,
         total,
 
-        payByDate: checkout.payByDate
-          ? new Date(checkout.payByDate)
-          : null,
-
+        payByDate: checkout.payByDate ? new Date(checkout.payByDate) : null,
         paymentProvider: checkout.paymentMethod,
-
         paymentStatus:
           checkout.paymentMethod === "cash"
             ? "OFFLINE_PAYMENT_DUE"
             : "PAY_BY_DATE",
 
         items: {
-        create: items.map((item: any) => ({
-          menuItemId: item.menuItemId,
-          name: item.name,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          lineTotal: item.price * item.quantity,
-          notes: [
-            ...(item.selectedOptions?.length
-              ? item.selectedOptions.map(
-                  (option: any) =>
-                    `${option.groupName}: ${option.choiceName}${
-                      option.priceDelta > 0
-                        ? ` (+$${option.priceDelta.toFixed(2)})`
-                        : ""
-                    }`,
-                )
-              : []),
-
-            item.customerInstructions
-              ? `Special Instructions: ${item.customerInstructions}`
-              : null,
-          ]
-            .filter(Boolean)
-            .join("\n") || null,
-        })),
-      },
+          create: items.map((item: any) => ({
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+            lineTotal: item.price * item.quantity,
+            notes:
+              [
+                ...(item.selectedOptions?.length
+                  ? item.selectedOptions.map(
+                      (option: any) =>
+                        `${option.groupName}: ${option.choiceName}${
+                          option.priceDelta > 0
+                            ? ` (+$${option.priceDelta.toFixed(2)})`
+                            : ""
+                        }`,
+                    )
+                  : []),
+                item.customerInstructions
+                  ? `Special Instructions: ${item.customerInstructions}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join("\n") || null,
+          })),
+        },
 
         statusHistory: {
           create: {
-            status: "PENDING",
-            note: "Order created.",
+            status: requiresApproval ? "PENDING" : "ACCEPTED",
+            note: requiresApproval
+              ? "Order created and waiting for approval."
+              : "Order created and auto-approved.",
           },
         },
       },
@@ -124,7 +123,6 @@ export async function POST(request: Request) {
         items: true,
       },
     });
-
     return NextResponse.json(order);
   } catch (error) {
     console.error(error);

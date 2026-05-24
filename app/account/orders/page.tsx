@@ -88,7 +88,9 @@ export default async function AccountOrdersPage() {
                   <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
                     {order.status}
                   </span>
-
+                  <p className="mt-2 text-xs text-neutral-500">
+                    Approval: {order.approvalStatus}
+                  </p>
                   <p className="mt-3 text-2xl font-bold">
                     ${Number(order.total).toFixed(2)}
                   </p>
@@ -100,7 +102,18 @@ export default async function AccountOrdersPage() {
                     >
                         View Details
                     </Link>
+                    {order.approvalStatus === "PENDING" && (
+                      <div className="mt-4 rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+                        Waiting for chef approval before this order is confirmed.
+                      </div>
+                    )}
 
+                    {order.approvalStatus === "DENIED" && (
+                      <div className="mt-4 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+                        This order was not approved.
+                        {order.approvalNote ? ` Note: ${order.approvalNote}` : ""}
+                      </div>
+                    )}
                     {isPaymentDue(order.paymentStatus) && (
                         <Link
                         href={`/orders/${order.id}`}
