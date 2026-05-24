@@ -29,6 +29,9 @@ export default async function AdminPage() {
 
     unpaidOrders: prisma.order.count({
       where: {
+        status: {
+          notIn: ["CANCELLED", "REFUNDED"],
+        },
         paymentStatus: {
           in: ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"],
         },
@@ -37,6 +40,9 @@ export default async function AdminPage() {
 
     approvalOrders: prisma.order.count({
       where: {
+        status: {
+          notIn: ["CANCELLED", "REFUNDED"],
+        },
         approvalStatus: "PENDING",
       },
     }),

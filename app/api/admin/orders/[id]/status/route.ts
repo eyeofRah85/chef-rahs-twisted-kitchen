@@ -30,6 +30,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       where: { id },
       data: {
         status,
+        paymentStatus:
+          status === "CANCELLED"
+            ? "CANCELLED"
+            : status === "REFUNDED"
+              ? "REFUNDED"
+              : undefined,
         statusHistory: {
           create: {
             status,

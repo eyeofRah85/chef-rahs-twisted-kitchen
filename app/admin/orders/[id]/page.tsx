@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { UpdateOrderStatusForm } from "@/components/admin/UpdateOrderStatusForm";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { OrderApprovalForm } from "@/components/admin/OrderApprovalForm";
+import Link from "next/link";
 
 type PageProps = {
   params: Promise<{
@@ -40,6 +41,9 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
+           <Link className="text-sm font-medium underline" href="/admin/orders">
+                      &larr;  Back to Orders
+                    </Link>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
             Admin Order
           </p>

@@ -35,6 +35,9 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
     ...(paymentFilter && paymentFilter !== "ALL"
       ? { paymentStatus: paymentFilter }
       : {}),
+      // status: {
+      //   notIn: ["CANCELLED", "REFUNDED"],
+      // },
 
     ...(typeFilter && typeFilter !== "ALL"
       ? { orderType: typeFilter as any }
@@ -90,6 +93,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
               { label: "Approval Pending", href: "/admin/orders?approval=PENDING" },
               { label: "Approved", href: "/admin/orders?approval=APPROVED" },
               { label: "Denied", href: "/admin/orders?approval=DENIED" },
+              {label:  "Cancelled", href: "/admin/orders?status=CANCELLED"}
             ].map((filter) => (
               <Link
                 key={filter.href}

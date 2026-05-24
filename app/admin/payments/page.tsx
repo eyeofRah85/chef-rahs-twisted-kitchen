@@ -13,6 +13,9 @@ export default async function AdminPaymentsPage() {
 
   const paymentDueOrders = await prisma.order.findMany({
     where: {
+      status: {
+        notIn: ["CANCELLED", "REFUNDED"],
+      },
       paymentStatus: {
         in: ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"],
       },
