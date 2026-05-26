@@ -60,6 +60,7 @@ export default async function AdminPage() {
         items: true,
       },
     }),
+    businessSettings: prisma.businessSettings.findFirst(),
   };
 
   const [
@@ -70,6 +71,7 @@ export default async function AdminPage() {
     approvalOrders,
     pendingCateringApprovals,
     recentOrders,
+    businessSettings,
   ] = await Promise.all([
     metrics.pendingOrders,
     metrics.activeOrders,
@@ -78,6 +80,7 @@ export default async function AdminPage() {
     metrics.approvalOrders,
     metrics.pendingCateringApprovals,
     metrics.recentOrders,
+    metrics.businessSettings,
   ]);
 
   const totalRevenueResult = await prisma.order.aggregate({
@@ -285,7 +288,41 @@ export default async function AdminPage() {
                   )}
               </div>
             </section>
+{businessSettings && (
+  <section className="rounded-2xl border bg-white p-6 shadow-sm">
+    <h2 className="text-2xl font-semibold">Active Business Rules</h2>
 
+    <div className="mt-5 space-y-3 text-sm">
+      <div className="flex justify-between">
+        <span className="text-neutral-600">Delivery Fee</span>
+        <span className="font-medium">
+          ${Number(businessSettings.deliveryFee).toFixed(2)}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-neutral-600">Late Fee</span>
+        <span className="font-medium">
+          ${Number(businessSettings.lateFee).toFixed(2)}
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-neutral-600">Catering Deposit</span>
+        <span className="font-medium">
+          {businessSettings.cateringDepositPercent}%
+        </span>
+      </div>
+
+      <div className="flex justify-between">
+        <span className="text-neutral-600">Weekend Orders</span>
+        <span className="font-medium">
+          {businessSettings.noWeekendOrdering ? "Disabled" : "Allowed"}
+        </span>
+      </div>
+    </div>
+  </section>
+)}
             <section className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Quick Links</h2>
 
