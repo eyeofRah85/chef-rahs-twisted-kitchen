@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getBusinessSettings } from "@/lib/business-settings";
 
 export default async function AdminPage() {
   try {
@@ -60,7 +61,7 @@ export default async function AdminPage() {
         items: true,
       },
     }),
-    businessSettings: prisma.businessSettings.findFirst(),
+    businessSettings: getBusinessSettings(),
   };
 
   const [

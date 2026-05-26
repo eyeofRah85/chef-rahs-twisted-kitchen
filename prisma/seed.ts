@@ -39,22 +39,23 @@ async function main() {
 
   console.log("Allergens seeded.");
 
-  const existingSettings = await prisma.businessSettings.findFirst();
-
-  if (!existingSettings) {
-    await prisma.businessSettings.create({
-      data: {
-        deliveryFee: 10,
-        lateFee: 10,
-        cateringDepositPercent: 50,
-        orderCutoffDay: 4,
-        orderCutoffHour: 17,
-        orderCutoffMinute: 0,
-        noWeekendOrdering: true,
-        deliveryArea: "Greater Atlanta area",
-      },
-    });
-  }
+  await prisma.businessSettings.upsert({
+    where: {
+      id: "business-settings",
+    },
+    update: {},
+    create: {
+      id: "business-settings",
+      deliveryFee: 10,
+      lateFee: 10,
+      cateringDepositPercent: 50,
+      orderCutoffDay: 4,
+      orderCutoffHour: 17,
+      orderCutoffMinute: 0,
+      noWeekendOrdering: true,
+      deliveryArea: "Greater Atlanta area",
+    },
+  });
 
   console.log("Business settings seeded");
 }
