@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 
 type RouteContext = {
   params: Promise<{
@@ -22,7 +23,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const depositAmount =
       body.depositAmount === null || body.depositAmount === undefined
-        ? null
+        ? estimatedTotal !== null
+          ? await calculateServerCateringDeposit(estimatedTotal)
+          : null
         : Number(body.depositAmount);
 
     if (

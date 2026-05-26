@@ -71,6 +71,9 @@ export function CateringQuoteForm({
           onChange={(e) => setDepositAmount(e.target.value)}
           className="mt-2 w-full rounded-xl border px-4 py-3"
         />
+        <p className="mt-2 text-xs text-neutral-500">
+          Leave blank to automatically calculate the deposit from business settings.
+        </p>
       </div>
 
       <button
