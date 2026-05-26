@@ -27,11 +27,26 @@ export async function PATCH(request: Request) {
       });
     }
 
-    const updated = await prisma.businessSettings.update({
+    const updated = await prisma.businessSettings.upsert({
       where: {
-        id: settings.id,
+        id: "business-settings",
       },
-      data: {
+      update: {
+        deliveryFee: Number.isNaN(deliveryFee) ? 10 : deliveryFee,
+        lateFee: Number.isNaN(lateFee) ? 10 : lateFee,
+        cateringDepositPercent: Number.isNaN(cateringDepositPercent)
+          ? 50
+          : cateringDepositPercent,
+        orderCutoffDay: Number.isNaN(orderCutoffDay) ? 4 : orderCutoffDay,
+        orderCutoffHour: Number.isNaN(orderCutoffHour) ? 17 : orderCutoffHour,
+        orderCutoffMinute: Number.isNaN(orderCutoffMinute)
+          ? 0
+          : orderCutoffMinute,
+        deliveryArea: deliveryArea || null,
+        noWeekendOrdering,
+      },
+      create: {
+        id: "business-settings",
         deliveryFee: Number.isNaN(deliveryFee) ? 10 : deliveryFee,
         lateFee: Number.isNaN(lateFee) ? 10 : lateFee,
         cateringDepositPercent: Number.isNaN(cateringDepositPercent)

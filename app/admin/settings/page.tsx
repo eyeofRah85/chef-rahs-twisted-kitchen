@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { BusinessSettingsForm } from "@/components/admin/BusinessSettingsForm";
 import Link from "next/link";
+import { getBusinessSettings } from "@/lib/business-settings";
 
 export default async function AdminSettingsPage() {
   try {
@@ -11,13 +12,7 @@ export default async function AdminSettingsPage() {
     redirect("/");
   }
 
-  let settings = await prisma.businessSettings.findFirst();
-
-  if (!settings) {
-    settings = await prisma.businessSettings.create({
-      data: {},
-    });
-  }
+  const settings = await getBusinessSettings();
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -38,19 +33,7 @@ export default async function AdminSettingsPage() {
           </p>
         </div>
 
-        <BusinessSettingsForm
-          settings={{
-            id: settings.id,
-            deliveryFee: Number(settings.deliveryFee),
-            lateFee: Number(settings.lateFee),
-            cateringDepositPercent: settings.cateringDepositPercent,
-            orderCutoffDay: settings.orderCutoffDay,
-            orderCutoffHour: settings.orderCutoffHour,
-            orderCutoffMinute: settings.orderCutoffMinute,
-            noWeekendOrdering: settings.noWeekendOrdering,
-            deliveryArea: settings.deliveryArea ?? "",
-          }}
-        />
+        <BusinessSettingsForm settings={settings} />
       </div>
     </main>
   );

@@ -13,7 +13,7 @@ type Props = {
     orderCutoffHour: number;
     orderCutoffMinute: number;
     noWeekendOrdering: boolean;
-    deliveryArea: string;
+    deliveryArea: string | null;
   };
 };
 
@@ -130,7 +130,7 @@ export function BusinessSettingsForm({ settings }: Props) {
           <label className="block text-sm font-medium">Delivery Area</label>
           <input
             name="deliveryArea"
-            defaultValue={settings.deliveryArea}
+            defaultValue={settings.deliveryArea ?? ""}
             className="mt-2 w-full rounded-xl border px-4 py-3"
           />
         </div>

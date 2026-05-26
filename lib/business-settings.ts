@@ -1,15 +1,20 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getBusinessSettings() {
-  let settings = await prisma.businessSettings.findFirst();
+const SETTINGS_SINGLETON_ID = "business-settings";
 
-  if (!settings) {
-    settings = await prisma.businessSettings.create({
-      data: {},
-    });
-  }
+export async function getBusinessSettings() {
+  const settings = await prisma.businessSettings.upsert({
+    where: {
+      id: SETTINGS_SINGLETON_ID,
+    },
+    update: {},
+    create: {
+      id: SETTINGS_SINGLETON_ID,
+    },
+  });
 
   return {
+    id: settings.id,
     deliveryFee: Number(settings.deliveryFee),
     lateFee: Number(settings.lateFee),
     cateringDepositPercent: settings.cateringDepositPercent,
