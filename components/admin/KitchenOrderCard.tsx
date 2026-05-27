@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 type KitchenOrderCardProps = {
@@ -122,7 +122,12 @@ export function KitchenOrderCard({
               : "ASAP"}
           </p>
         </div>
-
+        <Link
+          href={`/admin/orders/${order.id}`}
+          className="rounded-2xl border px-5 py-3 font-medium"
+        >
+          View / Print Ticket
+        </Link>
         {nextStatuses[order.status] && (
           <button
             onClick={advanceStatus}

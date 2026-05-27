@@ -41,10 +41,13 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12 print:bg-white print:px-0 print:py-0">
       <div className="mx-auto max-w-5xl">
+         <Link className="text-sm font-medium underline" href="/admin/kitchen">
+              &uarr;  Back to Kitchen tickets
+            </Link>
         <div className="mb-8">
            <Link className="text-sm font-medium underline" href="/admin/orders">
               &larr;  Back to Orders
-            </Link>
+            </Link>           
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
             Admin Order
           </p>
