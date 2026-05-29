@@ -118,6 +118,19 @@ export function MenuItemModal({ item, open, onClose }: Props) {
         }));
     }) ?? [];
 
+  const requiredGroups =
+  item.optionGroups?.filter((group) => group.required) ?? [];
+
+  const completedRequiredGroups = requiredGroups.filter(
+    (group) => selected[group.id]?.length > 0,
+  );
+
+  const requiredProgressText =
+    requiredGroups.length > 0
+      ? `${completedRequiredGroups.length} of ${requiredGroups.length} required selections completed`
+      : "";
+
+
   return (
     
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
@@ -157,18 +170,22 @@ export function MenuItemModal({ item, open, onClose }: Props) {
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {item.optionGroups?.map((group) => {
-  const missingRequired =
-    showRequiredErrors &&
-    group.required &&
-    !(selected[group.id]?.length > 0);
+            const missingRequired =
+              showRequiredErrors &&
+              group.required &&
+              !(selected[group.id]?.length > 0);
 
-  return (
-    <section
-      key={group.id}
-      className={`rounded-2xl border p-5 ${
-        missingRequired ? "border-red-400 bg-red-50" : ""
-      }`}
-    >
+              return (
+                <section
+                  key={group.id}
+                  className={`rounded-2xl border p-5 ${
+                    missingRequired
+                      ? "border-red-400 bg-red-50"
+                      : group.required && selected[group.id]?.length > 0
+                        ? "border-green-300 bg-green-50"
+                        : ""
+                      }`}
+                    >
       <div className="flex flex-wrap items-center gap-2">
         <h3 className="text-lg font-semibold">{group.name}</h3>
 
