@@ -54,8 +54,6 @@ export default async function AdminReportsPage() {
       },
     }),
 
-    cateringRequests: prisma.cateringRequest.count(),
-
     completedOrders: prisma.order.count({
       where: {
         status: "COMPLETED",
@@ -92,6 +90,21 @@ export default async function AdminReportsPage() {
         approvalStatus: "PENDING",
       },
     }),
+
+    serviceRequests: prisma.cateringRequest.count(),
+
+    cateringRequests: prisma.cateringRequest.count({
+      where: {
+        requestType: "CATERING",
+      },
+    }),
+
+    personalChefRequests: prisma.cateringRequest.count({
+      where: {
+        requestType: "PERSONAL_CHEF",
+      },
+    }),
+
   };
 
   const [
@@ -99,7 +112,9 @@ export default async function AdminReportsPage() {
   weeklyOrders,
   monthlyOrders,
   pendingPayments,
+  serviceRequests,
   cateringRequests,
+  personalChefRequests,
   completedOrders,
   cancelledOrders,
   topItems,
@@ -110,7 +125,9 @@ export default async function AdminReportsPage() {
   metricQueries.weeklyOrders,
   metricQueries.monthlyOrders,
   metricQueries.pendingPayments,
+  metricQueries.serviceRequests,
   metricQueries.cateringRequests,
+  metricQueries.personalChefRequests,
   metricQueries.completedOrders,
   metricQueries.cancelledOrders,
   metricQueries.topItems,
@@ -147,8 +164,16 @@ export default async function AdminReportsPage() {
       value: pendingPayments,
     },
     {
+      label: "Service Requests",
+      value: serviceRequests,
+    },
+    {
       label: "Catering Requests",
       value: cateringRequests,
+    },
+    {
+      label: "Personal Chef Requests",
+      value: personalChefRequests,
     },
     {
       label: "Order Approvals",
@@ -284,13 +309,19 @@ export default async function AdminReportsPage() {
                   </div>
                 )}
 
-                {cateringRequests > 0 && (
+                {serviceRequests > 0 && (
                   <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
-                    {cateringRequests} catering request
-                    {cateringRequests === 1 ? "" : "s"} submitted.
+                    {serviceRequests} service request
+                    {serviceRequests === 1 ? "" : "s"} submitted.
                   </div>
                 )}
-
+                
+                {personalChefRequests > 0 && (
+                  <div className="rounded-xl border border-purple-300 bg-purple-50 p-4 text-purple-900">
+                    {personalChefRequests} personal chef request
+                    {personalChefRequests === 1 ? "" : "s"} submitted.
+                  </div>
+                )}
                 {pendingOrderApprovals > 0 && (
                   <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
                     {pendingOrderApprovals} order
