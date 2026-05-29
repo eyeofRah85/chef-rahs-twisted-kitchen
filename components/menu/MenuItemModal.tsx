@@ -102,6 +102,22 @@ export function MenuItemModal({ item, open, onClose }: Props) {
 
   const displayTotal = item.price + selectedOptionsTotal;
 
+  const selectedSummary =
+    item.optionGroups?.flatMap((group) => {
+      const selectedChoiceIds = selected[group.id] ?? [];
+
+      return group.choices
+        .filter((choice) => selectedChoiceIds.includes(choice.id))
+        .map((choice) => ({
+          groupName: group.name,
+          choiceName: choice.requestOnly
+            ? `${choice.name} (Request Only)`
+            : choice.name,
+          priceDelta: choice.priceDelta,
+          requestOnly: choice.requestOnly,
+        }));
+    }) ?? [];
+
   return (
     
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
@@ -271,7 +287,37 @@ export function MenuItemModal({ item, open, onClose }: Props) {
             />
           </section>
         )}
+          {selectedSummary.length > 0 && (
+            <section className="mt-6 rounded-2xl border bg-neutral-50 p-5">
+              <h3 className="font-semibold">Your Selections</h3>
 
+              <div className="mt-3 space-y-2 text-sm">
+                {selectedSummary.map((selection, index) => (
+                  <div
+                    key={`${selection.groupName}-${selection.choiceName}-${index}`}
+                    className="flex flex-wrap justify-between gap-2 rounded-xl bg-white p-3"
+                  >
+                    <div>
+                      <span className="font-medium">{selection.groupName}:</span>{" "}
+                      {selection.choiceName}
+
+                      {selection.requestOnly && (
+                        <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                          Request Only
+                        </span>
+                      )}
+                    </div>
+
+                    {selection.priceDelta > 0 && (
+                      <span className="font-medium">
+                        +${selection.priceDelta.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         <div className="mt-8 flex items-center justify-between border-t pt-5">
           <div>
             <p className="text-sm text-neutral-500">Item total</p>
