@@ -62,6 +62,12 @@ enum ApprovalStatus{
   DENIED
 }
 
+enum ServiceRequestType {
+  CATERING
+  PERSONAL_CHEF
+}
+
+
 model CateringRequest {
   id              String         @id @default(cuid())
 
@@ -93,6 +99,7 @@ model CateringRequest {
   approvalNote   String?
   approvedAt     DateTime?
   deniedAt       DateTime?
+  requestType ServiceRequestType @default(CATERING)
 }
 
 model User {

@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringRequestEmail } from "@/emails/CateringRequestEmail";
 
-
 export async function POST(request: Request) {
   const session = await auth();
   const formData = await request.formData();
@@ -13,7 +12,6 @@ export async function POST(request: Request) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
   const eventDate = String(formData.get("eventDate") ?? "");
-  const eventType = String(formData.get("eventType") ?? "").trim();
   const guestCount = Number(formData.get("guestCount") ?? 0);
   const location = String(formData.get("location") ?? "").trim();
   const requestedMenu = String(formData.get("requestedMenu") ?? "").trim();
@@ -29,6 +27,8 @@ export async function POST(request: Request) {
 
   const requestRecord = await prisma.cateringRequest.create({
     data: {
+      requestType: "PERSONAL_CHEF",
+
       user: session?.user?.email
         ? {
             connect: {
@@ -41,34 +41,34 @@ export async function POST(request: Request) {
       email,
       phone: phone || null,
       eventDate: eventDate ? new Date(eventDate) : null,
-      eventType: eventType || null,
+      eventType: "Personal Chef",
       guestCount: guestCount > 0 ? guestCount : null,
       location: location || null,
       requestedMenu: requestedMenu || null,
       allergyNotes: allergyNotes || null,
       specialRequests: specialRequests || null,
-      requestType: "CATERING",
     },
   });
-    await sendAppEmail({      
-      to: email,
-      subject: "Catering Request Received",
-      react: CateringRequestEmail({
-        customerName: requestRecord.name,
-        requestId: requestRecord.id,
-        eventType: requestRecord.eventType ?? "Catering Request",
-        guestCount: requestRecord.guestCount,
-        eventDate: requestRecord.eventDate
-          ? requestRecord.eventDate.toLocaleString()
-          : null,
-        location: requestRecord.location,
-        requestedMenu: requestRecord.requestedMenu,
-        specialRequests: requestRecord.specialRequests,
-        requestUrl: `${appUrl}/account/catering/${requestRecord.id}`,
-      }),
-    }); 
+
+  await sendAppEmail({
+    to: email,
+    subject: "Personal Chef Request Received",
+    react: CateringRequestEmail({
+      customerName: requestRecord.name,
+      requestId: requestRecord.id,
+      eventType: "Personal Chef",
+      guestCount: requestRecord.guestCount,
+      eventDate: requestRecord.eventDate
+        ? requestRecord.eventDate.toLocaleString()
+        : null,
+      location: requestRecord.location,
+      requestedMenu: requestRecord.requestedMenu,
+      specialRequests: requestRecord.specialRequests,
+      requestUrl: `${appUrl}/account/catering/${requestRecord.id}`,
+    }),
+  });
 
   return NextResponse.redirect(
-    new URL(`/catering/thank-you?id=${requestRecord.id}`, request.url),
+    new URL(`/personal-chef/thank-you?id=${requestRecord.id}`, request.url),
   );
 }

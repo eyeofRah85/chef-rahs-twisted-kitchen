@@ -33,6 +33,7 @@ export function SiteHeader() {
         <nav className="flex items-center gap-5 text-sm font-medium">
           <Link href="/menu">Meal Plans</Link>
           <Link href="/catering">Catering</Link>
+          <Link href="/personal-chef">Personal Chef</Link>
           <Link href="/gallery">Gallery</Link>
           <Link href="/cart" className="relative">
             Cart

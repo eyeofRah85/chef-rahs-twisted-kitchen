@@ -288,12 +288,19 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                     item.customerInstructionsEnabled,
                                 }}
                               />
-                              <ApplyMealPlanTemplateButton menuItemId={item.id} />
-                              <ArchiveMenuItemButton menuItemId={item.id} />
-                            </div>
+                              {item.type === "MEAL_PLAN" && (
+                              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+                                <p className="mb-2 text-xs text-amber-900">
+                                  Adds meal plan length, meals per day, protein, vegetable, starch, and
+                                  substitution choices.
+                                </p>
+
+                                <ApplyMealPlanTemplateButton menuItemId={item.id} />
+                              </div>
+                            )}
                           </div>
                         </div>
-
+                      </div>
                       {item.optionGroups.length > 0 && (
                         <section className="mt-6 rounded-2xl border bg-white p-5">
                           <div className="mb-4">
