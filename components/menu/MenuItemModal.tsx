@@ -64,7 +64,9 @@ export function MenuItemModal({ item, open, onClose }: Props) {
         if (selectedChoiceIds.includes(choice.id)) {
           selectedOptions.push({
             groupName: group.name,
-            choiceName: choice.name,
+            choiceName: choice.requestOnly
+              ? `${choice.name} (Request Only)`
+              : choice.name,
             priceDelta: choice.priceDelta,
           });
         }
@@ -138,26 +140,67 @@ export function MenuItemModal({ item, open, onClose }: Props) {
                   return (
                     <label
                       key={choice.id}
-                      className="flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3"
+                      className={`flex cursor-pointer gap-4 rounded-xl border p-4 transition ${
+                        checked ? "border-black bg-neutral-50" : "hover:bg-neutral-50"
+                      }`}
                     >
-                      <span className="flex items-center gap-3">
-                        <input
-                          type={group.multiple ? "checkbox" : "radio"}
-                          name={group.id}
-                          checked={checked}
-                          onChange={() =>
-                            toggleChoice(group.id, choice.id, group.multiple)
-                          }
-                        />
+                      <input
+                        type={group.multiple ? "checkbox" : "radio"}
+                        name={group.id}
+                        checked={checked}
+                        onChange={() =>
+                          toggleChoice(group.id, choice.id, group.multiple)
+                        }
+                        className="mt-1"
+                      />
 
-                        {choice.name}
-                      </span>
-
-                      {choice.priceDelta > 0 && (
-                        <span className="text-sm font-medium">
-                          +${choice.priceDelta.toFixed(2)}
-                        </span>
+                      {choice.imageUrl && (
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
+                          <img
+                            src={choice.imageUrl}
+                            alt={choice.name}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                       )}
+
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-semibold">{choice.name}</p>
+
+                          <div className="flex items-center gap-2">
+                            {choice.requestOnly && (
+                              <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                                Request Only
+                              </span>
+                            )}
+
+                            {choice.priceDelta > 0 && (
+                              <span className="text-sm font-medium">
+                                +${choice.priceDelta.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {choice.description && (
+                          <p className="mt-2 text-sm text-neutral-600">
+                            {choice.description}
+                          </p>
+                        )}
+
+                        {choice.dietaryInfo && (
+                          <p className="mt-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                            {choice.dietaryInfo}
+                          </p>
+                        )}
+
+                        {choice.requestOnly && (
+                          <p className="mt-2 text-xs text-amber-700">
+                            This option may require chef approval and pricing may vary.
+                          </p>
+                        )}
+                      </div>
                     </label>
                   );
                 })}

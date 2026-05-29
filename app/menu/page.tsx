@@ -84,6 +84,10 @@ const categories = await prisma.menuCategory.findMany({
                         choices: group.choices.map((choice) => ({
                           id: choice.id,
                           name: choice.name,
+                          description: choice.description,
+                          dietaryInfo: choice.dietaryInfo,
+                          imageUrl: choice.imageUrl,
+                          requestOnly: choice.requestOnly,
                           priceDelta: Number(choice.priceDelta),
                         })),
                       })),

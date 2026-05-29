@@ -49,21 +49,6 @@ export const optionGroupTemplates = [
       { name: "Vegetables", priceDelta: "0" },
     ],
   },
-  {
-  name: "Meal Plan Length",
-  required: true,
-  multiple: false,
-  choices: [
-    {
-      name: "5 Day Meal Plan - 10 meals",
-      priceDelta: "0",
-    },
-    {
-      name: "7 Day Meal Plan - 14 meals",
-      priceDelta: "0",
-    },
-  ],
-},
 {
   name: "Protein Choice",
   required: true,

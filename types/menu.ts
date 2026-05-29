@@ -6,6 +6,10 @@ export type Allergen = {
 export type MenuItemOptionChoice = {
   id: string;
   name: string;
+  description?: string | null;
+  dietaryInfo?: string | null;
+  imageUrl?: string | null;
+  requestOnly?: boolean;
   priceDelta: number;
 };
 
