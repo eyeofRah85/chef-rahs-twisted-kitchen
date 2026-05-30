@@ -59,19 +59,21 @@ export default async function AccountPage() {
           <h1 className="mt-3 text-4xl font-bold">
             Welcome, {user.name ?? "Customer"}
           </h1>
-<AccountProfileModal
-    user={{
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      addressLine1: user.addressLine1,
-      addressLine2: user.addressLine2,
-      city: user.city,
-      state: user.state,
-      postalCode: user.postalCode,
-      deliveryNotes: user.deliveryNotes,
-    }}
-  />
+
+          <AccountProfileModal
+              user={{
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                addressLine1: user.addressLine1,
+                addressLine2: user.addressLine2,
+                city: user.city,
+                state: user.state,
+                postalCode: user.postalCode,
+                deliveryNotes: user.deliveryNotes,
+              }}
+            />
+
           <p className="mt-3 text-neutral-700">
             Track active orders, review payment status, and access your full
             order history.

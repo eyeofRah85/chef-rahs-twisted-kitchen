@@ -8,6 +8,13 @@ export async function POST(request: Request) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const phone = String(formData.get("phone") ?? "").trim();
+  const addressLine1 = String(formData.get("addressLine1") ?? "").trim();
+  const addressLine2 = String(formData.get("addressLine2") ?? "").trim();
+  const city = String(formData.get("city") ?? "").trim();
+  const state = String(formData.get("state") ?? "").trim();
+  const postalCode = String(formData.get("postalCode") ?? "").trim();
+  const deliveryNotes = String(formData.get("deliveryNotes") ?? "").trim();
 
   if (!name || !email || password.length < 8) {
     return NextResponse.json(
@@ -34,7 +41,14 @@ export async function POST(request: Request) {
       name,
       email,
       passwordHash,
-    },
+      phone: phone || null,
+      addressLine1: addressLine1 || null,
+      addressLine2: addressLine2 || null,
+      city: city || null,
+      state: state || null,
+      postalCode: postalCode || null,
+      deliveryNotes: deliveryNotes || null,
+      },
   });
 
   return NextResponse.redirect(new URL("/login", request.url));
