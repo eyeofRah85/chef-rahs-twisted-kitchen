@@ -84,10 +84,10 @@ export function MenuItemEditForm({ item }: Props) {
         defaultValue={item.type}
         className="w-full rounded-xl border px-4 py-3 text-sm"
       >
-        <option value="PLATE">Plate</option>
-        <option value="A_LA_CARTE">A La Carte</option>
         <option value="MEAL_PLAN">Meal Plan</option>
-        <option value="CATERING">Catering</option>
+        <option value="A_LA_CARTE">A La Carte</option>
+        <option value="CATERING">Catering Related</option>
+        <option value="PLATE">Plate / Legacy</option>
         <option value="DESSERT">Dessert</option>
         <option value="SIDE">Side</option>
         <option value="OTHER">Other</option>

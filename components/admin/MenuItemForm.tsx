@@ -45,7 +45,7 @@ export function MenuItemForm() {
 
   return (
     <form action={handleSubmit} className="h-fit rounded-2xl border bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold">Add Menu Item</h2>
+      <h2 className="text-2xl font-semibold">Add Meal Plan / Menu Item</h2>
 
       <div className="mt-5 space-y-4">
           <div className="space-y-3">
@@ -126,14 +126,19 @@ export function MenuItemForm() {
           defaultValue="MEAL_PLAN"
           required
         >
-          <option value="PLATE">Plate</option>
-          <option value="A LA CARTE">A La Carte</option>
-          <option value="MEAL PLAN">Meal Plan</option>
-          <option value="CATERING">Catering</option>
+          <option value="MEAL_PLAN">Meal Plan</option>
+          <option value="A_LA_CARTE">A La Carte</option>
+          <option value="CATERING">Catering Related</option>
+          <option value="PLATE">Plate / Legacy</option>
           <option value="DESSERT">Dessert</option>
           <option value="SIDE">Side</option>
           <option value="OTHER">Other</option>
         </select>
+
+        <p className="mt-2 text-xs text-neutral-500">
+          Meal plans are package-based and can use meal plan templates. Personal chef
+          requests should use the Personal Chef inquiry workflow instead of menu items.
+        </p>
 
         <label className="flex items-center gap-2 text-sm">
           <input name="requiresApproval" type="checkbox" />
@@ -149,7 +154,7 @@ export function MenuItemForm() {
           disabled={saving}
           className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
         >
-          {saving ? "Saving..." : "Add Item"}
+          {saving ? "Saving..." : "Create Offering"}
         </button>
       </div>
     </form>
