@@ -16,12 +16,12 @@ export default function GalleryPage() {
           </p>
 
           <h1 className="mt-3 text-5xl font-bold">
-            Food, Events, and Meal Prep
+            Meal Prep, Catering, and Personal Chef Services
           </h1>
 
           <p className="mt-4 max-w-2xl text-neutral-700">
-            Explore plates, catering setups, meal prep options, and seasonal
-            creations from Chef Rah&apos;s Twisted Kitchen.
+            Explore meal prep, meal plan options, catering setups, personal chef services,
+            and seasonal creations from Chef Rah&apos;s Twisted Kitchen.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -29,7 +29,7 @@ export default function GalleryPage() {
               href="/menu"
               className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white"
             >
-              View Menu
+              View Meal Plans
             </Link>
 
             <Link
