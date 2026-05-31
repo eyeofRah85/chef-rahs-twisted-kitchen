@@ -1,7 +1,27 @@
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function CateringPage() {
   const session = await auth();
+
+  const user = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: {
+          email: session.user.email,
+        },
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          state: true,
+          postalCode: true,
+          deliveryNotes: true,
+        },
+      })
+    : null;
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -20,7 +40,7 @@ export default async function CateringPage() {
         <form action="/api/catering" method="POST" className="mt-8 space-y-5">
           <input
             name="name"
-            defaultValue={session?.user?.name ?? ""}
+            defaultValue={user?.name ?? session?.user?.name ?? ""}
             placeholder="Name"
             className="w-full rounded-xl border px-4 py-3"
             required
@@ -29,7 +49,7 @@ export default async function CateringPage() {
           <input
             name="email"
             type="email"
-            defaultValue={session?.user?.email ?? ""}
+            defaultValue={user?.email ?? session?.user?.email ?? ""}
             placeholder="Email"
             className="w-full rounded-xl border px-4 py-3"
             required
@@ -38,6 +58,7 @@ export default async function CateringPage() {
           <input
             name="phone"
             placeholder="Phone"
+            defaultValue={user?.phone ?? ""}
             className="w-full rounded-xl border px-4 py-3"
           />
 
@@ -64,6 +85,17 @@ export default async function CateringPage() {
           <input
             name="location"
             placeholder="Event location"
+            defaultValue={
+              user?.addressLine1
+                ? `${user.addressLine1}${user.addressLine2 ? `, ${user.addressLine2}` : ""}, ${[
+                    user.city,
+                    user.state,
+                    user.postalCode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}`
+                : ""
+            }
             className="w-full rounded-xl border px-4 py-3"
           />
 
