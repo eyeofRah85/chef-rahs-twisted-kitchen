@@ -69,6 +69,7 @@ export default async function AccountPage() {
 
               <div className="mt-4">
                 <AccountProfileModal
+                  label="Complete Account Information"
                   user={{
                     name: user.name,
                     email: user.email,
@@ -82,6 +83,7 @@ export default async function AccountPage() {
                   }}
                 />
               </div>
+              
             </div>
           )}
           

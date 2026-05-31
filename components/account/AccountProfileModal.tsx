@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AccountProfileForm } from "@/components/account/AccountProfileForm";
 
 type Props = {
+  label?: string;
   user: {
     name: string | null;
     email: string | null;
@@ -17,7 +18,10 @@ type Props = {
   };
 };
 
-export function AccountProfileModal({ user }: Props) {
+export function AccountProfileModal({
+  user,
+  label = "Update Account Information",
+}: Props) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,7 +31,7 @@ export function AccountProfileModal({ user }: Props) {
         onClick={() => setOpen(true)}
         className="rounded-xl border bg-white px-5 py-3 text-sm font-medium shadow-sm transition hover:bg-neutral-100"
       >
-        Update Account Information
+        {label}
       </button>
 
       {open && (
@@ -40,7 +44,7 @@ export function AccountProfileModal({ user }: Props) {
                 </p>
 
                 <h2 className="mt-2 text-3xl font-bold">
-                  Update Account Information
+                  {label}
                 </h2>
 
                 <p className="mt-2 text-sm text-neutral-600">
