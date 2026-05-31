@@ -1,4 +1,5 @@
 "use client";
+
 import { useCheckoutStore } from "@/store/checkout-store";
 import { useCartStore } from "@/store/cart-store";
 import { calculateTip } from "@/lib/order-calculations";
@@ -31,49 +32,29 @@ export default function CheckoutPage() {
       setMounted(true);
     }, []);
 
-  useEffect(() => {
-    async function loadProfile() {
-      const response = await fetch("/api/account/profile");
+    useEffect(() => {
+      async function loadProfile() {
+        const response = await fetch("/api/account/profile", {
+          cache: "no-store",
+        });
 
-      if (!response.ok) return;
+        if (!response.ok) return;
 
-      const profile = await response.json();
+        const profile = await response.json();
 
-      if (!details.name && profile.name) {
-        updateField("name", profile.name);
+        updateField("name", profile.name ?? "");
+        updateField("phone", profile.phone ?? "");
+        updateField("addressLine1", profile.addressLine1 ?? "");
+        updateField("addressLine2", profile.addressLine2 ?? "");
+        updateField("city", profile.city ?? "");
+        updateField("state", profile.state ?? "");
+        updateField("postalCode", profile.postalCode ?? "");
+        updateField("deliveryNotes", profile.deliveryNotes ?? "");
+        updateField("saveContactInfo", false);
       }
 
-      if (!details.phone && profile.phone) {
-        updateField("phone", profile.phone);
-      }
-
-      if (!details.addressLine1 && profile.addressLine1) {
-        updateField("addressLine1", profile.addressLine1);
-      }
-
-      if (!details.addressLine2 && profile.addressLine2) {
-        updateField("addressLine2", profile.addressLine2);
-      }
-
-      if (!details.city && profile.city) {
-        updateField("city", profile.city);
-      }
-
-      if (!details.state && profile.state) {
-        updateField("state", profile.state);
-      }
-
-      if (!details.postalCode && profile.postalCode) {
-        updateField("postalCode", profile.postalCode);
-      }
-
-      if (!details.deliveryNotes && profile.deliveryNotes) {
-        updateField("deliveryNotes", profile.deliveryNotes);
-      }
-    }
-
-    loadProfile();
-  }, []);
+      loadProfile();
+    }, [updateField]);
 
     if (!mounted) {
       return null;
@@ -172,73 +153,82 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
           </section>
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
 
-  <h2 className="text-2xl font-semibold">Contact & Delivery Information</h2>
-        <p className="mt-2 text-sm text-neutral-600">
-          Delivery orders require contact and address information. Pickup orders only
-          require enough information for order follow-up.
-        </p>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <input
-              value={details.name}
-              onChange={(e) => updateField("name", e.target.value)}
-              placeholder="Name"
-              className="rounded-xl border px-4 py-3"
-            />
+          <h2 className="text-2xl font-semibold">
+            {details.orderType === "delivery"
+              ? "Contact & Delivery Information"
+              : "Contact Information"}
+          </h2>
 
-            <input
-              value={details.phone}
-              onChange={(e) => updateField("phone", e.target.value)}
-              placeholder="Phone"
-              className="rounded-xl border px-4 py-3"
-            />
+          <p className="mt-2 text-sm text-neutral-600">
+            {details.orderType === "delivery"
+              ? "Delivery orders require contact and address information."
+              : "Pickup orders only require enough information for order follow-up."}
+          </p>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <input
+                value={details.name}
+                onChange={(e) => updateField("name", e.target.value)}
+                placeholder="Name"
+                className="rounded-xl border px-4 py-3"
+              />
 
-            <input
-              value={details.addressLine1}
-              onChange={(e) => updateField("addressLine1", e.target.value)}
-              placeholder="Address line 1"
-              className="rounded-xl border px-4 py-3 md:col-span-2"
-            />
+              <input
+                value={details.phone}
+                onChange={(e) => updateField("phone", e.target.value)}
+                placeholder="Phone"
+                className="rounded-xl border px-4 py-3"
+              />
+              {details.orderType === "delivery" && (
+                <>
+                <input
+                  value={details.addressLine1}
+                  onChange={(e) => updateField("addressLine1", e.target.value)}
+                  placeholder="Address line 1"
+                  className="rounded-xl border px-4 py-3 md:col-span-2"
+                />
 
-            <input
-              value={details.addressLine2}
-              onChange={(e) => updateField("addressLine2", e.target.value)}
-              placeholder="Address line 2"
-              className="rounded-xl border px-4 py-3 md:col-span-2"
-            />
+                <input
+                  value={details.addressLine2}
+                  onChange={(e) => updateField("addressLine2", e.target.value)}
+                  placeholder="Address line 2"
+                  className="rounded-xl border px-4 py-3 md:col-span-2"
+                />
 
-            <input
-              value={details.city}
-              onChange={(e) => updateField("city", e.target.value)}
-              placeholder="City"
-              className="rounded-xl border px-4 py-3"
-            />
+                <input
+                  value={details.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  placeholder="City"
+                  className="rounded-xl border px-4 py-3"
+                />
 
-            <input
-              value={details.state}
-              onChange={(e) => updateField("state", e.target.value)}
-              placeholder="State"
-              className="rounded-xl border px-4 py-3"
-            />
+                <input
+                  value={details.state}
+                  onChange={(e) => updateField("state", e.target.value)}
+                  placeholder="State"
+                  className="rounded-xl border px-4 py-3"
+                />
 
-            <input
-              value={details.postalCode}
-              onChange={(e) => updateField("postalCode", e.target.value)}
-              placeholder="ZIP / Postal code"
-              className="rounded-xl border px-4 py-3"
-            />
+                <input
+                  value={details.postalCode}
+                  onChange={(e) => updateField("postalCode", e.target.value)}
+                  placeholder="ZIP / Postal code"
+                  className="rounded-xl border px-4 py-3"
+                />
 
-            <textarea
-              value={details.deliveryNotes}
-              onChange={(e) => updateField("deliveryNotes", e.target.value)}
-              placeholder="Delivery notes, gate code, parking, drop-off instructions, etc."
-              rows={3}
-              className="rounded-xl border px-4 py-3 md:col-span-2"
-            />
-            
+                <textarea
+                  value={details.deliveryNotes}
+                  onChange={(e) => updateField("deliveryNotes", e.target.value)}
+                  placeholder="Delivery notes, gate code, parking, drop-off instructions, etc."
+                  rows={3}
+                  className="rounded-xl border px-4 py-3 md:col-span-2"
+                />
+              </>
+            )}
+
             <label className="flex items-center gap-2 text-sm md:col-span-2">              
             <input
               type="checkbox"
-              checked={details.saveContactInfo}
+              checked={Boolean(details.saveContactInfo)}
               onChange={(e) =>
                 updateField("saveContactInfo", e.target.checked)
               }
@@ -246,7 +236,7 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
             Save this contact and delivery information to my account
           </label>
           </div>
-        </section>
+          </section>
         
           {details.orderType === "delivery" && settings.deliveryArea && (
             <p className="mt-2 text-xs text-neutral-500">
@@ -423,7 +413,8 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
                   )}
                   </div>
                 </section>
-            <button
+                
+            <button            
               type="button"
               onClick={async () => {
                 if (!details.requestedDateTime) {
@@ -459,6 +450,13 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
                   alert(
                     "Delivery orders require name, phone number, address, city, state, and ZIP/postal code.",
                   );
+                  return;
+                }
+              }
+
+              if (details.orderType === "pickup") {
+                if (!details.name || !details.phone) {
+                  alert("Pickup orders require your name and phone number.");
                   return;
                 }
               }
@@ -568,17 +566,6 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
             </div>
           )}
         </section>
-
-        {/* <div className="mt-10 rounded-2xl bg-neutral-100 p-5">
-          <h2 className="font-semibold">
-            Debug Checkout State
-          </h2>
-
-          <pre className="mt-3 overflow-auto text-xs">
-            {JSON.stringify(details, null, 2)}
-          </pre>
-        </div> */}
-
       </div>
     </main>
   );

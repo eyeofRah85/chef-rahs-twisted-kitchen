@@ -57,6 +57,21 @@ export const useCheckoutStore = create<CheckoutState>()(
     }),
     {
       name: "chef-rahs-checkout",
+      version: 2,
+      merge: (persisted, current) => {
+        const persistedState = persisted as Partial<CheckoutState>;
+
+        return {
+          ...current,
+          ...persistedState,
+          details: {
+            ...defaultCheckout,
+            ...persistedState.details,
+            saveContactInfo:
+              persistedState.details?.saveContactInfo ?? false,
+          },
+        };
+      },
     },
   ),
 );
