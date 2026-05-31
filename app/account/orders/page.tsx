@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ReorderButton } from "@/components/account/ReorderButton";
+import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
     return paymentStatus === "PAY_BY_DATE" || paymentStatus === "OFFLINE_PAYMENT_DUE";
@@ -60,7 +61,7 @@ export default async function AccountOrdersPage() {
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                 <div>
                   <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
-                    {order.orderType}
+                    {formatOrderType(order.orderType)}
                   </p>
 
                   <h2 className="mt-2 text-2xl font-bold">
@@ -75,7 +76,7 @@ export default async function AccountOrdersPage() {
                   </p>
 
                   <p className="mt-1 text-sm text-neutral-600">
-                    Payment: {order.paymentStatus ?? "Not set"}
+                    Payment: {formatPaymentStatus(order.paymentStatus) ?? "Not set"}
                   </p>
                 </div>
                 {order.payByDate && (
@@ -89,7 +90,7 @@ export default async function AccountOrdersPage() {
                     {order.status}
                   </span>
                   <p className="mt-2 text-xs text-neutral-500">
-                    Approval: {order.approvalStatus}
+                    Approval: {formatPaymentStatus(order.paymentStatus)}
                   </p>
                   <p className="mt-3 text-2xl font-bold">
                     ${Number(order.total).toFixed(2)}

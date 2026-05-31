@@ -6,6 +6,7 @@ import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { OrderApprovalForm } from "@/components/admin/OrderApprovalForm";
 import Link from "next/link";
 import { PrintButton } from "@/components/admin/PrintButton";
+import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
 
 type PageProps = {
   params: Promise<{
@@ -72,7 +73,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                   <strong>Phone:</strong> {order.customerPhone ?? "Not provided"}
                 </p>
                 <p>
-                  <strong>Order Type:</strong> {order.orderType}
+                  <strong>Order Type:</strong> {formatOrderType(order.orderType)}
                 </p>
                 <p>
                   <strong>Requested:</strong>{" "}
@@ -192,7 +193,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               <div className="mt-6">
                   <OrderApprovalForm
                     orderId={order.id}
-                    currentApprovalStatus={order.approvalStatus}
+                    currentApprovalStatus={formatApprovalStatus(order.approvalStatus)}
                   />
                 </div>
 

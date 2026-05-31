@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
 
 type OrderPageProps = {
   params: Promise<{
@@ -66,13 +67,13 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
             <div className="rounded-xl bg-neutral-100 p-4">
               <p className="text-sm text-neutral-500">Approval</p>
-              <p className="mt-2 font-semibold">{order.approvalStatus}</p>
+              <p className="mt-2 font-semibold">{formatApprovalStatus(order.approvalStatus)}</p>
             </div>
 
             <div className="rounded-xl bg-neutral-100 p-4">
               <p className="text-sm text-neutral-500">Payment</p>
               <p className="mt-2 font-semibold">
-                {order.paymentStatus ?? "Not set"}
+                {formatPaymentStatus(order.paymentStatus) ?? "Not set"}
               </p>
             </div>
           </section>
@@ -145,7 +146,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
                 </p>
 
                 <p>
-                  <strong>Order Type:</strong> {order.orderType}
+                  <strong>Order Type:</strong> {formatOrderType(order.orderType)}
                 </p>
 
                 <p>
