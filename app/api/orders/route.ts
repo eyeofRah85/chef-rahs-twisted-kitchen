@@ -21,16 +21,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const { items, checkout } = await request.json();
 
-    const { items, checkout } = body;
-
-    if (!items?.length) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: "Order contains no items." },
+        { error: "Order must include at least one item." },
         { status: 400 },
       );
     }
+
     const subtotal = items.reduce(
       (sum: number, item: any) => sum + item.price * item.quantity,
       0,

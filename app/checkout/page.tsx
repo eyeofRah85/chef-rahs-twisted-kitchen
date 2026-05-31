@@ -422,90 +422,96 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
 
                 setSubmitting(true);
                   try{
-                if (!details.requestedDateTime) {
-                  alert("Please choose a requested date and time.");
+
+                    if (items.length === 0) {
+                      alert("Your cart is empty.");
+                      return;
+                    }
+
+                    if (!details.requestedDateTime) {
+                      alert("Please choose a requested date and time.");
+                      return;
+                    }
+
+                  const requestedDate = new Date(details.requestedDateTime);
+
+                  if (Number.isNaN(requestedDate.getTime())) {
+                    alert("Please choose a valid requested date and time.");
+                    return;
+                  }
+
+                  const validation = validateRequestedDate(requestedDate, {
+                    noWeekendOrdering: settings.noWeekendOrdering,
+                  });
+
+                  if (!validation.valid) {
+                    alert(validation.error);
+                    return;
+                  }
+
+                if (details.orderType === "delivery") {
+                  if (
+                    !details.name ||
+                    !details.phone ||
+                    !details.addressLine1 ||
+                    !details.city ||
+                    !details.state ||
+                    !details.postalCode
+                  ) {
+                    alert(
+                      "Delivery orders require name, phone number, address, city, state, and ZIP/postal code.",
+                    );
+                    return;
+                  }
+                }
+
+                if (details.orderType === "pickup") {
+                  if (!details.name || !details.phone) {
+                    alert("Pickup orders require your name and phone number.");
+                    return;
+                  }
+                }
+                
+                if (details.paymentMethod === "manual" && !details.payByDate) {
+                alert("Please choose a pay-by date.");
+                return;
+                }
+
+                const response = await fetch("/api/orders", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    items,
+                    checkout: details,
+                    subtotal,
+                    deliveryFee,
+                    lateFee,
+                    tipAmount,
+                    total,
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorData = await response.json().catch(() => null);
+
+                  alert(errorData?.error ?? "Failed to submit order.");
                   return;
                 }
 
-              const requestedDate = new Date(details.requestedDateTime);
+                const order = await response.json();
 
-              if (Number.isNaN(requestedDate.getTime())) {
-                alert("Please choose a valid requested date and time.");
-                return;
-              }
+                clearCart();
+                resetCheckout();
 
-              const validation = validateRequestedDate(requestedDate, {
-                noWeekendOrdering: settings.noWeekendOrdering,
-              });
-
-              if (!validation.valid) {
-                alert(validation.error);
-                return;
-              }
-
-              if (details.orderType === "delivery") {
-                if (
-                  !details.name ||
-                  !details.phone ||
-                  !details.addressLine1 ||
-                  !details.city ||
-                  !details.state ||
-                  !details.postalCode
-                ) {
-                  alert(
-                    "Delivery orders require name, phone number, address, city, state, and ZIP/postal code.",
-                  );
-                  return;
+                router.push(`/orders/${order.id}`);
+                } finally {
+                  setSubmitting(false);
                 }
-              }
-
-              if (details.orderType === "pickup") {
-                if (!details.name || !details.phone) {
-                  alert("Pickup orders require your name and phone number.");
-                  return;
-                }
-              }
-              
-              if (details.paymentMethod === "manual" && !details.payByDate) {
-              alert("Please choose a pay-by date.");
-              return;
-              }
-
-              const response = await fetch("/api/orders", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  items,
-                  checkout: details,
-                  subtotal,
-                  deliveryFee,
-                  lateFee,
-                  tipAmount,
-                  total,
-                }),
-              });
-
-              if (!response.ok) {
-                const errorData = await response.json().catch(() => null);
-
-                alert(errorData?.error ?? "Failed to submit order.");
-                return;
-              }
-
-              const order = await response.json();
-
-              clearCart();
-              resetCheckout();
-
-              router.push(`/orders/${order.id}`);
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-            className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white"
-          >
+              }}
+              className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white"
+            >
             {submitting ? "Submitting..." : "Submit Order"}
           </button>
         </form>
