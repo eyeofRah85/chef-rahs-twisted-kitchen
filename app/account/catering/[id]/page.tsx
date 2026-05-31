@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type PageProps = {
   params: Promise<{
@@ -40,14 +41,14 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
 
         <div className="mt-8 rounded-2xl border bg-white p-8 shadow-sm">
          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {request.requestType === "PERSONAL_CHEF"
+            {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
               ? "Personal Chef Request"
               : "Catering Request"}
           </p>
 
           <h1 className="mt-3 text-4xl font-bold">
             {request.eventType ??
-            (request.requestType === "PERSONAL_CHEF"
+            (formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
               ? "Personal Chef Request"
               : "Catering Request")}
           </h1>

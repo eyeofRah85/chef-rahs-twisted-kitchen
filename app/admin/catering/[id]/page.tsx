@@ -6,6 +6,7 @@ import { CateringApprovalForm } from "@/components/admin/CateringApprovalForm";
 import Link from "next/link";
 import { CateringQuoteForm } from "@/components/admin/CateringQuoteForm";
 import { MarkDepositPaidButton } from "@/components/admin/MarkDepositPaidButton";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type PageProps = {
   params: Promise<{
@@ -41,7 +42,7 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
             Admin
           </p>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {request.requestType === "PERSONAL_CHEF"
+            {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
               ? "Personal Chef Request"
               : "Catering Request"}
           </p>

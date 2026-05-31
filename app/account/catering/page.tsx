@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 export default async function AccountCateringPage() {
   const session = await auth();
@@ -59,7 +60,7 @@ export default async function AccountCateringPage() {
                     </p>
 
                     <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
-                      {request.requestType === "PERSONAL_CHEF"
+                      {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
                         ? "Personal Chef"
                         : "Catering"}
                     </span>

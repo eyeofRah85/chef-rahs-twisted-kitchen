@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type PageProps = {
   searchParams: Promise<{
@@ -134,7 +135,7 @@ export default async function AdminCateringPage({ searchParams }: PageProps) {
 
                   <td className="p-4">
                     <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {request.requestType === "PERSONAL_CHEF"
+                      {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
                         ? "Personal Chef"
                         : "Catering"}
                     </span>

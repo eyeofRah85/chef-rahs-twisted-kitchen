@@ -10,6 +10,7 @@ import { DeleteOptionGroupButton } from "@/components/admin/DeleteOptionGroupBut
 import { ArchiveMenuItemButton } from "@/components/admin/ArchiveMenuItemButton";
 import { EditOptionChoiceForm } from "@/components/admin/EditOptionChoiceForm";
 import { ApplyMealPlanTemplateButton } from "@/components/admin/ApplyMealPlanTemplateButton";
+import { formatMenuItemType } from "@/lib/format-labels";
 
 type PageProps = {
   searchParams: Promise<{
@@ -27,13 +28,6 @@ const menuTypeTabs = [
   { label: "Sides", value: "SIDE" },
   { label: "Other", value: "OTHER" },
 ];
-
-function getTypeLabel(type: string) {
-  return (
-    menuTypeTabs.find((tab) => tab.value === type)?.label ??
-    type.replaceAll("_", " ")
-  );
-}
 
 export default async function AdminMenuPage({ searchParams }: PageProps) {
   try {
@@ -177,7 +171,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                       Showing {category.items.length} item
                       {category.items.length === 1 ? "" : "s"}
                       {selectedType !== "ALL"
-                        ? ` in ${getTypeLabel(selectedType)}`
+                        ? ` in ${formatMenuItemType(selectedType)}`
                         : ""}
                     </p>
                   </div>
@@ -196,7 +190,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                               <h3 className="text-xl font-semibold">{item.name}</h3>
 
                               <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-600">
-                                {getTypeLabel(item.type)}
+                                {formatMenuItemType(item.type)}
                               </span>
 
                               {item.seasonal && (
