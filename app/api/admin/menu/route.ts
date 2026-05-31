@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const price = Number(formData.get("price") ?? 0);
-    const categoryName = String(formData.get("category") ?? "").trim();
+    const categoryName = String(formData.get("categoryName") ?? "").trim();
     const available = formData.get("available") === "on";
     const seasonal = formData.get("seasonal") === "on";
     const type = String(formData.get("type") ?? "PLATE");
@@ -21,7 +21,16 @@ export async function POST(request: Request) {
     const customerInstructionsEnabled = formData.get("customerInstructionsEnabled") === "on";
     const image = formData.get("imageUrl") as File | null;
 
-    let imageUrl: string | null = null;
+// const rawCategoryName = String(formData.get("categoryName") ?? "").trim();
+
+// const categoryName =
+//   rawCategoryName === "MEAL_PLAN"
+//     ? "Meal Plans"
+//     : rawCategoryName === "A_LA_CARTE"
+//       ? "A La Carte"
+//       : rawCategoryName || "Other";
+
+     let imageUrl: string | null = null;
 
     if (image && image.size > 0) {
       const bytes = await image.arrayBuffer();

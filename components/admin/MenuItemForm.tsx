@@ -120,20 +120,42 @@ export function MenuItemForm() {
           Seasonal
         </label>
 
-        <select
-          name="category"
-          className="w-full rounded-xl border px-4 py-3"
-          defaultValue="MEAL_PLAN"
-          required
-        >
-          <option value="MEAL_PLAN">Meal Plan</option>
-          <option value="A_LA_CARTE">A La Carte</option>
-          <option value="CATERING">Catering Related</option>
-          <option value="PLATE">Plate / Legacy</option>
-          <option value="DESSERT">Dessert</option>
-          <option value="SIDE">Side</option>
-          <option value="OTHER">Other</option>
-        </select>
+       <div>
+  <label className="block text-sm font-medium">Category</label>
+
+  <select
+    name="categoryName"
+    className="mt-2 w-full rounded-xl border px-4 py-3"
+    defaultValue="Meal Plans"
+    required
+  >
+    <option value="Meal Plans">Meal Plans</option>
+    <option value="A La Carte">A La Carte</option>
+    <option value="Catering">Catering</option>
+    <option value="Desserts">Desserts</option>
+    <option value="Sides">Sides</option>
+    <option value="Other">Other</option>
+  </select>
+</div>
+
+<div>
+  <label className="block text-sm font-medium">Item Type</label>
+
+  <select
+    name="type"
+    className="mt-2 w-full rounded-xl border px-4 py-3"
+    defaultValue="MEAL_PLAN"
+    required
+  >
+    <option value="MEAL_PLAN">Meal Plan</option>
+    <option value="A_LA_CARTE">A La Carte</option>
+    <option value="CATERING">Catering Related</option>
+    <option value="PLATE">Plate / Legacy</option>
+    <option value="DESSERT">Dessert</option>
+    <option value="SIDE">Side</option>
+    <option value="OTHER">Other</option>
+  </select>
+</div>
 
         <p className="mt-2 text-xs text-neutral-500">
           Meal plans are package-based and can use meal plan templates. Personal chef

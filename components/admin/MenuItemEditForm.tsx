@@ -10,6 +10,7 @@ type Props = {
     description: string;
     price: number;
     type: string;
+    categoryName:string;
     seasonal: boolean;
     requiresApproval: boolean;
     customerInstructionsEnabled: boolean;
@@ -79,19 +80,42 @@ export function MenuItemEditForm({ item }: Props) {
         required
       />
 
-      <select
-        name="type"
-        defaultValue={item.type}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
-      >
-        <option value="MEAL_PLAN">Meal Plan</option>
-        <option value="A_LA_CARTE">A La Carte</option>
-        <option value="CATERING">Catering Related</option>
-        <option value="PLATE">Plate / Legacy</option>
-        <option value="DESSERT">Dessert</option>
-        <option value="SIDE">Side</option>
-        <option value="OTHER">Other</option>
-      </select>
+      <div>
+        <label className="block text-sm font-medium">Category</label>
+
+        <select
+          name="categoryName"
+          defaultValue={item.categoryName}
+          className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+        >
+          <option value="Meal Plans">Meal Plans</option>
+          <option value="A La Carte">A La Carte</option>
+          <option value="Catering">Catering</option>
+          <option value="Desserts">Desserts</option>
+          <option value="Sides">Sides</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium">Item Type</label>
+
+        <select
+          name="type"
+          defaultValue={item.type}
+          className="mt-2 w-full rounded-xl border px-4 py-3 text-sm"
+        >
+          <option value="MEAL_PLAN">Meal Plan</option>
+          <option value="A_LA_CARTE">A La Carte</option>
+          <option value="CATERING">Catering Related</option>
+          <option value="PLATE">Plate / Legacy</option>
+          <option value="DESSERT">Dessert</option>
+          <option value="SIDE">Side</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      
 
       <label className="flex items-center gap-2 text-sm">
         <input name="seasonal" type="checkbox" defaultChecked={item.seasonal} />

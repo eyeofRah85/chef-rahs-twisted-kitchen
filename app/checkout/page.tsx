@@ -148,8 +148,14 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
         </h1>
 
         <form className="mt-8 space-y-6">
-          <div>
-            <label className="block text-sm font-medium">
+          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold">Order Method</h2>
+
+            <p className="mt-2 text-sm text-neutral-600">
+              Choose how you would like to receive this order.
+            </p>
+
+            <label className="mt-5 block text-sm font-medium">
               Order Type
             </label>
 
@@ -162,9 +168,14 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
             >
               <option value="delivery">Delivery</option>
               <option value="pickup">Pickup</option>
-              <option value="catering">Catering</option>
             </select>
-          </div>
+
+            {/* {details.orderType === "delivery" && settings.deliveryArea && (
+              <p className="mt-2 text-xs text-neutral-500">
+                Delivery area: {settings.deliveryArea}.
+              </p>
+            )} */}
+          </section>
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
 
   <h2 className="text-2xl font-semibold">Contact & Delivery Information</h2>
@@ -237,8 +248,10 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
               Delivery area: {settings.deliveryArea}.
             </p>
           )}
-          <div>
-            <label className="block text-sm font-medium">
+          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold">Schedule</h2>
+
+            <label className="mt-5 block text-sm font-medium">
               Requested Date / Time
             </label>
 
@@ -252,10 +265,20 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
             />
 
             <p className="mt-2 text-xs text-neutral-500">
-              Late-week orders may include an additional fee.
-              Weekend ordering availability may be limited..
+              Orders placed after {cutoffText} may include a $
+              {settings.lateFee.toFixed(2)} late-order fee.
+              {settings.noWeekendOrdering
+                ? " Weekend ordering is currently unavailable."
+                : ""}
             </p>
-          </div>
+
+            {lateFee > 0 && (
+              <div className="mt-4 rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+                Orders placed after {cutoffText} include a $
+                {settings.lateFee.toFixed(2)} late-order fee.
+              </div>
+            )}
+          </section>
           <p className="mt-2 text-xs text-neutral-500">
             Orders placed after {cutoffText} may include a $
             {settings.lateFee.toFixed(2)} late-order fee.
@@ -263,128 +286,138 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
               ? " Weekend ordering is currently unavailable."
               : ""}
           </p>
-          <div>
-            <label className="block text-sm font-medium">
-              Allergy Notes
-            </label>
+          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold">Preferences</h2>
+              <div className="mt-5 space-y-5">
+                <div>
+                  <label className="block text-sm font-medium">
+                    Allergy Notes
+                  </label>
 
-            <textarea
-              rows={4}
-              value={details.allergyNotes}
-              onChange={(e) =>
-                updateField("allergyNotes", e.target.value)
-              }
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-              placeholder="List allergies or dietary restrictions."
-            />
-          </div>
+                  <textarea
+                    rows={4}
+                    value={details.allergyNotes}
+                    onChange={(e) =>
+                      updateField("allergyNotes", e.target.value)
+                    }
+                    className="mt-2 w-full rounded-xl border px-4 py-3"
+                    placeholder="List allergies or dietary restrictions."
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium">
-              Substitution Preference
-            </label>
+                <div>
+                  <label className="block text-sm font-medium">
+                    Substitution Preference
+                  </label>
 
-            <textarea
-              rows={3}
-              value={details.substitutionPreference}
-              onChange={(e) =>
-                updateField(
-                  "substitutionPreference",
-                  e.target.value,
-                )
-              }
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-              placeholder="If something is unavailable, what would you prefer?"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">
-              Tip
-            </label>
-
-            <select
-              value={details.tipType}
-              onChange={(e) =>
-                updateField("tipType", e.target.value as any)
-              }
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-            >
-              <option value="none">No tip</option>
-              <option value="10">10%</option>
-              <option value="15">15%</option>
-              <option value="20">20%</option>
-              <option value="custom">Custom amount</option>
-            </select>
-          </div>
-
-          {details.tipType === "custom" && (
-            <div>
-              <label className="block text-sm font-medium">
-                Custom Tip Amount
-              </label>
-
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={details.customTipAmount}
-                onChange={(e) =>
-                  updateField(
-                    "customTipAmount",
-                    Number(e.target.value),
-                  )
-                }
-                className="mt-2 w-full rounded-xl border px-4 py-3"
-              />
-            </div>
-          )}
-            {lateFee > 0 && (
-              <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
-                Orders placed after {cutoffText} include a $
-                {settings.lateFee.toFixed(2)} late-order fee.
+                  <textarea
+                    rows={3}
+                    value={details.substitutionPreference}
+                    onChange={(e) =>
+                      updateField(
+                        "substitutionPreference",
+                        e.target.value,
+                      )
+                    }
+                    className="mt-2 w-full rounded-xl border px-4 py-3"
+                    placeholder="If something is unavailable, what would you prefer?"
+                  />
+                </div>
               </div>
-            )}
-            <div>
-            <label className="block text-sm font-medium">Payment Method</label>
-            <select
-              value={details.paymentMethod}
-              onChange={(e) =>
-                updateField("paymentMethod", e.target.value as any)
-              }
-              className="mt-2 w-full rounded-xl border px-4 py-3"
-            >
-              <option value="manual">Pay Later / Manual Invoice</option>
-              <option value="cash">Cash / Offline Payment</option>
-              <option value="stripe" disabled>
-                Online Card Payment — Coming Soon
-              </option>
-            </select>
+            </section>
 
-            <p className="mt-2 text-xs text-neutral-500">
-              Online card payments will be added later. For now, orders can be submitted
-              with manual payment tracking.
-            </p>
-          </div>
+            <section className="rounded-2xl border bg-white p-6 shadow-sm">
+              <h2 className="text-2xl font-semibold">Payment</h2>
+              <div className="mt-5 space-y-5">
+                <div>
+                  <label className="block text-sm font-medium">
+                    Tip
+                  </label>
 
-          {details.paymentMethod === "manual" && (
-            <div>
-              <label className="block text-sm font-medium">Pay By Date</label>
+                  <select
+                    value={details.tipType}
+                    onChange={(e) =>
+                      updateField("tipType", e.target.value as any)
+                    }
+                    className="mt-2 w-full rounded-xl border px-4 py-3"
+                  >
+                    <option value="none">No tip</option>
+                    <option value="10">10%</option>
+                    <option value="15">15%</option>
+                    <option value="20">20%</option>
+                    <option value="custom">Custom amount</option>
+                  </select>
+                </div>
 
-              <input
-                type="date"
-                value={details.payByDate}
-                onChange={(e) => updateField("payByDate", e.target.value)}
-                className="mt-2 w-full rounded-xl border px-4 py-3"
-              />
-            </div>
-            )}
-            {requiresApproval && (
-              <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
-                One or more items in this order require chef approval. Your order may need
-                review before final confirmation.
-              </div>
-            )}
+                {details.tipType === "custom" && (
+                  <div>
+                    <label className="block text-sm font-medium">
+                      Custom Tip Amount
+                    </label>
+
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={details.customTipAmount}
+                      onChange={(e) =>
+                        updateField(
+                          "customTipAmount",
+                          Number(e.target.value),
+                        )
+                      }
+                      className="mt-2 w-full rounded-xl border px-4 py-3"
+                    />
+                  </div>
+                )}
+                  {lateFee > 0 && (
+                    <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+                      Orders placed after {cutoffText} include a $
+                      {settings.lateFee.toFixed(2)} late-order fee.
+                    </div>
+                  )}
+                  <div>
+                  <label className="block text-sm font-medium">Payment Method</label>
+                  <select
+                    value={details.paymentMethod}
+                    onChange={(e) =>
+                      updateField("paymentMethod", e.target.value as any)
+                    }
+                    className="mt-2 w-full rounded-xl border px-4 py-3"
+                  >
+                    <option value="manual">Pay Later / Manual Invoice</option>
+                    <option value="cash">Cash / Offline Payment</option>
+                    <option value="stripe" disabled>
+                      Online Card Payment — Coming Soon
+                    </option>
+                  </select>
+
+                  <p className="mt-2 text-xs text-neutral-500">
+                    Online card payments will be added later. For now, orders can be submitted
+                    with manual payment tracking.
+                  </p>
+                </div>
+
+                {details.paymentMethod === "manual" && (
+                  <div>
+                    <label className="block text-sm font-medium">Pay By Date</label>
+
+                    <input
+                      type="date"
+                      value={details.payByDate}
+                      onChange={(e) => updateField("payByDate", e.target.value)}
+                      className="mt-2 w-full rounded-xl border px-4 py-3"
+                    />
+                  </div>
+                  )}
+                  {requiresApproval && (
+                    <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+                      One or more items in this order require chef approval. Your order may need
+                      review before final confirmation.
+                    </div>
+                  )}
+                  </div>
+                </section>
             <button
               type="button"
               onClick={async () => {

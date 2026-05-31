@@ -284,6 +284,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                   description: item.description,
                                   price: Number(item.price),
                                   type: item.type,
+                                  categoryName: category.name,
                                   seasonal: item.seasonal,
                                   requiresApproval: item.requiresApproval,
                                   customerInstructionsEnabled:

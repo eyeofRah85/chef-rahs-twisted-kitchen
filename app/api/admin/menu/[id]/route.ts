@@ -14,7 +14,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const formData = await request.formData();
-
+    const categoryName = String(formData.get("categoryName") ?? "").trim() || "Other";
     const name = String(formData.get("name") ?? "").trim();
     const description = String(formData.get("description") ?? "").trim();
     const price = Number(formData.get("price") ?? 0);
@@ -31,6 +31,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const category = await prisma.menuCategory.upsert({
+      where: {
+        name: categoryName,
+      },
+      update: {},
+      create: {
+        name: categoryName,
+      },
+    });
+
     const updated = await prisma.menuItem.update({
       where: { id },
       data: {
@@ -38,6 +48,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         description,
         price,
         type: type as any,
+        categoryId: category.id,
         seasonal,
         requiresApproval,
         customerInstructionsEnabled,
