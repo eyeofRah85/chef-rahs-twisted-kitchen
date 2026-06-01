@@ -8,64 +8,108 @@ type Props = {
   currentApprovalStatus: string;
 };
 
-export function OrderApprovalForm({ orderId, currentApprovalStatus }: Props) {
+export function OrderApprovalForm({
+  orderId,
+  currentApprovalStatus,
+}: Props) {
   const router = useRouter();
-  const [approvalNote, setApprovalNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const [approvalNote, setApprovalNote] = useState("");
 
-  async function updateApproval(approvalStatus: "APPROVED" | "DENIED") {
+  const finalized =
+    currentApprovalStatus === "APPROVED" ||
+    currentApprovalStatus === "DENIED";
+
+  async function submitApproval(approvalStatus: "APPROVED" | "DENIED") {
+    if (saving || finalized) return;
+
+    const confirmed = confirm(
+      approvalStatus === "APPROVED"
+        ? "Are you sure you want to approve this order? This will notify the customer and move the order forward."
+        : "Are you sure you want to deny this order? This will notify the customer and cancel the order.",
+    );
+
+    if (!confirmed) return;
+
     setSaving(true);
 
-    const response = await fetch(`/api/admin/orders/${orderId}/approval`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ approvalStatus, approvalNote }),
-    });
+    const response = await fetch(
+      `/api/admin/orders/${orderId}/approval`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          approvalStatus,
+          approvalNote,
+        }),
+      },
+    );
 
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to update approval.");
+      const errorData = await response.json().catch(() => null);
+      alert(errorData?.error ?? "Failed to update approval.");
       return;
     }
 
-    setApprovalNote("");
     router.refresh();
   }
 
+  if (currentApprovalStatus === "APPROVED") {
+    return (
+      <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-900">
+        This order has already been approved.
+      </div>
+    );
+  }
+
+  if (currentApprovalStatus === "DENIED") {
+    return (
+      <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+        This order has already been denied.
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      <p className="rounded-full bg-neutral-100 px-3 py-2 text-center text-sm font-medium">
-        {currentApprovalStatus}
+    <section className="rounded-2xl border bg-white p-6 shadow-sm">
+      <h2 className="text-2xl font-semibold">Approval Decision</h2>
+
+      <p className="mt-2 text-sm text-neutral-600">
+        Approve the order to move it into the kitchen workflow, or deny it if
+        the selected options cannot be fulfilled.
       </p>
 
       <textarea
-        rows={3}
         value={approvalNote}
         onChange={(e) => setApprovalNote(e.target.value)}
-        placeholder="Optional approval/denial note."
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        rows={3}
+        placeholder="Optional note to include with the decision"
+        className="mt-5 w-full rounded-xl border px-4 py-3 text-sm"
       />
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="mt-5 flex flex-wrap gap-3">
         <button
           type="button"
           disabled={saving}
-          onClick={() => updateApproval("APPROVED")}
-          className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
+          onClick={() => submitApproval("APPROVED")}
+          className="rounded-xl bg-green-700 px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
         >
-          Approve
+          {saving ? "Saving..." : "Approve Order"}
         </button>
 
         <button
           type="button"
           disabled={saving}
-          onClick={() => updateApproval("DENIED")}
-          className="rounded-xl border border-red-400 bg-red-50 px-5 py-3 text-sm font-medium text-red-700 disabled:bg-neutral-100"
+          onClick={() => submitApproval("DENIED")}
+          className="rounded-xl bg-red-700 px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
         >
-          Deny
+          {saving ? "Saving..." : "Deny Order"}
         </button>
       </div>
-    </div>
+    </section>
   );
 }

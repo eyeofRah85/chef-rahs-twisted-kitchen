@@ -124,7 +124,46 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                     <strong>Delivery Notes:</strong>{" "}
                     {order.deliveryNotes ?? "None"}
                   </p>
+
+                 
                 </div>
+                 {order.approvalStatus === "PENDING" && (
+                    <div className="mt-6 rounded-2xl border border-blue-300 bg-blue-50 p-5 text-blue-950">
+                      <h2 className="text-xl font-semibold">Approval Needed</h2>
+
+                      <p className="mt-2 text-sm leading-6">
+                        This order includes one or more items or selections that require review
+                        before it can move into preparation.
+                      </p>
+                    </div>
+                  )}
+
+                  {order.approvalStatus === "APPROVED" && (
+                    <div className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5 text-green-950">
+                      <h2 className="text-xl font-semibold">Approved</h2>
+
+                      <p className="mt-2 text-sm leading-6">
+                        This order has been approved and can continue through the kitchen workflow.
+                      </p>
+                    </div>
+                  )}
+
+                  {order.approvalStatus === "DENIED" && (
+                    <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950">
+                      <h2 className="text-xl font-semibold">Denied</h2>
+
+                      <p className="mt-2 text-sm leading-6">
+                        This order was denied and should not move forward unless the customer
+                        submits a revised order.
+                      </p>
+
+                      {order.approvalNote && (
+                        <p className="mt-3 text-sm">
+                          <span className="font-semibold">Note:</span> {order.approvalNote}
+                        </p>
+                      )}
+                    </div>
+                  )}
               </section>
 
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -188,8 +227,13 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
 
           <aside className="space-y-6 print:hidden">
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Approval</h2>
+              <h2 className="text-2xl font-semibold">Approval Decision</h2>
 
+              <p className="mt-2 text-sm text-neutral-600">
+                Approve the order to move it into the kitchen workflow, or deny it if the
+                selected options cannot be fulfilled.
+              </p>
+              
               <div className="mt-6">
                   <OrderApprovalForm
                     orderId={order.id}
@@ -202,6 +246,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                     <strong>Note:</strong> {order.approvalNote}
                   </p>
                   )}
+                  
               </div>
               
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
