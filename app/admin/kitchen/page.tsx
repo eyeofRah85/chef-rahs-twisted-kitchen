@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { KitchenOrderCard } from "@/components/admin/KitchenOrderCard";
 import Link from "next/link";
+
 export default async function KitchenPage() {
   try {
     await requireAdmin();

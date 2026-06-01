@@ -90,30 +90,30 @@ export default function CheckoutPage() {
   const requiresApproval = items.some((item) => item.requiresApproval);
 
   const cutoffDayNames = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
-const cutoffHour12 =
-  settings.orderCutoffHour === 0
-    ? 12
-    : settings.orderCutoffHour > 12
-      ? settings.orderCutoffHour - 12
-      : settings.orderCutoffHour;
+  const cutoffHour12 =
+    settings.orderCutoffHour === 0
+      ? 12
+      : settings.orderCutoffHour > 12
+        ? settings.orderCutoffHour - 12
+        : settings.orderCutoffHour;
 
-const cutoffAmPm =
-  settings.orderCutoffHour >= 12 ? "PM" : "AM";
+  const cutoffAmPm =
+    settings.orderCutoffHour >= 12 ? "PM" : "AM";
 
-const cutoffMinute = settings.orderCutoffMinute
-  .toString()
-  .padStart(2, "0");
+  const cutoffMinute = settings.orderCutoffMinute
+    .toString()
+    .padStart(2, "0");
 
-const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12}:${cutoffMinute} ${cutoffAmPm}`;
+  const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12}:${cutoffMinute} ${cutoffAmPm}`;
 
 
 
@@ -130,6 +130,7 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
 
         <form className="mt-8 space-y-6">
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            
             <h2 className="text-2xl font-semibold">Order Method</h2>
 
             <p className="mt-2 text-sm text-neutral-600">
@@ -151,6 +152,67 @@ const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12
               <option value="pickup">Pickup</option>
             </select>
           </section>
+          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+  <h2 className="text-2xl font-semibold">Order Items</h2>
+
+  <div className="mt-5 space-y-4">
+    {items.map((item) => (
+      <div
+        key={item.cartId}
+        className="rounded-xl border bg-neutral-50 p-4"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="font-semibold">{item.name}</p>
+
+            <p className="mt-1 text-sm text-neutral-600">
+              Quantity: {item.quantity}
+            </p>
+
+            {item.selectedOptions && item.selectedOptions.length > 0 && (
+              <ul className="mt-3 space-y-1 text-sm text-neutral-600">
+                {item.selectedOptions.map((option, index) => (
+                  <li key={`${option.groupName}-${option.choiceName}-${index}`}>
+                    <span className="font-medium">{option.groupName}:</span>{" "}
+                    {option.choiceName}
+                    {option.priceDelta > 0
+                      ? ` (+$${option.priceDelta.toFixed(2)})`
+                      : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {item.customerInstructions && (
+              <p className="mt-3 text-sm text-neutral-600">
+                <span className="font-medium">Instructions:</span>{" "}
+                {item.customerInstructions}
+              </p>
+            )}
+          </div>
+<div className="mt-5">
+  <button
+    type="button"
+    onClick={() => router.push("/cart")}
+    className="rounded-xl border px-4 py-2 text-sm font-medium"
+  >
+    Edit Cart
+  </button>
+</div>
+          <p className="font-semibold">
+            ${(item.price * item.quantity).toFixed(2)}
+          </p>
+        </div>
+      </div>
+    ))}
+
+    {items.length === 0 && (
+      <p className="text-sm text-neutral-600">
+        Your cart is empty.
+      </p>
+    )}
+  </div>
+</section>
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
 
           <h2 className="text-2xl font-semibold">
