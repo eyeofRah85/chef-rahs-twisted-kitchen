@@ -152,69 +152,70 @@ export default function CheckoutPage() {
               <option value="pickup">Pickup</option>
             </select>
           </section>
+
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
-  <h2 className="text-2xl font-semibold">Order Items</h2>
+            <h2 className="text-2xl font-semibold">Order Items</h2>
 
-  <div className="mt-5 space-y-4">
-    {items.map((item) => (
-      <div
-        key={item.cartId}
-        className="rounded-xl border bg-neutral-50 p-4"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="font-semibold">{item.name}</p>
+            <div className="mt-5 space-y-4">
+              {items.map((item) => (
+                <div
+                  key={item.cartId}
+                  className="rounded-xl border bg-neutral-50 p-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
 
-            <p className="mt-1 text-sm text-neutral-600">
-              Quantity: {item.quantity}
-            </p>
+                      <p className="mt-1 text-sm text-neutral-600">
+                        Quantity: {item.quantity}
+                      </p>
 
-            {item.selectedOptions && item.selectedOptions.length > 0 && (
-              <ul className="mt-3 space-y-1 text-sm text-neutral-600">
-                {item.selectedOptions.map((option, index) => (
-                  <li key={`${option.groupName}-${option.choiceName}-${index}`}>
-                    <span className="font-medium">{option.groupName}:</span>{" "}
-                    {option.choiceName}
-                    {option.priceDelta > 0
-                      ? ` (+$${option.priceDelta.toFixed(2)})`
-                      : ""}
-                  </li>
-                ))}
-              </ul>
-            )}
+                      {item.selectedOptions && item.selectedOptions.length > 0 && (
+                        <ul className="mt-3 space-y-1 text-sm text-neutral-600">
+                          {item.selectedOptions.map((option, index) => (
+                            <li key={`${option.groupName}-${option.choiceName}-${index}`}>
+                              <span className="font-medium">{option.groupName}:</span>{" "}
+                              {option.choiceName}
+                              {option.priceDelta > 0
+                                ? ` (+$${option.priceDelta.toFixed(2)})`
+                                : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
 
-            {item.customerInstructions && (
-              <p className="mt-3 text-sm text-neutral-600">
-                <span className="font-medium">Instructions:</span>{" "}
-                {item.customerInstructions}
-              </p>
-            )}
-          </div>
-<div className="mt-5">
-  <button
-    type="button"
-    onClick={() => router.push("/cart")}
-    className="rounded-xl border px-4 py-2 text-sm font-medium"
-  >
-    Edit Cart
-  </button>
-</div>
-          <p className="font-semibold">
-            ${(item.price * item.quantity).toFixed(2)}
-          </p>
-        </div>
-      </div>
-    ))}
+                      {item.customerInstructions && (
+                        <p className="mt-3 text-sm text-neutral-600">
+                          <span className="font-medium">Instructions:</span>{" "}
+                          {item.customerInstructions}
+                        </p>
+                      )}
+                    </div>
+                    <div className="mt-5">
+                      <button
+                        type="button"
+                        onClick={() => router.push("/cart")}
+                        className="rounded-xl border px-4 py-2 text-sm font-medium"
+                      >
+                        Edit Cart
+                      </button>
+                    </div>
+                    <p className="font-semibold">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ))}
 
-    {items.length === 0 && (
-      <p className="text-sm text-neutral-600">
-        Your cart is empty.
-      </p>
-    )}
-  </div>
-</section>
+              {items.length === 0 && (
+                <p className="text-sm text-neutral-600">
+                  Your cart is empty.
+                </p>
+              )}
+            </div>
+          </section>
+
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
-
           <h2 className="text-2xl font-semibold">
             {details.orderType === "delivery"
               ? "Contact & Delivery Information"
@@ -336,6 +337,7 @@ export default function CheckoutPage() {
               </div>
             )}
           </section>
+
           <p className="mt-2 text-xs text-neutral-500">
             Orders placed after {cutoffText} may include a $
             {settings.lateFee.toFixed(2)} late-order fee.
@@ -343,6 +345,7 @@ export default function CheckoutPage() {
               ? " Weekend ordering is currently unavailable."
               : ""}
           </p>
+
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold">Preferences</h2>
               <div className="mt-5 space-y-5">
@@ -381,102 +384,102 @@ export default function CheckoutPage() {
                   />
                 </div>
               </div>
-            </section>
+          </section>
 
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Payment</h2>
-              <div className="mt-5 space-y-5">
+          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-semibold">Payment</h2>
+            <div className="mt-5 space-y-5">
+              <div>
+                <label className="block text-sm font-medium">
+                  Tip
+                </label>
+
+                <select
+                  value={details.tipType}
+                  onChange={(e) =>
+                    updateField("tipType", e.target.value as any)
+                  }
+                  className="mt-2 w-full rounded-xl border px-4 py-3"
+                >
+                  <option value="none">No tip</option>
+                  <option value="10">10%</option>
+                  <option value="15">15%</option>
+                  <option value="20">20%</option>
+                  <option value="custom">Custom amount</option>
+                </select>
+              </div>
+
+              {details.tipType === "custom" && (
                 <div>
                   <label className="block text-sm font-medium">
-                    Tip
+                    Custom Tip Amount
                   </label>
 
-                  <select
-                    value={details.tipType}
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={details.customTipAmount}
                     onChange={(e) =>
-                      updateField("tipType", e.target.value as any)
+                      updateField(
+                        "customTipAmount",
+                        Number(e.target.value),
+                      )
                     }
                     className="mt-2 w-full rounded-xl border px-4 py-3"
-                  >
-                    <option value="none">No tip</option>
-                    <option value="10">10%</option>
-                    <option value="15">15%</option>
-                    <option value="20">20%</option>
-                    <option value="custom">Custom amount</option>
-                  </select>
+                  />
                 </div>
-
-                {details.tipType === "custom" && (
-                  <div>
-                    <label className="block text-sm font-medium">
-                      Custom Tip Amount
-                    </label>
-
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={details.customTipAmount}
-                      onChange={(e) =>
-                        updateField(
-                          "customTipAmount",
-                          Number(e.target.value),
-                        )
-                      }
-                      className="mt-2 w-full rounded-xl border px-4 py-3"
-                    />
+              )}
+                {lateFee > 0 && (
+                  <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+                    Orders placed after {cutoffText} include a $
+                    {settings.lateFee.toFixed(2)} late-order fee.
                   </div>
                 )}
-                  {lateFee > 0 && (
-                    <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
-                      Orders placed after {cutoffText} include a $
-                      {settings.lateFee.toFixed(2)} late-order fee.
-                    </div>
-                  )}
-                  <div>
-                  <label className="block text-sm font-medium">Payment Method</label>
-                  <select
-                    value={details.paymentMethod}
-                    onChange={(e) =>
-                      updateField("paymentMethod", e.target.value as any)
-                    }
+                <div>
+                <label className="block text-sm font-medium">Payment Method</label>
+                <select
+                  value={details.paymentMethod}
+                  onChange={(e) =>
+                    updateField("paymentMethod", e.target.value as any)
+                  }
+                  className="mt-2 w-full rounded-xl border px-4 py-3"
+                >
+                  <option value="manual">Pay Later / Manual Invoice</option>
+                  <option value="cash">Cash / Offline Payment</option>
+                  <option value="stripe" disabled>
+                    Online Card Payment — Coming Soon
+                  </option>
+                </select>
+
+                <p className="mt-2 text-xs text-neutral-500">
+                  Online card payments will be added later. For now, orders can be submitted
+                  with manual payment tracking.
+                </p>
+              </div>
+
+              {details.paymentMethod === "manual" && (
+                <div>
+                  <label className="block text-sm font-medium">Pay By Date</label>
+
+                  <input
+                    type="date"
+                    value={details.payByDate}
+                    onChange={(e) => updateField("payByDate", e.target.value)}
                     className="mt-2 w-full rounded-xl border px-4 py-3"
-                  >
-                    <option value="manual">Pay Later / Manual Invoice</option>
-                    <option value="cash">Cash / Offline Payment</option>
-                    <option value="stripe" disabled>
-                      Online Card Payment — Coming Soon
-                    </option>
-                  </select>
-
-                  <p className="mt-2 text-xs text-neutral-500">
-                    Online card payments will be added later. For now, orders can be submitted
-                    with manual payment tracking.
-                  </p>
+                  />
                 </div>
-
-                {details.paymentMethod === "manual" && (
-                  <div>
-                    <label className="block text-sm font-medium">Pay By Date</label>
-
-                    <input
-                      type="date"
-                      value={details.payByDate}
-                      onChange={(e) => updateField("payByDate", e.target.value)}
-                      className="mt-2 w-full rounded-xl border px-4 py-3"
-                    />
+                )}
+                {requiresApproval && (
+                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
+                    One or more items in this order require chef approval. Your order may need
+                    review before final confirmation.
                   </div>
-                  )}
-                  {requiresApproval && (
-                    <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-sm text-blue-900">
-                      One or more items in this order require chef approval. Your order may need
-                      review before final confirmation.
-                    </div>
-                  )}
-                  </div>
-                </section>
-                
-            <button
+                )}
+                </div>
+          </section>
+              
+          <button
               type="button"
               disabled={submitting}
               onClick={async () => {
