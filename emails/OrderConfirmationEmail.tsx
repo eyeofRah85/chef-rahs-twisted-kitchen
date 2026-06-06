@@ -106,8 +106,6 @@ export function OrderConfirmationEmail({
 
             <Hr />
 
-            <Hr />
-
             <Heading as="h2">Contact / Delivery Information</Heading>
 
             <Text>
@@ -149,12 +147,12 @@ export function OrderConfirmationEmail({
               <Section key={`${item.name}-${index}`}>
                 <Text>
                   <strong>
-                    {item.quantity}× {item.name}
+                    {item.quantity} x {item.name}
                   </strong>
                 </Text>
 
                 <Text>
-                  ${item.unitPrice.toFixed(2)} each — ${item.lineTotal.toFixed(2)}
+                  ${item.unitPrice.toFixed(2)} each - ${item.lineTotal.toFixed(2)}
                 </Text>
 
                 {item.notes && (
@@ -193,9 +191,6 @@ export function OrderConfirmationEmail({
             >
               View Order Details
             </Button>
-            <Text>
-              <strong>Total:</strong> ${total.toFixed(2)}
-            </Text>
           </Section>
 
           <Hr />

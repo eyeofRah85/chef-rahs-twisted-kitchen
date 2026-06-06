@@ -45,3 +45,29 @@ Current next priorities:
 7. Run typecheck/build and report any issues before making unrelated changes.
 
 Start by auditing the checkout/profile/order flow and tell me what you find. Then propose the smallest safe patch.
+
+Progress update - June 6, 2026:
+- Checkout/profile/order flow has been audited and patched:
+  - Checkout contact details are reset before account profile preload.
+  - Persisted checkout state no longer carries stale contact/delivery details across users.
+  - Account profile data preloads into checkout for signed-in users.
+  - `saveContactInfo` updates the customer profile after order submission.
+  - Delivery and pickup validations are enforced on both checkout UI and order creation API.
+- Debug UI cleanup:
+  - Removed the known admin menu form debug log.
+  - No remaining `console.log`, `Debug`, or `debug` matches were found in `app`, `components`, `store`, `emails`, or `lib`.
+- Checkout page polish:
+  - Checkout is organized around Order Method, Order Items, Contact / Delivery Info, Schedule, Preferences, Payment, and Review.
+  - The checkout route remains `/checkout`.
+- Order history snapshots:
+  - Customer and admin order detail pages show the delivery/contact snapshot saved with the order.
+- Order confirmation email:
+  - Confirmation emails include contact and delivery details from the order snapshot.
+  - Duplicate divider/total markup and non-ASCII item separators were cleaned up.
+- Approval duplicate-decision protection:
+  - Admin order and service request approval forms show final approved/denied states instead of repeat decision buttons.
+  - Admin order and service request approval APIs guard final decisions with pending-only transactional updates.
+  - Duplicate final decisions return an error and do not resend approval/denial emails.
+- Validation:
+  - `npm run lint` passes with existing `@next/next/no-img-element` warnings.
+  - `npm run build` passes with the current Next.js/Prisma setup.
