@@ -1,0 +1,47 @@
+You are helping continue development on a Next.js/Prisma food service web app for Chef Rah's Twisted Kitchen.
+
+Current business model:
+- Meal Plans / Meal Prep and A La Carte items are purchased through cart checkout.
+- Catering and Personal Chef are service request / quote workflows, not direct checkout purchases.
+- Meal plans support rich customizations such as plan length, meals per day, protein, vegetable, starch, substitutions, request-only options, descriptions, dietary info, image URLs, and price deltas.
+- Pork and beef are request-only for meal plans. Pricing may vary and chef approval may be required.
+- Customer accounts now include phone, delivery address fields, and delivery notes.
+- Checkout preloads account profile data and can save edited checkout contact info back to the customer profile.
+- Orders store a delivery/contact snapshot so historical orders keep the delivery info used at order time.
+- Admin order approvals and service request approvals should prevent duplicate final decisions.
+
+Important architecture notes:
+- Menu item `type` controls behavior, such as MEAL_PLAN, A_LA_CARTE, CATERING, PLATE, DESSERT, SIDE, OTHER.
+- Menu category controls display grouping, such as "Meal Plans", "A La Carte", "Desserts", "Sides".
+- Do not confuse category names with enum values.
+- Catering and Personal Chef share the CateringRequest/service request workflow using requestType.
+- Checkout orderType should only be delivery or pickup.
+- Keep routes stable for now:
+  - /menu displays Meal Plans / A La Carte
+  - /admin/catering displays Service Requests
+  - /account/catering displays Service Requests
+
+Please inspect the codebase before making changes. Do not rename routes or database models unless explicitly asked. Avoid large rewrites. Prefer small safe changes with clear commits.
+
+Current next priorities:
+1. Verify checkout contact/profile flow:
+   - account profile updates correctly
+   - checkout preloads current user profile
+   - checkout does not leak prior user persisted data
+   - saveContactInfo updates the profile after order submission
+   - delivery/pickup validations match frontend and backend
+2. Remove or avoid debug UI.
+3. Polish checkout sections:
+   - Order Method
+   - Order Items
+   - Contact / Delivery Info
+   - Schedule
+   - Preferences
+   - Payment
+   - Review
+4. Ensure order detail pages show delivery/contact snapshot.
+5. Ensure order confirmation emails include delivery/contact details.
+6. Make sure duplicate approval decisions are blocked on both frontend and backend.
+7. Run typecheck/build and report any issues before making unrelated changes.
+
+Start by auditing the checkout/profile/order flow and tell me what you find. Then propose the smallest safe patch.
