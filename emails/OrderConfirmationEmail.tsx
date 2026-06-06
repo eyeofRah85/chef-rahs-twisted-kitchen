@@ -105,8 +105,6 @@ export function OrderConfirmationEmail({
             </Text>
 
             <Hr />
-            
-            <Hr />
 
             <Heading as="h2">Contact / Delivery Information</Heading>
 
@@ -193,9 +191,6 @@ export function OrderConfirmationEmail({
             >
               View Order Details
             </Button>
-            <Text>
-              <strong>Total:</strong> ${total.toFixed(2)}
-            </Text>
           </Section>
 
           <Hr />

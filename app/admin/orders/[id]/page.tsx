@@ -6,7 +6,7 @@ import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { OrderApprovalForm } from "@/components/admin/OrderApprovalForm";
 import Link from "next/link";
 import { PrintButton } from "@/components/admin/PrintButton";
-import { formatOrderType, formatApprovalStatus } from "@/lib/format-labels";
+import { formatOrderType } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
@@ -276,7 +276,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               <div className="mt-6">
                   <OrderApprovalForm
                     orderId={order.id}
-                    currentApprovalStatus={formatApprovalStatus(order.approvalStatus)}
+                    currentApprovalStatus={order.approvalStatus}
                   />
                 </div>
 

@@ -155,33 +155,6 @@ export default async function OrderPage({ params }: OrderPageProps) {
               </p>
             </div>
           </section>
-{order.approvalStatus === "PENDING" && (
-  <section className="mt-6 rounded-2xl border border-blue-300 bg-blue-50 p-5 text-blue-950">
-    <h2 className="text-xl font-semibold">Waiting for Chef Approval</h2>
-
-    <p className="mt-2 text-sm">
-      This order includes one or more items that need to be reviewed before it
-      is confirmed. You will be able to track the order status here.
-    </p>
-  </section>
-  )}
-
-  {order.approvalStatus === "DENIED" && (
-    <section className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950">
-      <h2 className="text-xl font-semibold">Order Not Approved</h2>
-
-      <p className="mt-2 text-sm">
-        This order was not approved. Please review any notes below or contact the
-        business for more details.
-      </p>
-
-      {order.approvalNote && (
-        <p className="mt-3 text-sm">
-          <strong>Note:</strong> {order.approvalNote}
-        </p>
-      )}
-    </section>
-  )}
 
   {order.approvalStatus === "APPROVED" && order.approvalNote && (
     <section className="mt-6 rounded-2xl border bg-neutral-50 p-5">

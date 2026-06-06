@@ -17,6 +17,12 @@ export default function CheckoutPage() {
   const settings = useBusinessSettings();
   const details = useCheckoutStore((state) => state.details);
   const updateField = useCheckoutStore((state) => state.updateField);
+  const updateContactDetails = useCheckoutStore(
+    (state) => state.updateContactDetails,
+  );
+  const resetContactDetails = useCheckoutStore(
+    (state) => state.resetContactDetails,
+  );
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
@@ -38,28 +44,42 @@ export default function CheckoutPage() {
     }, []);
 
     useEffect(() => {
+      let cancelled = false;
+
       async function loadProfile() {
+        resetContactDetails();
+
         const response = await fetch("/api/account/profile", {
           cache: "no-store",
         });
 
-        if (!response.ok) return;
+        if (!response.ok || cancelled) return;
 
         const profile = await response.json();
 
-        updateField("name", profile.name ?? "");
-        updateField("phone", profile.phone ?? "");
-        updateField("addressLine1", profile.addressLine1 ?? "");
-        updateField("addressLine2", profile.addressLine2 ?? "");
-        updateField("city", profile.city ?? "");
-        updateField("state", profile.state ?? "");
-        updateField("postalCode", profile.postalCode ?? "");
-        updateField("deliveryNotes", profile.deliveryNotes ?? "");
-        updateField("saveContactInfo", false);
+        updateContactDetails({
+          name: profile.name ?? "",
+          phone: profile.phone ?? "",
+          addressLine1: profile.addressLine1 ?? "",
+          addressLine2: profile.addressLine2 ?? "",
+          city: profile.city ?? "",
+          state: profile.state ?? "",
+          postalCode: profile.postalCode ?? "",
+          deliveryNotes: profile.deliveryNotes ?? "",
+          saveContactInfo: false,
+        });
       }
 
-      loadProfile();
-    }, [updateField]);
+      loadProfile().catch(() => {
+        if (!cancelled) {
+          resetContactDetails();
+        }
+      });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [resetContactDetails, updateContactDetails]);
 
     if (!mounted) {
       return null;
@@ -201,9 +221,9 @@ export default function CheckoutPage() {
                             </li>
                           ))}
                           {item.requiresApproval && (
-                            <div className="mt-3 rounded-xl border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
+                            <li className="mt-3 rounded-xl border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
                               This item requires chef approval before the order is confirmed.
-                            </div>
+                            </li>
                           )}
                         </ul>
                         
@@ -363,14 +383,6 @@ export default function CheckoutPage() {
             )}
           </section>
 
-          <p className="mt-2 text-xs text-neutral-500">
-            Orders placed after {cutoffText} may include a $
-            {settings.lateFee.toFixed(2)} late-order fee.
-            {settings.noWeekendOrdering
-              ? " Weekend ordering is currently unavailable."
-              : ""}
-          </p>
-
           <section className="rounded-2xl border bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-semibold">Preferences</h2>
               <div className="mt-5 space-y-5">
@@ -458,12 +470,6 @@ export default function CheckoutPage() {
                   />
                 </div>
               )}
-                {lateFee > 0 && (
-                  <div className="rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
-                    Orders placed after {cutoffText} include a $
-                    {settings.lateFee.toFixed(2)} late-order fee.
-                  </div>
-                )}
                 <div>
                 <label className="block text-sm font-medium">Payment Method</label>
                 <select
@@ -479,7 +485,7 @@ export default function CheckoutPage() {
                   <option value="manual">Pay Later / Manual Invoice</option>
                   <option value="cash">Cash / Offline Payment</option>
                   <option value="stripe" disabled>
-                    Online Card Payment — Coming Soon
+                    Online Card Payment - Coming Soon
                   </option>
                 </select>
 

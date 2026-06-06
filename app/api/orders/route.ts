@@ -53,6 +53,109 @@ export async function POST(request: Request) {
       );
     }
 
+    const allowedOrderTypes = ["delivery", "pickup"];
+
+    if (!allowedOrderTypes.includes(checkout.orderType)) {
+      return NextResponse.json(
+        { error: "Invalid order type." },
+        { status: 400 },
+      );
+    }
+
+    if (checkout.paymentMethod !== "manual" && checkout.paymentMethod !== "cash") {
+      return NextResponse.json(
+        { error: "Invalid payment method." },
+        { status: 400 },
+      );
+    }
+
+    const contact = {
+      name: String(checkout.name ?? "").trim(),
+      phone: String(checkout.phone ?? "").trim(),
+      addressLine1: String(checkout.addressLine1 ?? "").trim(),
+      addressLine2: String(checkout.addressLine2 ?? "").trim(),
+      city: String(checkout.city ?? "").trim(),
+      state: String(checkout.state ?? "").trim(),
+      postalCode: String(checkout.postalCode ?? "").trim(),
+      deliveryNotes: String(checkout.deliveryNotes ?? "").trim(),
+    };
+
+    const allergyNotes = String(checkout.allergyNotes ?? "").trim();
+    const substitutionPreference = String(
+      checkout.substitutionPreference ?? "",
+    ).trim();
+
+    if (!checkout.requestedDateTime) {
+      return NextResponse.json(
+        { error: "Please choose a requested date and time." },
+        { status: 400 },
+      );
+    }
+
+    const requestedDate = new Date(checkout.requestedDateTime);
+
+    if (Number.isNaN(requestedDate.getTime())) {
+      return NextResponse.json(
+        { error: "Please choose a valid requested date and time." },
+        { status: 400 },
+      );
+    }
+
+    const requestedDateValidation = await validateServerRequestedDate(requestedDate);
+
+    if (!requestedDateValidation.valid) {
+      return NextResponse.json(
+        { error: requestedDateValidation.error },
+        { status: 400 },
+      );
+    }
+
+    if (checkout.orderType === "delivery") {
+      if (
+        !contact.name ||
+        !contact.phone ||
+        !contact.addressLine1 ||
+        !contact.city ||
+        !contact.state ||
+        !contact.postalCode
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Delivery orders require name, phone number, address, city, state, and postal code.",
+          },
+          { status: 400 },
+        );
+      }
+    }
+
+    if (checkout.orderType === "pickup" && (!contact.name || !contact.phone)) {
+      return NextResponse.json(
+        { error: "Pickup orders require your name and phone number." },
+        { status: 400 },
+      );
+    }
+
+    let payByDate: Date | null = null;
+
+    if (checkout.paymentMethod === "manual") {
+      if (!checkout.payByDate) {
+        return NextResponse.json(
+          { error: "Please choose a pay-by date." },
+          { status: 400 },
+        );
+      }
+
+      payByDate = new Date(checkout.payByDate);
+
+      if (Number.isNaN(payByDate.getTime())) {
+        return NextResponse.json(
+          { error: "Please choose a valid pay-by date." },
+          { status: 400 },
+        );
+      }
+    }
+
     const subtotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -70,45 +173,6 @@ export async function POST(request: Request) {
     const total = subtotal + deliveryFee + lateFee + tipAmount;
     const requiresApproval = items.some((item) => item.requiresApproval);
 
-    if (checkout.requestedDateTime) {
-      const requestedDate = new Date(checkout.requestedDateTime);
-
-      const validation = await validateServerRequestedDate(requestedDate);
-
-      if (!validation.valid) {
-        return NextResponse.json(
-          { error: validation.error },
-          { status: 400 },
-        );
-      }
-    }
-
-    if (checkout.orderType === "delivery") {
-      if (
-        !checkout.name ||
-        !checkout.phone ||
-        !checkout.addressLine1 ||
-        !checkout.city ||
-        !checkout.state ||
-        !checkout.postalCode
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Delivery orders require name, phone number, address, city, state, and postal code.",
-          },
-          { status: 400 },
-        );
-      }
-    }
-      const allowedOrderTypes = ["delivery", "pickup"];
-
-      if (!allowedOrderTypes.includes(checkout.orderType)) {
-        return NextResponse.json(
-          { error: "Invalid order type." },
-          { status: 400 },
-        );
-      }
     const order = await prisma.order.create({
       data: {
         user: {
@@ -117,8 +181,9 @@ export async function POST(request: Request) {
           },
         },
 
-        customerName: checkout.name || session.user.name || "Customer",
+        customerName: contact.name || session.user.name || "Customer",
         customerEmail: session.user.email,
+        customerPhone: contact.phone || null,
 
         orderType:
           checkout.orderType === "delivery"
@@ -129,12 +194,10 @@ export async function POST(request: Request) {
         approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
         approvedAt: requiresApproval ? null : new Date(),
 
-        requestedDateTime: checkout.requestedDateTime
-          ? new Date(checkout.requestedDateTime)
-          : null,
+        requestedDateTime: requestedDate,
 
-        allergyNotes: checkout.allergyNotes,
-        substitutionPreference: checkout.substitutionPreference,
+        allergyNotes,
+        substitutionPreference,
 
         subtotal,
         deliveryFee,
@@ -142,16 +205,16 @@ export async function POST(request: Request) {
         tipAmount,
         total,
 
-        deliveryName: checkout.name || session.user.name || null,
-        deliveryPhone: checkout.phone || null,
-        deliveryAddressLine1: checkout.addressLine1 || null,
-        deliveryAddressLine2: checkout.addressLine2 || null,
-        deliveryCity: checkout.city || null,
-        deliveryState: checkout.state || null,
-        deliveryPostalCode: checkout.postalCode || null,
-        deliveryNotes: checkout.deliveryNotes || null,
+        deliveryName: contact.name || session.user.name || null,
+        deliveryPhone: contact.phone || null,
+        deliveryAddressLine1: contact.addressLine1 || null,
+        deliveryAddressLine2: contact.addressLine2 || null,
+        deliveryCity: contact.city || null,
+        deliveryState: contact.state || null,
+        deliveryPostalCode: contact.postalCode || null,
+        deliveryNotes: contact.deliveryNotes || null,
 
-        payByDate: checkout.payByDate ? new Date(checkout.payByDate) : null,
+        payByDate,
         paymentProvider: checkout.paymentMethod,
         paymentStatus:
           checkout.paymentMethod === "cash"
@@ -208,14 +271,14 @@ export async function POST(request: Request) {
             email: session.user.email,
           },
           data: {
-            name: checkout.name || session.user.name || null,
-            phone: checkout.phone || null,
-            addressLine1: checkout.addressLine1 || null,
-            addressLine2: checkout.addressLine2 || null,
-            city: checkout.city || null,
-            state: checkout.state || null,
-            postalCode: checkout.postalCode || null,
-            deliveryNotes: checkout.deliveryNotes || null,
+            name: contact.name || session.user.name || null,
+            phone: contact.phone || null,
+            addressLine1: contact.addressLine1 || null,
+            addressLine2: contact.addressLine2 || null,
+            city: contact.city || null,
+            state: contact.state || null,
+            postalCode: contact.postalCode || null,
+            deliveryNotes: contact.deliveryNotes || null,
           },
         });
       }
@@ -223,7 +286,6 @@ export async function POST(request: Request) {
       console.error("Failed to save checkout contact info to profile", profileError);
     }
 
-    // email section
       await sendAppEmail({
         to: session.user.email,
         subject: "Order Confirmation",
@@ -258,24 +320,7 @@ export async function POST(request: Request) {
         })),
       }),
       });
-    // end email section
-    if (checkout.orderType === "delivery") {
-      if (
-        !checkout.addressLine1 ||
-        !checkout.city ||
-        !checkout.state ||
-        !checkout.postalCode ||
-        !checkout.phone
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Delivery orders require phone number, address, city, state, and postal code.",
-          },
-          { status: 400 },
-        );
-      }
-    }
+
     return NextResponse.json(order);
   } catch (error) {
     console.error(error);

@@ -29,25 +29,55 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid approval status." }, { status: 400 });
     }
 
-
-    const existingRequest = await prisma.cateringRequest.findUnique({
-      where: { id },
-      select: {
-        approvalStatus: true,
-      },
-    });
-
-    if (!existingRequest) {
+    if (approvalStatus === "PENDING") {
       return NextResponse.json(
-        { error: "Service request not found." },
-        { status: 404 },
+        { error: "Choose approve or deny for a final decision." },
+        { status: 400 },
       );
     }
 
-    if (
-      existingRequest.approvalStatus === "APPROVED" ||
-      existingRequest.approvalStatus === "DENIED"
-    ) {
+    const nextStatus =
+      approvalStatus === "APPROVED" ? "APPROVED" : "CANCELLED";
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.cateringRequest.updateMany({
+        where: {
+          id,
+          approvalStatus: "PENDING",
+        },
+        data: {
+          approvalStatus,
+          approvalNote: approvalNote || null,
+          approvedAt: approvalStatus === "APPROVED" ? new Date() : null,
+          deniedAt: approvalStatus === "DENIED" ? new Date() : null,
+          status: nextStatus,
+        },
+      });
+
+      if (result.count === 0) {
+        return null;
+      }
+
+      return tx.cateringRequest.findUnique({
+        where: { id },
+      });
+    });
+
+    if (!updated) {
+      const existingRequest = await prisma.cateringRequest.findUnique({
+        where: { id },
+        select: {
+          approvalStatus: true,
+        },
+      });
+
+      if (!existingRequest) {
+        return NextResponse.json(
+          { error: "Service request not found." },
+          { status: 404 },
+        );
+      }
+
       return NextResponse.json(
         {
           error:
@@ -57,42 +87,28 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const updated = await prisma.cateringRequest.update({
-      where: { id },
-      data: {
-        approvalStatus,
-        approvalNote: approvalNote || null,
-        approvedAt: approvalStatus === "APPROVED" ? new Date() : null,
-        deniedAt: approvalStatus === "DENIED" ? new Date() : null,
-        status:
-          approvalStatus === "APPROVED"
-            ? "APPROVED"
-            : approvalStatus === "DENIED"
-              ? "CANCELLED"
-              : undefined,
-      },
+    await sendAppEmail({
+      to: updated.email,
+      subject:
+        approvalStatus === "APPROVED"
+          ? "Your catering request has been approved"
+          : "Your catering request was not approved",
+      react: CateringStatusEmail({
+        customerName: updated.name,
+        eventType: updated.eventType ?? "Catering Request",
+        status: updated.status,
+        approvalStatus: updated.approvalStatus,
+        approvalNote,
+        estimatedTotal: updated.estimatedTotal
+          ? Number(updated.estimatedTotal)
+          : null,
+        depositAmount: updated.depositAmount
+          ? Number(updated.depositAmount)
+          : null,
+          requestUrl: `${appUrl}/account/catering/${updated.id}`,
+      }),
     });
-        await sendAppEmail({
-          to: updated.email,
-          subject:
-            approvalStatus === "APPROVED"
-              ? "Your catering request has been approved"
-              : "Your catering request was not approved",
-          react: CateringStatusEmail({
-            customerName: updated.name,
-            eventType: updated.eventType ?? "Catering Request",
-            status: updated.status,
-            approvalStatus: updated.approvalStatus,
-            approvalNote,
-            estimatedTotal: updated.estimatedTotal
-              ? Number(updated.estimatedTotal)
-              : null,
-            depositAmount: updated.depositAmount
-              ? Number(updated.depositAmount)
-              : null,
-              requestUrl: `${appUrl}/account/catering/${updated.id}`,
-          }),
-        });    
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
