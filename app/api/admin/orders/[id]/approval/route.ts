@@ -108,7 +108,7 @@ export async function PATCH(request: Request, context: RouteContext) {
             approvalNote,
           }),
         });
-      } 
+      }
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);

@@ -29,7 +29,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid approval status." }, { status: 400 });
     }
 
-
     const existingRequest = await prisma.cateringRequest.findUnique({
       where: { id },
       select: {
@@ -92,7 +91,7 @@ export async function PATCH(request: Request, context: RouteContext) {
               : null,
               requestUrl: `${appUrl}/account/catering/${updated.id}`,
           }),
-        });    
+        });
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);

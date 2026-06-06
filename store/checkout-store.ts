@@ -12,7 +12,34 @@ type CheckoutState = {
     value: CheckoutDetails[K],
   ) => void;
 
+  updateContactDetails: (details: Partial<CheckoutContactDetails>) => void;
+  resetContactDetails: () => void;
   resetCheckout: () => void;
+};
+
+type CheckoutContactDetails = Pick<
+  CheckoutDetails,
+  | "name"
+  | "phone"
+  | "addressLine1"
+  | "addressLine2"
+  | "city"
+  | "state"
+  | "postalCode"
+  | "deliveryNotes"
+  | "saveContactInfo"
+>;
+
+const emptyContactDetails: CheckoutContactDetails = {
+  name: "",
+  phone: "",
+  addressLine1: "",
+  addressLine2: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  deliveryNotes: "",
+  saveContactInfo: false,
 };
 
 const defaultCheckout: CheckoutDetails = {
@@ -25,16 +52,7 @@ const defaultCheckout: CheckoutDetails = {
   paymentMethod: "manual",
   payByDate: "",
 
-  name: "",
-  phone: "",
-  addressLine1: "",
-  addressLine2: "",
-  city: "",
-  state: "",
-  postalCode: "",
-  deliveryNotes: "",
-
-  saveContactInfo: false,
+  ...emptyContactDetails,
 };
 
 export const useCheckoutStore = create<CheckoutState>()(
@@ -50,6 +68,22 @@ export const useCheckoutStore = create<CheckoutState>()(
           },
         })),
 
+      updateContactDetails: (contactDetails) =>
+        set((state) => ({
+          details: {
+            ...state.details,
+            ...contactDetails,
+          },
+        })),
+
+      resetContactDetails: () =>
+        set((state) => ({
+          details: {
+            ...state.details,
+            ...emptyContactDetails,
+          },
+        })),
+
       resetCheckout: () =>
         set({
           details: defaultCheckout,
@@ -58,6 +92,13 @@ export const useCheckoutStore = create<CheckoutState>()(
     {
       name: "chef-rahs-checkout",
       version: 2,
+      partialize: (state) => ({
+        ...state,
+        details: {
+          ...state.details,
+          ...emptyContactDetails,
+        },
+      }),
       merge: (persisted, current) => {
         const persistedState = persisted as Partial<CheckoutState>;
 
@@ -67,8 +108,7 @@ export const useCheckoutStore = create<CheckoutState>()(
           details: {
             ...defaultCheckout,
             ...persistedState.details,
-            saveContactInfo:
-              persistedState.details?.saveContactInfo ?? false,
+            ...emptyContactDetails,
           },
         };
       },

@@ -17,6 +17,12 @@ export default function CheckoutPage() {
   const settings = useBusinessSettings();
   const details = useCheckoutStore((state) => state.details);
   const updateField = useCheckoutStore((state) => state.updateField);
+  const updateContactDetails = useCheckoutStore(
+    (state) => state.updateContactDetails,
+  );
+  const resetContactDetails = useCheckoutStore(
+    (state) => state.resetContactDetails,
+  );
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
@@ -38,28 +44,42 @@ export default function CheckoutPage() {
     }, []);
 
     useEffect(() => {
+      let cancelled = false;
+
       async function loadProfile() {
+        resetContactDetails();
+
         const response = await fetch("/api/account/profile", {
           cache: "no-store",
         });
 
-        if (!response.ok) return;
+        if (!response.ok || cancelled) return;
 
         const profile = await response.json();
 
-        updateField("name", profile.name ?? "");
-        updateField("phone", profile.phone ?? "");
-        updateField("addressLine1", profile.addressLine1 ?? "");
-        updateField("addressLine2", profile.addressLine2 ?? "");
-        updateField("city", profile.city ?? "");
-        updateField("state", profile.state ?? "");
-        updateField("postalCode", profile.postalCode ?? "");
-        updateField("deliveryNotes", profile.deliveryNotes ?? "");
-        updateField("saveContactInfo", false);
+        updateContactDetails({
+          name: profile.name ?? "",
+          phone: profile.phone ?? "",
+          addressLine1: profile.addressLine1 ?? "",
+          addressLine2: profile.addressLine2 ?? "",
+          city: profile.city ?? "",
+          state: profile.state ?? "",
+          postalCode: profile.postalCode ?? "",
+          deliveryNotes: profile.deliveryNotes ?? "",
+          saveContactInfo: false,
+        });
       }
 
-      loadProfile();
-    }, [updateField]);
+      loadProfile().catch(() => {
+        if (!cancelled) {
+          resetContactDetails();
+        }
+      });
+
+      return () => {
+        cancelled = true;
+      };
+    }, [resetContactDetails, updateContactDetails]);
 
     if (!mounted) {
       return null;

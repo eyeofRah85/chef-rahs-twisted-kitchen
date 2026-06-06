@@ -105,7 +105,7 @@ export function OrderConfirmationEmail({
             </Text>
 
             <Hr />
-            
+
             <Hr />
 
             <Heading as="h2">Contact / Delivery Information</Heading>
