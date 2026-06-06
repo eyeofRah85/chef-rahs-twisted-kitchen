@@ -114,6 +114,30 @@ export async function POST(request: Request) {
       );
     }
 
+    const submittedMenuItemIds = Array.from(
+      new Set(items.map((item) => item.menuItemId).filter(Boolean)),
+    );
+
+    if (submittedMenuItemIds.length > 0) {
+      const submittedMenuItems = await prisma.menuItem.findMany({
+        where: {
+          id: {
+            in: submittedMenuItemIds,
+          },
+        },
+        select: {
+          type: true,
+        },
+      });
+
+      if (submittedMenuItems.some((item) => item.type === "CATERING")) {
+        return NextResponse.json(
+          { error: "Catering items must be submitted as service requests." },
+          { status: 400 },
+        );
+      }
+    }
+
     const subtotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,

@@ -7,9 +7,10 @@ import { parseEnumValue } from "@/lib/enum-values";
 import {
   approvalStatuses,
   orderStatuses,
-  orderTypes,
 } from "@/lib/prisma-enums";
 import type { DecimalLike } from "@/types/display";
+
+const orderFilterTypes = ["DELIVERY", "PICKUP"] as const;
 
 type PageProps = {
   searchParams: Promise<{
@@ -48,7 +49,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   const typeFilter = params.type;
   const approvalFilter = params.approval;
   const status = parseEnumValue(orderStatuses, statusFilter);
-  const orderType = parseEnumValue(orderTypes, typeFilter);
+  const orderType = parseEnumValue(orderFilterTypes, typeFilter);
   const approvalStatus = parseEnumValue(
     approvalStatuses,
     approvalFilter,
@@ -91,7 +92,6 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm"></div>
         <div className="mb-6 rounded-2xl border bg-white p-5 shadow-sm">
           <p className="mb-4 font-semibold">Filters</p>
 
@@ -107,7 +107,6 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
               { label: "Offline Due", href: "/admin/orders?payment=OFFLINE_PAYMENT_DUE" },
               { label: "Delivery", href: "/admin/orders?type=DELIVERY" },
               { label: "Pickup", href: "/admin/orders?type=PICKUP" },
-              { label: "Catering", href: "/admin/orders?type=CATERING" },
               { label: "Approval Pending", href: "/admin/orders?approval=PENDING" },
               { label: "Approved", href: "/admin/orders?approval=APPROVED" },
               { label: "Denied", href: "/admin/orders?approval=DENIED" },
@@ -130,12 +129,12 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                 <th className="p-4">Customer</th>
                 <th className="p-4">Type</th>
                 <th className="p-4">Status</th>
+                <th className="p-4">Approval</th>
                 <th className="p-4">Items</th>
                 <th className="p-4">Total</th>
                 <th className="p-4">Payment</th>
                 <th className="p-4">Pay By</th>
                 <th className="p-4">Created</th>
-                <th className="p-4">Approval</th>
                 <th className="p-4"></th>
               </tr>
             </thead>

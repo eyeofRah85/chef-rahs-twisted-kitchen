@@ -76,3 +76,8 @@ Progress update - June 6, 2026:
   - Admin service request status updates now receive the raw status enum instead of a formatted label.
   - Admin service request approval and status controls are split into separate cards.
   - Customer order detail pages now show one approval notice instead of duplicated pending/denied/approved messaging.
+- Purchase vs. service request boundary:
+  - Public `/menu` hides menu items with type `CATERING` so quote-based services do not enter cart checkout.
+  - Order creation rejects submitted cart items whose menu item type is `CATERING`, protecting against stale persisted carts.
+  - Admin order filters now only expose delivery and pickup order types.
+  - Admin orders table columns were realigned so approval status no longer appears under the item count column.
