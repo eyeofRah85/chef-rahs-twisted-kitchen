@@ -4,10 +4,35 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ReorderButton } from "@/components/account/ReorderButton";
 import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
+import type { DecimalLike } from "@/types/display";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
     return paymentStatus === "PAY_BY_DATE" || paymentStatus === "OFFLINE_PAYMENT_DUE";
 }
+
+type AccountOrderItem = {
+  id: string;
+  menuItemId: string | null;
+  name: string;
+  quantity: number;
+  unitPrice: DecimalLike;
+  lineTotal: DecimalLike;
+  notes: string | null;
+};
+
+type AccountOrder = {
+  id: string;
+  orderType: string;
+  createdAt: Date;
+  requestedDateTime: Date | null;
+  paymentStatus: string | null;
+  payByDate: Date | null;
+  status: string;
+  approvalStatus: string;
+  approvalNote: string | null;
+  total: DecimalLike;
+  items: AccountOrderItem[];
+};
 
 export default async function AccountOrdersPage() {
   const session = await auth();
@@ -53,7 +78,7 @@ export default async function AccountOrdersPage() {
         </div>
 
         <div className="space-y-5">
-          {user.orders.map((order) => (
+          {(user.orders as AccountOrder[]).map((order) => (
             <div
               key={order.id}
               className="rounded-2xl border bg-white p-6 shadow-sm"
@@ -90,7 +115,7 @@ export default async function AccountOrdersPage() {
                     {order.status}
                   </span>
                   <p className="mt-2 text-xs text-neutral-500">
-                    Approval: {formatPaymentStatus(order.paymentStatus)}
+                    Approval: {formatApprovalStatus(order.approvalStatus)}
                   </p>
                   <p className="mt-3 text-2xl font-bold">
                     ${Number(order.total).toFixed(2)}

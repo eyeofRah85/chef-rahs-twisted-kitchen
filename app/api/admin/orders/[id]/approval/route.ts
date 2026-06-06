@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { ApprovalStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderApprovalEmail } from "@/emails/OrderApprovalEmail";
+import { parseEnumValue } from "@/lib/enum-values";
+import { approvalStatuses } from "@/lib/prisma-enums";
 
 
 type RouteContext = {
@@ -17,10 +18,15 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const approvalStatus = body.approvalStatus as ApprovalStatus;
+    const approvalStatus = parseEnumValue(
+      approvalStatuses,
+      typeof body.approvalStatus === "string"
+        ? body.approvalStatus
+        : undefined,
+    );
     const approvalNote = String(body.approvalNote ?? "").trim();
 
-    if (!Object.values(ApprovalStatus).includes(approvalStatus)) {
+    if (!approvalStatus) {
       return NextResponse.json({ error: "Invalid approval status." }, { status: 400 });
     }
 

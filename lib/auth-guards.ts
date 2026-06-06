@@ -17,7 +17,7 @@ export async function requireAdmin() {
     throw new Error("Unauthorized");
   }
 
-  const role = (session.user as any).role;
+  const role = session.user.role;
 
   if (role !== "ADMIN" && role !== "OWNER") {
     throw new Error("Forbidden");

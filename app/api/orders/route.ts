@@ -9,6 +9,22 @@ import {
 } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
+import type { CartItem } from "@/store/cart-store";
+import type { CheckoutDetails } from "@/types/order";
+import type { DecimalLike } from "@/types/display";
+
+type CreateOrderRequest = {
+  items?: CartItem[];
+  checkout?: CheckoutDetails;
+};
+
+type CreatedOrderItem = {
+  name: string;
+  quantity: number;
+  unitPrice: DecimalLike;
+  lineTotal: DecimalLike;
+  notes: string | null;
+};
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +37,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { items, checkout } = await request.json();
+    const { items, checkout } = (await request.json()) as CreateOrderRequest;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -30,8 +46,15 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!checkout) {
+      return NextResponse.json(
+        { error: "Checkout details are required." },
+        { status: 400 },
+      );
+    }
+
     const subtotal = items.reduce(
-      (sum: number, item: any) => sum + item.price * item.quantity,
+      (sum, item) => sum + item.price * item.quantity,
       0,
     );
 
@@ -45,7 +68,7 @@ export async function POST(request: Request) {
     );
 
     const total = subtotal + deliveryFee + lateFee + tipAmount;
-    const requiresApproval = items.some((item: any) => item.requiresApproval);
+    const requiresApproval = items.some((item) => item.requiresApproval);
 
     if (checkout.requestedDateTime) {
       const requestedDate = new Date(checkout.requestedDateTime);
@@ -97,7 +120,10 @@ export async function POST(request: Request) {
         customerName: checkout.name || session.user.name || "Customer",
         customerEmail: session.user.email,
 
-        orderType: checkout.orderType.toUpperCase(),
+        orderType:
+          checkout.orderType === "delivery"
+            ? "DELIVERY"
+            : "PICKUP",
 
         status: requiresApproval ? "PENDING" : "ACCEPTED",
         approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
@@ -133,7 +159,7 @@ export async function POST(request: Request) {
             : "PAY_BY_DATE",
 
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item) => ({
             menuItemId: item.menuItemId,
             name: item.name,
             quantity: item.quantity,
@@ -143,7 +169,7 @@ export async function POST(request: Request) {
               [
                 ...(item.selectedOptions?.length
                   ? item.selectedOptions.map(
-                      (option: any) =>
+                      (option) =>
                         `${option.groupName}: ${option.choiceName}${
                           option.priceDelta > 0
                             ? ` (+$${option.priceDelta.toFixed(2)})`
@@ -223,7 +249,7 @@ export async function POST(request: Request) {
         deliveryPostalCode: order.deliveryPostalCode,
         deliveryNotes: order.deliveryNotes,
 
-        items: order.items.map((item) => ({
+        items: order.items.map((item: CreatedOrderItem) => ({
           name: item.name,
           quantity: item.quantity,
           unitPrice: Number(item.unitPrice),

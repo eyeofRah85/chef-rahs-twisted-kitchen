@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { CateringStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { parseEnumValue } from "@/lib/enum-values";
+import { cateringStatuses } from "@/lib/prisma-enums";
 
 type RouteContext = {
   params: Promise<{
@@ -16,9 +17,12 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const status = body.status as CateringStatus;
+    const status = parseEnumValue(
+      cateringStatuses,
+      typeof body.status === "string" ? body.status : undefined,
+    );
 
-    if (!Object.values(CateringStatus).includes(status)) {
+    if (!status) {
       return NextResponse.json(
         { error: "Invalid catering status." },
         { status: 400 },

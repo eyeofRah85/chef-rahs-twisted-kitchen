@@ -2,11 +2,35 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
   params: Promise<{
     id: string;
   }>;
+};
+
+type CustomerOrderItem = {
+  id: string;
+};
+
+type CustomerOrder = {
+  id: string;
+  orderType: string;
+  status: string;
+  paymentStatus: string | null;
+  requestedDateTime: Date | null;
+  createdAt: Date;
+  total: DecimalLike;
+  items: CustomerOrderItem[];
+};
+
+type CustomerServiceRequest = {
+  id: string;
+  eventType: string | null;
+  guestCount: number | null;
+  eventDate: Date | null;
+  status: string;
 };
 
 export default async function AdminCustomerDetailsPage({ params }: PageProps) {
@@ -41,17 +65,21 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
     notFound();
   }
 
-  const totalSpent = customer.orders
+  const orders = customer.orders as CustomerOrder[];
+  const cateringRequests =
+    customer.cateringRequests as CustomerServiceRequest[];
+
+  const totalSpent = orders
     .filter((order) => order.status !== "CANCELLED" && order.status !== "REFUNDED")
     .reduce((sum, order) => sum + Number(order.total), 0);
 
-  const activeOrders = customer.orders.filter((order) =>
+  const activeOrders = orders.filter((order) =>
     ["PENDING", "ACCEPTED", "PREPARING", "READY", "OUT_FOR_DELIVERY"].includes(
       order.status,
     ),
   );
 
-  const unpaidOrders = customer.orders.filter((order) =>
+  const unpaidOrders = orders.filter((order) =>
     ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"].includes(order.paymentStatus ?? ""),
   );
 
@@ -80,7 +108,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
         <section className="grid gap-5 md:grid-cols-4">
           <div className="rounded-2xl border bg-white p-6 shadow-sm">
             <p className="text-sm text-neutral-500">Total Orders</p>
-            <p className="mt-3 text-4xl font-bold">{customer.orders.length}</p>
+            <p className="mt-3 text-4xl font-bold">{orders.length}</p>
           </div>
 
           <div className="rounded-2xl border bg-white p-6 shadow-sm">
@@ -105,7 +133,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
               <h2 className="text-2xl font-semibold">Orders</h2>
 
               <div className="mt-5 space-y-4">
-                {customer.orders.map((order) => (
+                {orders.map((order) => (
                   <Link
                     key={order.id}
                     href={`/admin/orders/${order.id}`}
@@ -148,7 +176,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                   </Link>
                 ))}
 
-                {customer.orders.length === 0 && (
+                {orders.length === 0 && (
                   <p className="text-neutral-500">No orders yet.</p>
                 )}
               </div>
@@ -158,7 +186,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
               <h2 className="text-2xl font-semibold">Catering Requests</h2>
 
               <div className="mt-5 space-y-4">
-                {customer.cateringRequests.map((request) => (
+                {cateringRequests.map((request) => (
                   <Link
                     key={request.id}
                     href={`/admin/catering/${request.id}`}
@@ -189,7 +217,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                   </Link>
                 ))}
 
-                {customer.cateringRequests.length === 0 && (
+                {cateringRequests.length === 0 && (
                   <p className="text-neutral-500">No catering requests yet.</p>
                 )}
               </div>

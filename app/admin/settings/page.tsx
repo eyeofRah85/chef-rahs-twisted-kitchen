@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { BusinessSettingsForm } from "@/components/admin/BusinessSettingsForm";
 import Link from "next/link";

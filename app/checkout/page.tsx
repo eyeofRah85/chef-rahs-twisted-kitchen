@@ -10,6 +10,7 @@ import {
   validateRequestedDate,
 } from "@/lib/business-rules";
 import { useBusinessSettings } from "@/hooks/useBusinessSettings";
+import type { CheckoutDetails } from "@/types/order";
 
 export default function CheckoutPage() {
 
@@ -29,7 +30,11 @@ export default function CheckoutPage() {
   const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-      setMounted(true);
+      const timeoutId = window.setTimeout(() => {
+        setMounted(true);
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
     }, []);
 
     useEffect(() => {
@@ -144,7 +149,10 @@ export default function CheckoutPage() {
             <select
               value={details.orderType}
               onChange={(e) =>
-                updateField("orderType", e.target.value as any)
+                updateField(
+                  "orderType",
+                  e.target.value as CheckoutDetails["orderType"],
+                )
               }
               className="mt-2 w-full rounded-xl border px-4 py-3"
             >
@@ -414,7 +422,10 @@ export default function CheckoutPage() {
                 <select
                   value={details.tipType}
                   onChange={(e) =>
-                    updateField("tipType", e.target.value as any)
+                    updateField(
+                      "tipType",
+                      e.target.value as CheckoutDetails["tipType"],
+                    )
                   }
                   className="mt-2 w-full rounded-xl border px-4 py-3"
                 >
@@ -458,7 +469,10 @@ export default function CheckoutPage() {
                 <select
                   value={details.paymentMethod}
                   onChange={(e) =>
-                    updateField("paymentMethod", e.target.value as any)
+                    updateField(
+                      "paymentMethod",
+                      e.target.value as CheckoutDetails["paymentMethod"],
+                    )
                   }
                   className="mt-2 w-full rounded-xl border px-4 py-3"
                 >

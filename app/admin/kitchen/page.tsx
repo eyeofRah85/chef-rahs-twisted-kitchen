@@ -3,6 +3,29 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { KitchenOrderCard } from "@/components/admin/KitchenOrderCard";
 import Link from "next/link";
+import type { DecimalLike } from "@/types/display";
+
+type KitchenOrderRow = {
+  id: string;
+  orderType: string;
+  status: string;
+  customerName: string;
+  requestedDateTime: Date | null;
+  allergyNotes: string | null;
+  subtotal: DecimalLike;
+  deliveryFee: DecimalLike;
+  lateFee: DecimalLike;
+  tipAmount: DecimalLike;
+  total: DecimalLike;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    unitPrice: DecimalLike;
+    lineTotal: DecimalLike;
+    notes: string | null;
+  }[];
+};
 
 export default async function KitchenPage() {
   try {
@@ -11,7 +34,7 @@ export default async function KitchenPage() {
     redirect("/");
   }
 
-  const activeOrders = await prisma.order.findMany({
+  const activeOrders = (await prisma.order.findMany({
     where: {
       approvalStatus: "APPROVED",
 
@@ -27,7 +50,7 @@ export default async function KitchenPage() {
     include: {
       items: true,
     },
-  });
+  })) as KitchenOrderRow[];
 
   return (
     <main className="min-h-screen bg-neutral-100 p-6">
@@ -50,12 +73,6 @@ export default async function KitchenPage() {
             key={order.id}
             order={{
             ...order,
-
-            subtotal: Number(order.subtotal),
-            deliveryFee: Number(order.deliveryFee),
-            lateFee: Number(order.lateFee),
-            tipAmount: Number(order.tipAmount),
-            total: Number(order.total),
 
             items: order.items.map((item) => ({
                 ...item,

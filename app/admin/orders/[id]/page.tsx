@@ -6,12 +6,58 @@ import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { OrderApprovalForm } from "@/components/admin/OrderApprovalForm";
 import Link from "next/link";
 import { PrintButton } from "@/components/admin/PrintButton";
-import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
+import { formatOrderType, formatApprovalStatus } from "@/lib/format-labels";
+import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
   params: Promise<{
     id: string;
   }>;
+};
+
+type AdminOrderDetail = {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string | null;
+  orderType: string;
+  requestedDateTime: Date | null;
+  deliveryName: string | null;
+  deliveryPhone: string | null;
+  deliveryAddressLine1: string | null;
+  deliveryAddressLine2: string | null;
+  deliveryCity: string | null;
+  deliveryState: string | null;
+  deliveryPostalCode: string | null;
+  deliveryNotes: string | null;
+  approvalStatus: string;
+  approvalNote: string | null;
+  status: string;
+  allergyNotes: string | null;
+  substitutionPreference: string | null;
+  subtotal: DecimalLike;
+  deliveryFee: DecimalLike;
+  lateFee: DecimalLike;
+  tipAmount: DecimalLike;
+  total: DecimalLike;
+  paymentProvider: string | null;
+  paymentStatus: string | null;
+  payByDate: Date | null;
+  paidAt: Date | null;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    unitPrice: DecimalLike;
+    lineTotal: DecimalLike;
+    notes: string | null;
+  }[];
+  statusHistory: {
+    id: string;
+    status: string;
+    note: string | null;
+    createdAt: Date;
+  }[];
 };
 
 export default async function AdminOrderDetailsPage({ params }: PageProps) {
@@ -23,7 +69,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
 
   const { id } = await params;
 
-  const order = await prisma.order.findUnique({
+  const order = (await prisma.order.findUnique({
     where: { id },
     include: {
       items: true,
@@ -33,7 +79,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
         },
       },
     },
-  });
+  })) as AdminOrderDetail | null;
 
   if (!order) {
     notFound();

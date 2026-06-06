@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
-import { getBusinessSettings } from "@/lib/business-settings";
 export async function PATCH(request: Request) {
   try {
     await requireAdmin();
@@ -18,8 +17,6 @@ export async function PATCH(request: Request) {
     const orderCutoffMinute = Number(formData.get("orderCutoffMinute") ?? 0);
     const deliveryArea = String(formData.get("deliveryArea") ?? "").trim();
     const noWeekendOrdering = formData.get("noWeekendOrdering") === "on";
-
-    const settings = await getBusinessSettings();
 
     const updated = await prisma.businessSettings.upsert({
       where: {

@@ -118,19 +118,6 @@ export function MenuItemModal({ item, open, onClose }: Props) {
         }));
     }) ?? [];
 
-  const requiredGroups =
-  item.optionGroups?.filter((group) => group.required) ?? [];
-
-  const completedRequiredGroups = requiredGroups.filter(
-    (group) => selected[group.id]?.length > 0,
-  );
-
-  const requiredProgressText =
-    requiredGroups.length > 0
-      ? `${completedRequiredGroups.length} of ${requiredGroups.length} required selections completed`
-      : "";
-
-
   return (
     
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">

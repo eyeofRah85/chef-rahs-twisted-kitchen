@@ -3,11 +3,50 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
+import type { DecimalLike } from "@/types/display";
 
 type OrderPageProps = {
   params: Promise<{
     id: string;
   }>;
+};
+
+type OrderDetail = {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  orderType: string;
+  status: string;
+  approvalStatus: string;
+  approvalNote: string | null;
+  paymentStatus: string | null;
+  paymentProvider: string | null;
+  payByDate: Date | null;
+  paidAt: Date | null;
+  requestedDateTime: Date | null;
+  deliveryName: string | null;
+  deliveryPhone: string | null;
+  deliveryAddressLine1: string | null;
+  deliveryAddressLine2: string | null;
+  deliveryCity: string | null;
+  deliveryState: string | null;
+  deliveryPostalCode: string | null;
+  deliveryNotes: string | null;
+  allergyNotes: string | null;
+  substitutionPreference: string | null;
+  subtotal: DecimalLike;
+  deliveryFee: DecimalLike;
+  lateFee: DecimalLike;
+  tipAmount: DecimalLike;
+  total: DecimalLike;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+    unitPrice: DecimalLike;
+    lineTotal: DecimalLike;
+    notes: string | null;
+  }[];
 };
 
 export default async function OrderPage({ params }: OrderPageProps) {
@@ -19,19 +58,19 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   const { id } = await params;
 
-  const order = await prisma.order.findUnique({
+  const order = (await prisma.order.findUnique({
     where: { id },
     include: {
       items: true,
       user: true,
     },
-  });
+  })) as OrderDetail | null;
 
   if (!order) {
     notFound();
   }
 
-  const userRole = (session.user as any).role;
+  const userRole = session.user.role;
   const isOwner = order.customerEmail === session.user.email;
   const isAdmin = userRole === "ADMIN" || userRole === "OWNER";
 

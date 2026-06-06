@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { parseEnumValue } from "@/lib/enum-values";
+import { menuItemTypes } from "@/lib/prisma-enums";
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +22,7 @@ export async function POST(request: Request) {
     const requiresApproval = formData.get("requiresApproval") === "on";
     const customerInstructionsEnabled = formData.get("customerInstructionsEnabled") === "on";
     const image = formData.get("imageUrl") as File | null;
+    const menuItemType = parseEnumValue(menuItemTypes, type);
 
 // const rawCategoryName = String(formData.get("categoryName") ?? "").trim();
 
@@ -51,9 +54,9 @@ export async function POST(request: Request) {
     }
 
 
-    if (!name || !description || !categoryName || price <= 0) {
+    if (!name || !description || !categoryName || price <= 0 || !menuItemType) {
       return NextResponse.json(
-        { error: "Name, description, category, and valid price are required." },
+        { error: "Name, description, category, valid price, and valid type are required." },
         { status: 400 },
       );
     }
@@ -73,7 +76,7 @@ export async function POST(request: Request) {
         price,
         available,
         seasonal,
-        type: type as any,
+        type: menuItemType,
         requiresApproval,
         customerInstructionsEnabled,
         categoryId: category.id,

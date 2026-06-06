@@ -4,6 +4,13 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { MenuCategoryEditForm } from "@/components/admin/MenuCategoryEditForm";
 import Link from "next/link";
 
+type MenuCategoryRow = {
+  id: string;
+  name: string;
+  sortOrder: number;
+  items: { id: string }[];
+};
+
 export default async function MenuCategoriesPage() {
   try {
     await requireAdmin();
@@ -11,14 +18,14 @@ export default async function MenuCategoriesPage() {
     redirect("/");
   }
 
-  const categories = await prisma.menuCategory.findMany({
+  const categories = (await prisma.menuCategory.findMany({
     orderBy: {
       sortOrder: "asc",
     },
     include: {
       items: true,
     },
-  });
+  })) as MenuCategoryRow[];
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">

@@ -7,6 +7,21 @@ import {
   formatServiceRequestStatus,
   formatApprovalStatus,
 } from "@/lib/format-labels";
+import type { DecimalLike } from "@/types/display";
+
+type AccountCateringRequest = {
+  id: string;
+  eventType: string | null;
+  requestType: string;
+  createdAt: Date;
+  eventDate: Date | null;
+  guestCount: number | null;
+  approvalStatus: string;
+  status: string;
+  estimatedTotal: DecimalLike | null;
+  depositAmount: DecimalLike | null;
+  depositPaidAt: Date | null;
+};
 
 export default async function AccountCateringPage() {
   const session = await auth();
@@ -50,7 +65,7 @@ export default async function AccountCateringPage() {
         </div>
 
         <div className="space-y-5">
-          {user.cateringRequests.map((request) => (
+          {user.cateringRequests.map((request: AccountCateringRequest) => (
             <div
               key={request.id}
               className="rounded-2xl border bg-white p-6 shadow-sm"
@@ -95,13 +110,13 @@ export default async function AccountCateringPage() {
                     {formatServiceRequestStatus(request.status)}
                   </span>
 
-                  {request.estimatedTotal && (
+                  {request.estimatedTotal != null && (
                     <p className="mt-3 text-2xl font-bold">
                       ${Number(request.estimatedTotal).toFixed(2)}
                     </p>
                   )}
 
-                  {request.depositAmount && (
+                  {request.depositAmount != null && (
                     <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
                       <p className="font-medium">
                         Deposit: ${Number(request.depositAmount).toFixed(2)}

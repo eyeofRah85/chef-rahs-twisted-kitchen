@@ -3,6 +3,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { formatServiceRequestType, formatServiceRequestStatus, formatApprovalStatus, } from "@/lib/format-labels";
+import { parseEnumValue } from "@/lib/enum-values";
+import {
+  approvalStatuses,
+  cateringStatuses,
+  serviceRequestTypes,
+} from "@/lib/prisma-enums";
 
 type PageProps = {
   searchParams: Promise<{
@@ -10,6 +16,19 @@ type PageProps = {
     approval?: string;
     type?:string;
   }>;
+};
+
+type AdminServiceRequestRow = {
+  id: string;
+  name: string;
+  email: string;
+  requestType: string;
+  eventType: string | null;
+  eventDate: Date | null;
+  guestCount: number | null;
+  status: string;
+  approvalStatus: string;
+  createdAt: Date;
 };
 
 export default async function AdminCateringPage({ searchParams }: PageProps) {
@@ -23,24 +42,27 @@ export default async function AdminCateringPage({ searchParams }: PageProps) {
   const statusFilter = params.status;
   const approvalFilter = params.approval;
   const typeFilter = params.type;
+  const status = parseEnumValue(cateringStatuses, statusFilter);
+  const approvalStatus = parseEnumValue(
+    approvalStatuses,
+    approvalFilter,
+  );
+  const requestType = parseEnumValue(
+    serviceRequestTypes,
+    typeFilter,
+  );
 
-  const requests = await prisma.cateringRequest.findMany({
-   where: {
-        ...(statusFilter && statusFilter !== "ALL"
-          ? { status: statusFilter as any }
-          : {}),
+  const where = {
+    ...(status ? { status } : {}),
+    ...(approvalStatus ? { approvalStatus } : {}),
+    ...(requestType ? { requestType } : {}),
+  };
 
-        ...(approvalFilter && approvalFilter !== "ALL"
-          ? { approvalStatus: approvalFilter as any }
-          : {}),
-
-        ...(typeFilter && typeFilter !== "ALL"
-          ? { requestType: typeFilter as any }
-          : {}),
-      },
+  const requests = (await prisma.cateringRequest.findMany({
+    where,
 
     orderBy: { createdAt: "desc" },
-  });
+  })) as AdminServiceRequestRow[];
 
   return (
     

@@ -20,8 +20,6 @@ export function MenuItemForm() {
   };
 
   async function handleSubmit(formData: FormData) {
-    const image = formData.get("imageUrl") as File | null;
-    console.log(image);
     setSaving(true);
 
     const response = await fetch("/api/admin/menu", {

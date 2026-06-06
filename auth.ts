@@ -3,6 +3,14 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { userRoles, type UserRoleValue } from "@/lib/prisma-enums";
+
+function isUserRole(value: unknown): value is UserRoleValue {
+  return (
+    typeof value === "string" &&
+    userRoles.includes(value as UserRoleValue)
+  );
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -62,8 +70,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.role = (user as any).role;
+      if (user && isUserRole(user.role)) {
+        token.role = user.role;
       }
 
       return token;
@@ -71,8 +79,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = token.role;
+        if (token.sub) {
+          session.user.id = token.sub;
+        }
+
+        if (isUserRole(token.role)) {
+          session.user.role = token.role;
+        }
       }
 
       return session;

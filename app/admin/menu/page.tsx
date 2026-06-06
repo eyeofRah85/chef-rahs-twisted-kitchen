@@ -7,10 +7,12 @@ import { MenuItemCustomizationEditor } from "@/components/admin/MenuItemCustomiz
 import { MenuAvailabilityToggle } from "@/components/admin/MenuAvailabilityToggle";
 import { MenuItemEditForm } from "@/components/admin/MenuItemEditForm";
 import { DeleteOptionGroupButton } from "@/components/admin/DeleteOptionGroupButton";
-import { ArchiveMenuItemButton } from "@/components/admin/ArchiveMenuItemButton";
 import { EditOptionChoiceForm } from "@/components/admin/EditOptionChoiceForm";
 import { ApplyMealPlanTemplateButton } from "@/components/admin/ApplyMealPlanTemplateButton";
 import { formatMenuItemType } from "@/lib/format-labels";
+import { parseEnumValue } from "@/lib/enum-values";
+import { menuItemTypes } from "@/lib/prisma-enums";
+import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
   searchParams: Promise<{
@@ -29,6 +31,48 @@ const menuTypeTabs = [
   { label: "Other", value: "OTHER" },
 ];
 
+type AdminAllergen = {
+  id: string;
+  name: string;
+};
+
+type AdminMenuChoice = {
+  id: string;
+  name: string;
+  description: string | null;
+  dietaryInfo: string | null;
+  imageUrl: string | null;
+  requestOnly: boolean;
+  priceDelta: DecimalLike;
+};
+
+type AdminMenuOptionGroup = {
+  id: string;
+  name: string;
+  required: boolean;
+  multiple: boolean;
+  choices: AdminMenuChoice[];
+};
+
+type AdminMenuItem = {
+  id: string;
+  name: string;
+  description: string;
+  price: DecimalLike;
+  type: string;
+  available: boolean;
+  seasonal: boolean;
+  requiresApproval: boolean;
+  customerInstructionsEnabled: boolean;
+  optionGroups: AdminMenuOptionGroup[];
+};
+
+type AdminMenuCategory = {
+  id: string;
+  name: string;
+  items: AdminMenuItem[];
+};
+
 export default async function AdminMenuPage({ searchParams }: PageProps) {
   try {
     await requireAdmin();
@@ -37,9 +81,10 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
   }
 
   const params = await searchParams;
-  const selectedType = params.type ?? "ALL";
+  const selectedType =
+    parseEnumValue(menuItemTypes, params.type) ?? "ALL";
 
-  const categories = await prisma.menuCategory.findMany({
+  const categories = (await prisma.menuCategory.findMany({
     orderBy: { sortOrder: "asc" },
 
     include: {
@@ -48,7 +93,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
           archived: false,
           ...(selectedType !== "ALL"
             ? {
-                type: selectedType as any,
+                type: selectedType,
               }
             : {}),
         },
@@ -72,13 +117,13 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
         },
       },
     },
-  });
+  })) as AdminMenuCategory[];
 
-  const allergens = await prisma.allergen.findMany({
+  const allergens = (await prisma.allergen.findMany({
     orderBy: {
       name: "asc",
     },
-  });
+  })) as AdminAllergen[];
 
   const visibleCategories = categories.filter(
     (category) => category.items.length > 0,

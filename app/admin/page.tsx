@@ -3,6 +3,17 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getBusinessSettings } from "@/lib/business-settings";
+import type { DecimalLike } from "@/types/display";
+
+type AdminRecentOrder = {
+  id: string;
+  customerName: string;
+  orderType: string;
+  status: string;
+  total: DecimalLike;
+  createdAt: Date;
+  items: { id: string }[];
+};
 
 export default async function AdminPage() {
   try {
@@ -60,7 +71,7 @@ export default async function AdminPage() {
       include: {
         items: true,
       },
-    }),
+    }) as Promise<AdminRecentOrder[]>,
 
     serviceRequests: prisma.cateringRequest.count(),
 
@@ -118,6 +129,7 @@ export default async function AdminPage() {
   });
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
+  const recentAdminOrders = recentOrders as AdminRecentOrder[];
 
   const cards = [
     {
@@ -232,7 +244,7 @@ export default async function AdminPage() {
             </div>
 
             <div className="space-y-4">
-              {recentOrders.map((order) => (
+              {recentAdminOrders.map((order) => (
                 <Link
                   key={order.id}
                   href={`/admin/orders/${order.id}`}
@@ -265,7 +277,7 @@ export default async function AdminPage() {
                 </Link>
               ))}
 
-              {recentOrders.length === 0 && (
+              {recentAdminOrders.length === 0 && (
                 <p className="text-neutral-500">No recent orders yet.</p>
               )}
             </div>

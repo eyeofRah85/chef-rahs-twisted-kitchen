@@ -1,10 +1,49 @@
 import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
+import type { DecimalLike } from "@/types/display";
+
+type PublicMenuCategory = {
+  id: string;
+  name: string;
+  items: {
+    id: string;
+    name: string;
+    type: string;
+    description: string;
+    price: DecimalLike;
+    imageUrl: string | null;
+    available: boolean;
+    seasonal: boolean;
+    requiresApproval: boolean;
+    customerInstructionsEnabled: boolean;
+    allergens: {
+      allergen: {
+        id: string;
+        name: string;
+      };
+    }[];
+    optionGroups: {
+      id: string;
+      name: string;
+      required: boolean;
+      multiple: boolean;
+      choices: {
+        id: string;
+        name: string;
+        description: string | null;
+        dietaryInfo: string | null;
+        imageUrl: string | null;
+        requestOnly: boolean;
+        priceDelta: DecimalLike;
+      }[];
+    }[];
+  }[];
+};
 
 export default async function MenuPage() {
 
-const categories = await prisma.menuCategory.findMany({
+const categories = (await prisma.menuCategory.findMany({
   orderBy: {
     sortOrder: "asc",
   },
@@ -30,7 +69,7 @@ const categories = await prisma.menuCategory.findMany({
       },
     },
   },
-});
+})) as PublicMenuCategory[];
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">

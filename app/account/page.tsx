@@ -4,6 +4,28 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getMissingProfileFields } from "@/lib/profile-completeness";
 import { AccountProfileModal } from "@/components/account/AccountProfileModal";
+import type { DecimalLike } from "@/types/display";
+
+type DashboardOrderItem = {
+  id: string;
+  name: string;
+};
+
+type DashboardOrder = {
+  id: string;
+  orderType: string;
+  status: string;
+  paymentStatus: string | null;
+  requestedDateTime: Date | null;
+  createdAt: Date;
+  total: DecimalLike;
+  items: DashboardOrderItem[];
+};
+
+type DashboardServiceRequest = {
+  id: string;
+};
+
 export default async function AccountPage() {
   const session = await auth();
 
@@ -38,13 +60,17 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const activeOrders = user.orders.filter((order) =>
+  const orders = user.orders as DashboardOrder[];
+  const cateringRequests =
+    user.cateringRequests as DashboardServiceRequest[];
+
+  const activeOrders = orders.filter((order) =>
     ["PENDING", "ACCEPTED", "PREPARING", "READY", "OUT_FOR_DELIVERY"].includes(
       order.status,
     ),
   );
 
-  const unpaidOrders = user.orders.filter((order) =>
+  const unpaidOrders = orders.filter((order) =>
     ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"].includes(order.paymentStatus ?? ""),
   );
 
@@ -118,7 +144,7 @@ export default async function AccountPage() {
             className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
             <p className="text-sm text-neutral-500">Recent Orders Shown</p>
-            <p className="mt-3 text-4xl font-bold">{user.orders.length}</p>
+            <p className="mt-3 text-4xl font-bold">{orders.length}</p>
           </Link>
 
           <Link
@@ -143,7 +169,7 @@ export default async function AccountPage() {
           >
             <p className="text-sm text-neutral-500">Service Requests</p>
             <p className="mt-3 text-4xl font-bold">
-              {user.cateringRequests.length}
+              {cateringRequests.length}
             </p>
           </Link>
         </section>
@@ -216,7 +242,7 @@ export default async function AccountPage() {
           </div>
 
           <div className="space-y-4">
-            {user.orders.map((order) => (
+            {orders.map((order) => (
               <div
                 key={order.id}
                 className="rounded-xl border p-4 transition hover:bg-neutral-50"
@@ -265,7 +291,7 @@ export default async function AccountPage() {
               </div>
             ))}
 
-            {user.orders.length === 0 && (
+            {orders.length === 0 && (
               <div className="rounded-xl bg-neutral-100 p-6 text-center">
                 <p className="font-medium">No recent activity yet.</p>
 

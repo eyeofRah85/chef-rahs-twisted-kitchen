@@ -3,6 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { RestoreMenuItemButton } from "@/components/admin/RestoreMenuItemButton";
 import Link from "next/link";
+import type { DecimalLike } from "@/types/display";
+
+type ArchivedMenuItem = {
+  id: string;
+  name: string;
+  description: string;
+  price: DecimalLike;
+  category: {
+    name: string;
+  };
+};
 
 export default async function ArchivedMenuItemsPage() {
   try {
@@ -11,7 +22,7 @@ export default async function ArchivedMenuItemsPage() {
     redirect("/");
   }
 
-  const items = await prisma.menuItem.findMany({
+  const items = (await prisma.menuItem.findMany({
     where: {
       archived: true,
     },
@@ -21,7 +32,7 @@ export default async function ArchivedMenuItemsPage() {
     include: {
       category: true,
     },
-  });
+  })) as ArchivedMenuItem[];
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">

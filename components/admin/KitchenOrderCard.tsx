@@ -2,8 +2,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+type KitchenOrderItem = {
+  id: string;
+  name: string;
+  quantity: number;
+  lineTotal: number;
+  notes: string | null;
+};
+
+type KitchenOrder = {
+  id: string;
+  orderType: string;
+  status: string;
+  customerName: string;
+  requestedDateTime: Date | string | null;
+  allergyNotes: string | null;
+  items: KitchenOrderItem[];
+};
+
 type KitchenOrderCardProps = {
-  order: any;
+  order: KitchenOrder;
 };
 
 const nextStatuses: Record<string, string> = {
@@ -67,7 +85,7 @@ export function KitchenOrderCard({
       </div>
 
       <div className="mt-6 space-y-4">
-        {order.items.map((item: any) => (
+        {order.items.map((item) => (
           <div
             key={item.id}
             className="rounded-2xl border p-4"

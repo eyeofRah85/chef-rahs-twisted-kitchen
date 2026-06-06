@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import Link from "next/link";
 
+type TopOrderedItem = {
+  name: string;
+  _sum: {
+    quantity: number | null;
+  };
+};
+
 export default async function AdminReportsPage() {
   try {
     await requireAdmin();
@@ -136,6 +143,7 @@ export default async function AdminReportsPage() {
 ]);
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
+  const topOrderedItems = topItems as TopOrderedItem[];
 
   const averageOrderValue =
     monthlyOrders > 0
@@ -259,7 +267,7 @@ export default async function AdminReportsPage() {
               </h2>
 
               <div className="mt-6 space-y-3">
-                {topItems.map((item, index) => (
+                {topOrderedItems.map((item, index) => (
                   <div
                     key={item.name}
                     className="flex items-center justify-between rounded-xl border p-4"
@@ -282,7 +290,7 @@ export default async function AdminReportsPage() {
                   </div>
                 ))}
 
-                {topItems.length === 0 && (
+                {topOrderedItems.length === 0 && (
                   <p className="text-neutral-500">
                     No order data yet.
                   </p>

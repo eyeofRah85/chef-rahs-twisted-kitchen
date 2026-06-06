@@ -8,12 +8,28 @@ type RouteContext = {
   }>;
 };
 
+type OptionChoiceInput = {
+  name: string;
+  description?: string | null;
+  dietaryInfo?: string | null;
+  imageUrl?: string | null;
+  requestOnly?: boolean;
+  priceDelta?: number;
+};
+
+type CreateOptionGroupInput = {
+  groupName?: string;
+  required?: boolean;
+  multiple?: boolean;
+  choices?: OptionChoiceInput[];
+};
+
 export async function POST(request: Request, context: RouteContext) {
   try {
     await requireAdmin();
 
     const { id } = await context.params;
-    const body = await request.json();
+    const body = (await request.json()) as CreateOptionGroupInput;
 
     const { groupName, required, multiple, choices } = body;
 
@@ -31,7 +47,7 @@ export async function POST(request: Request, context: RouteContext) {
         required: Boolean(required),
         multiple: Boolean(multiple),
         choices: {
-          create: choices.map((choice: any) => ({
+          create: choices.map((choice) => ({
             name: choice.name,
             description: choice.description || null,
             dietaryInfo: choice.dietaryInfo || null,

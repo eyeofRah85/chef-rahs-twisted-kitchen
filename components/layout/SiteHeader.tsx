@@ -14,14 +14,18 @@ export function SiteHeader() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const timeoutId = window.setTimeout(() => {
+      setMounted(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const count = mounted
     ? items.reduce((total, item) => total + item.quantity, 0)
     : 0;
 
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role;
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">

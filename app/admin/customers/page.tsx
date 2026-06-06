@@ -2,12 +2,28 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
   searchParams: Promise<{
     filter?: string;
     q?: string;
   }>;
+};
+
+type CustomerListOrder = {
+  id: string;
+  status: string;
+  paymentStatus: string | null;
+  total: DecimalLike;
+  createdAt: Date;
+};
+
+type CustomerListRow = {
+  id: string;
+  name: string | null;
+  email: string;
+  orders: CustomerListOrder[];
 };
 
 export default async function AdminCustomersPage({ searchParams }: PageProps) {
@@ -20,7 +36,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const filter = params.filter;
   const query = params.q?.trim().toLowerCase() ?? ""; 
-  const customers = await prisma.user.findMany({
+  const customers = (await prisma.user.findMany({
     where: {
       role: "CUSTOMER",
     },
@@ -34,7 +50,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
         },
       },
     },
-  });
+  })) as CustomerListRow[];
 
   const customerRows = customers.map((customer) => {
     const totalSpent = customer.orders

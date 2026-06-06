@@ -3,6 +3,13 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
+import { parseEnumValue } from "@/lib/enum-values";
+import {
+  approvalStatuses,
+  orderStatuses,
+  orderTypes,
+} from "@/lib/prisma-enums";
+import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
   searchParams: Promise<{
@@ -11,6 +18,20 @@ type PageProps = {
     type?: string;
     approval?: string;
   }>;
+};
+
+type AdminOrderRow = {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  orderType: string;
+  status: string;
+  approvalStatus: string;
+  items: { id: string }[];
+  total: DecimalLike;
+  paymentStatus: string | null;
+  payByDate: Date | null;
+  createdAt: Date;
 };
 
 export default async function AdminOrdersPage({ searchParams }: PageProps) {
@@ -26,28 +47,24 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   const paymentFilter = params.payment;
   const typeFilter = params.type;
   const approvalFilter = params.approval;
+  const status = parseEnumValue(orderStatuses, statusFilter);
+  const orderType = parseEnumValue(orderTypes, typeFilter);
+  const approvalStatus = parseEnumValue(
+    approvalStatuses,
+    approvalFilter,
+  );
 
-  const orders = await prisma.order.findMany({
-  where: {
-    ...(statusFilter && statusFilter !== "ALL"
-      ? { status: statusFilter as any }
-      : {}),
-
+  const where = {
+    ...(status ? { status } : {}),
     ...(paymentFilter && paymentFilter !== "ALL"
       ? { paymentStatus: paymentFilter }
       : {}),
-      // status: {
-      //   notIn: ["CANCELLED", "REFUNDED"],
-      // },
+    ...(orderType ? { orderType } : {}),
+    ...(approvalStatus ? { approvalStatus } : {}),
+  };
 
-    ...(typeFilter && typeFilter !== "ALL"
-      ? { orderType: typeFilter as any }
-      : {}),
-
-    ...(approvalFilter && approvalFilter !== "ALL"
-      ? { approvalStatus: approvalFilter as any }
-      : {}),
-  },
+  const orders = (await prisma.order.findMany({
+  where,
 
   orderBy: {
     createdAt: "desc",
@@ -56,7 +73,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   include: {
     items: true,
   },
-});
+})) as AdminOrderRow[];
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">

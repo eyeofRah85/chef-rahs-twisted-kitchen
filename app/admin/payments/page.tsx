@@ -3,6 +3,16 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
+import type { DecimalLike } from "@/types/display";
+
+type PaymentDueOrder = {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  paymentStatus: string | null;
+  payByDate: Date | null;
+  total: DecimalLike;
+};
 
 export default async function AdminPaymentsPage() {
   try {
@@ -11,7 +21,7 @@ export default async function AdminPaymentsPage() {
     redirect("/");
   }
 
-  const paymentDueOrders = await prisma.order.findMany({
+  const paymentDueOrders = (await prisma.order.findMany({
     where: {
       status: {
         notIn: ["CANCELLED", "REFUNDED"],
@@ -26,7 +36,7 @@ export default async function AdminPaymentsPage() {
     include: {
       items: true,
     },
-  });
+  })) as PaymentDueOrder[];
 
   const totalDue = paymentDueOrders.reduce(
     (sum, order) => sum + Number(order.total),

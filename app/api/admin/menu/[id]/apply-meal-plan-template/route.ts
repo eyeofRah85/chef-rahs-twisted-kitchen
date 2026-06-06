@@ -9,6 +9,12 @@ type RouteContext = {
   }>;
 };
 
+type MenuItemWithOptionGroups = {
+  optionGroups: {
+    name: string;
+  }[];
+};
+
 const mealPlanTemplateNames = [
   "Meal Plan Length",
   "Meals Per Day",
@@ -24,12 +30,12 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
 
-    const menuItem = await prisma.menuItem.findUnique({
+    const menuItem = (await prisma.menuItem.findUnique({
       where: { id },
       include: {
         optionGroups: true,
       },
-    });
+    })) as MenuItemWithOptionGroups | null;
 
     if (!menuItem) {
       return NextResponse.json(

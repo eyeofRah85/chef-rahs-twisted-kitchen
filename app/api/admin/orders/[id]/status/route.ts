@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
-import { OrderStatus } from "@prisma/client";
+import { orderStatuses } from "@/lib/prisma-enums";
+import { parseEnumValue } from "@/lib/enum-values";
 
 type RouteContext = {
   params: Promise<{
@@ -16,10 +17,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const status = body.status as OrderStatus;
+    const status = parseEnumValue(
+      orderStatuses,
+      typeof body.status === "string" ? body.status : undefined,
+    );
     const note = String(body.note ?? "").trim();
 
-    if (!Object.values(OrderStatus).includes(status)) {
+    if (!status) {
       return NextResponse.json(
         { error: "Invalid order status." },
         { status: 400 },

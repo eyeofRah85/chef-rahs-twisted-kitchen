@@ -8,6 +8,18 @@ type RouteContext = {
   }>;
 };
 
+type OptionChoiceInput = {
+  name: string;
+  priceDelta?: number;
+};
+
+type CreateOptionGroupInput = {
+  groupName?: string;
+  required?: boolean;
+  multiple?: boolean;
+  choices?: OptionChoiceInput[];
+};
+
 export async function POST(
   request: Request,
   context: RouteContext,
@@ -17,7 +29,7 @@ export async function POST(
 
     const { id } = await context.params;
 
-    const body = await request.json();
+    const body = (await request.json()) as CreateOptionGroupInput;
 
     const {
       groupName,
@@ -45,7 +57,7 @@ export async function POST(
           multiple: Boolean(multiple),
 
           choices: {
-            create: choices.map((choice: any) => ({
+            create: choices.map((choice) => ({
               name: choice.name,
               priceDelta: choice.priceDelta ?? 0,
             })),

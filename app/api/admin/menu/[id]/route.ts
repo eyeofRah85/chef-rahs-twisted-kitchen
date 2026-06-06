@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { parseEnumValue } from "@/lib/enum-values";
+import { menuItemTypes } from "@/lib/prisma-enums";
 
 type RouteContext = {
   params: Promise<{
@@ -23,10 +25,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     const requiresApproval = formData.get("requiresApproval") === "on";
     const customerInstructionsEnabled =
       formData.get("customerInstructionsEnabled") === "on";
+    const menuItemType = parseEnumValue(menuItemTypes, type);
 
-    if (!name || !description || price < 0) {
+    if (!name || !description || price < 0 || !menuItemType) {
       return NextResponse.json(
-        { error: "Name, description, and valid price are required." },
+        { error: "Name, description, valid price, and valid type are required." },
         { status: 400 },
       );
     }
@@ -47,7 +50,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         name,
         description,
         price,
-        type: type as any,
+        type: menuItemType,
         categoryId: category.id,
         seasonal,
         requiresApproval,
