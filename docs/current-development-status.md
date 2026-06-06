@@ -86,3 +86,6 @@ Progress update - June 6, 2026:
   - Account, admin, customer detail, order list, and kitchen views now show friendly order type/status/payment labels instead of raw enum values.
   - Cleaned corrupted item quantity and separator text in summary cards.
   - Kitchen view now passes only plain serialized order data to the client card, avoiding Prisma `Decimal` objects in client component props.
+- Admin menu customization polish:
+  - Restored manual option group name entry in the customization editor.
+  - Removed duplicate "Add Option Group" heading in the customization editor.
