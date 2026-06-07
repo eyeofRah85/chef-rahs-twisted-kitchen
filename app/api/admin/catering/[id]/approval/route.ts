@@ -117,6 +117,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to update catering approval." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update service request approval." },
+      { status: 500 },
+    );
   }
 }

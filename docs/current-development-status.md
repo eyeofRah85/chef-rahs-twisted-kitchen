@@ -116,3 +116,6 @@ Progress update - June 6, 2026:
 - Order detail label polish:
   - Customer and admin order detail pages now show friendly order and payment status labels.
   - Cleaned remaining corrupted quantity separators and aligned the admin payments table columns.
+- Service request settings terminology:
+  - Business settings now label the shared deposit percentage as a service request deposit instead of catering-only copy.
+  - Service request approval API failures now use service request terminology.

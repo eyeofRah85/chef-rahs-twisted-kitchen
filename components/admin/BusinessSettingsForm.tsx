@@ -73,7 +73,7 @@ export function BusinessSettingsForm({ settings }: Props) {
 
         <div>
           <label className="block text-sm font-medium">
-            Catering Deposit Percent
+            Service Request Deposit Percent
           </label>
           <input
             name="cateringDepositPercent"

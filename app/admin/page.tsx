@@ -360,7 +360,7 @@ export default async function AdminPage() {
       </div>
 
       <div className="flex justify-between">
-        <span className="text-neutral-600">Catering Deposit</span>
+        <span className="text-neutral-600">Service Request Deposit</span>
         <span className="font-medium">
           {businessSettings.cateringDepositPercent}%
         </span>

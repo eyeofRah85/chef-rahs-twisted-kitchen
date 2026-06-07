@@ -27,7 +27,7 @@ export default async function AdminSettingsPage() {
           <h1 className="mt-3 text-4xl font-bold">Business Settings</h1>
 
           <p className="mt-3 text-neutral-700">
-            Manage order rules, delivery fees, late fees, catering deposits,
+            Manage order rules, delivery fees, late fees, service request deposits,
             and operating preferences.
           </p>
         </div>
