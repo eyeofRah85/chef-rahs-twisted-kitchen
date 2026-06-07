@@ -94,8 +94,8 @@ export default async function AccountPage() {
               <h2 className="text-xl font-semibold">Complete Your Account Information</h2>
 
               <p className="mt-2 text-sm leading-6">
-                Add your {missingProfileFields.join(", ")} to make checkout, delivery,
-                catering, and personal chef requests easier.
+                Add your {missingProfileFields.join(", ")} to make checkout and
+                service requests easier.
               </p>
 
               <div className="mt-4">
@@ -219,7 +219,7 @@ export default async function AccountPage() {
           </Link>
 
           <Link
-            href="/catering"
+            href="/account/catering"
             className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
             <h2 className="text-xl font-semibold">Service Requests</h2>

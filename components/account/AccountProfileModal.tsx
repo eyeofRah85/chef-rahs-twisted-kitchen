@@ -48,8 +48,8 @@ export function AccountProfileModal({
                 </h2>
 
                 <p className="mt-2 text-sm text-neutral-600">
-                  Keep your contact and delivery information current for orders,
-                  catering, and personal chef requests.
+                  Keep your contact, delivery, and service-location information
+                  current for orders and service requests.
                 </p>
               </div>
 

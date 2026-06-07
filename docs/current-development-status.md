@@ -104,3 +104,6 @@ Progress update - June 6, 2026:
 - Admin status label polish:
   - Admin order and service request status dropdowns now show friendly status labels instead of raw enum values.
   - Service request status formatting explicitly covers new, deposit due, and deposit paid states.
+- Account service request navigation:
+  - The account dashboard Service Requests card now links to the account service request history instead of the public catering request form.
+  - Account profile copy now describes contact, delivery, and service-location information for orders and service requests.
