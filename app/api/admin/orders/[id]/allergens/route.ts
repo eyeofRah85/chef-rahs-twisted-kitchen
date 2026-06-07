@@ -1,51 +1,23 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 
-type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
-export async function POST(
-  request: Request,
-  context: RouteContext,
-) {
+export async function POST() {
   try {
     await requireAdmin();
 
-    const { id } = await context.params;
-
-    const body = await request.json();
-
-    const allergenIds: string[] =
-      body.allergenIds ?? [];
-
-    await prisma.menuItemAllergen.deleteMany({
-      where: {
-        menuItemId: id,
+    return NextResponse.json(
+      {
+        error:
+          "Order allergens are historical snapshots. Update allergens from the menu manager instead.",
       },
-    });
-
-    if (allergenIds.length > 0) {
-      await prisma.menuItemAllergen.createMany({
-        data: allergenIds.map((allergenId) => ({
-          menuItemId: id,
-          allergenId,
-        })),
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-    });
+      { status: 410 },
+    );
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       {
-        error: "Failed to assign allergens.",
+        error: "Failed to process order allergen request.",
       },
       { status: 500 },
     );

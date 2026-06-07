@@ -131,3 +131,6 @@ Progress update - June 6, 2026:
   - Reorder submissions carry the prior order item ID, and the order API verifies it belongs to the signed-in customer before using the historical snapshot price.
 - Account order history display cleanup:
   - Replaced the remaining corrupted quantity separator in account order history with the plain ASCII `x` used on order detail surfaces.
+- Admin order snapshot route hardening:
+  - Disabled unused admin order allergen/option endpoints that were incorrectly pointed at menu customization tables using an order ID.
+  - Those routes now return an authenticated unsupported-operation response and direct edits back to the menu manager.

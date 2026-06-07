@@ -1,81 +1,23 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 
-type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
-};
-
-type OptionChoiceInput = {
-  name: string;
-  priceDelta?: number;
-};
-
-type CreateOptionGroupInput = {
-  groupName?: string;
-  required?: boolean;
-  multiple?: boolean;
-  choices?: OptionChoiceInput[];
-};
-
-export async function POST(
-  request: Request,
-  context: RouteContext,
-) {
+export async function POST() {
   try {
     await requireAdmin();
 
-    const { id } = await context.params;
-
-    const body = (await request.json()) as CreateOptionGroupInput;
-
-    const {
-      groupName,
-      required,
-      multiple,
-      choices,
-    } = body;
-
-    if (!groupName || !choices?.length) {
-      return NextResponse.json(
-        {
-          error:
-            "Group name and at least one choice required.",
-        },
-        { status: 400 },
-      );
-    }
-
-    const optionGroup =
-      await prisma.menuItemOptionGroup.create({
-        data: {
-          menuItemId: id,
-          name: groupName,
-          required: Boolean(required),
-          multiple: Boolean(multiple),
-
-          choices: {
-            create: choices.map((choice) => ({
-              name: choice.name,
-              priceDelta: choice.priceDelta ?? 0,
-            })),
-          },
-        },
-
-        include: {
-          choices: true,
-        },
-      });
-
-    return NextResponse.json(optionGroup);
+    return NextResponse.json(
+      {
+        error:
+          "Order options are historical snapshots. Update menu item options from the menu manager instead.",
+      },
+      { status: 410 },
+    );
   } catch (error) {
     console.error(error);
 
     return NextResponse.json(
       {
-        error: "Failed to create option group.",
+        error: "Failed to process order option request.",
       },
       { status: 500 },
     );
