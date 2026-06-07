@@ -63,6 +63,10 @@ type ServerRecoveredOrderItem = {
   name: string;
   unitPrice: DecimalLike;
   notes: string | null;
+  menuItem: {
+    type: string;
+    requiresApproval: boolean;
+  } | null;
 };
 
 function normalizeSubmittedChoiceName(choiceName: string) {
@@ -226,6 +230,12 @@ export async function POST(request: Request) {
         name: true,
         unitPrice: true,
         notes: true,
+        menuItem: {
+          select: {
+            type: true,
+            requiresApproval: true,
+          },
+        },
       },
     })) as ServerRecoveredOrderItem[];
 
@@ -274,13 +284,22 @@ export async function POST(request: Request) {
           );
         }
 
+        if (recoveredItem.menuItem?.type === "CATERING") {
+          return NextResponse.json(
+            { error: "Catering items must be submitted as service requests." },
+            { status: 400 },
+          );
+        }
+
         validatedItems.push({
           menuItemId: recoveredItem.menuItemId,
           name,
           quantity,
           unitPrice,
           lineTotal: unitPrice * quantity,
-          requiresApproval: recoveredItem.notes?.includes("(Request Only)") ?? false,
+          requiresApproval:
+            Boolean(recoveredItem.menuItem?.requiresApproval) ||
+            (recoveredItem.notes?.includes("(Request Only)") ?? false),
           notes:
             [
               recoveredItem.notes,
