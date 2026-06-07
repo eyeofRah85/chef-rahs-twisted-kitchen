@@ -148,40 +148,41 @@ export function MenuItemCustomizationEditor({
 
       <section className="border-t pt-5">
         <h4 className="font-semibold">Add Option Group</h4>
-      <select
-        value={selectedTemplate}
-        onChange={(e) => {
-          const templateName = e.target.value;
-          setSelectedTemplate(templateName);
 
-          const template = optionGroupTemplates.find(
-            (item) => item.name === templateName,
-          );
+        <select
+          value={selectedTemplate}
+          onChange={(e) => {
+            const templateName = e.target.value;
+            setSelectedTemplate(templateName);
 
-          if (!template) return;
+            const template = optionGroupTemplates.find(
+              (item) => item.name === templateName,
+            );
 
-          setGroupName(template.name);
-          setRequired(template.required);
-          setMultiple(template.multiple);
-          setChoices(template.choices);
-        }}
-        className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
-      >
-        <option value="">Choose an option template</option>
+            if (!template) return;
 
-        {optionGroupTemplates.map((template) => (
-          <option key={template.name} value={template.name}>
-            {template.name}
-          </option>
-        ))}
-      </select>
-      <h4 className="font-semibold">Add Option Group</h4>
-        {/* <input
+            setGroupName(template.name);
+            setRequired(template.required);
+            setMultiple(template.multiple);
+            setChoices(template.choices);
+          }}
+          className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
+        >
+          <option value="">Choose an option template</option>
+
+          {optionGroupTemplates.map((template) => (
+            <option key={template.name} value={template.name}>
+              {template.name}
+            </option>
+          ))}
+        </select>
+
+        <input
           value={groupName}
           onChange={(e) => setGroupName(e.target.value)}
           placeholder="Group name, e.g. Spice Level"
           className="mt-4 w-full rounded-xl border px-4 py-3 text-sm"
-        /> */}
+        />
 
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
           <label className="flex items-center gap-2">

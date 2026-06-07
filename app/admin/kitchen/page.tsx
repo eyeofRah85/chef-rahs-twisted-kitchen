@@ -12,16 +12,10 @@ type KitchenOrderRow = {
   customerName: string;
   requestedDateTime: Date | null;
   allergyNotes: string | null;
-  subtotal: DecimalLike;
-  deliveryFee: DecimalLike;
-  lateFee: DecimalLike;
-  tipAmount: DecimalLike;
-  total: DecimalLike;
   items: {
     id: string;
     name: string;
     quantity: number;
-    unitPrice: DecimalLike;
     lineTotal: DecimalLike;
     notes: string | null;
   }[];
@@ -47,8 +41,22 @@ export default async function KitchenPage() {
       createdAt: "asc",
     },
 
-    include: {
-      items: true,
+    select: {
+      id: true,
+      orderType: true,
+      status: true,
+      customerName: true,
+      requestedDateTime: true,
+      allergyNotes: true,
+      items: {
+        select: {
+          id: true,
+          name: true,
+          quantity: true,
+          lineTotal: true,
+          notes: true,
+        },
+      },
     },
   })) as KitchenOrderRow[];
 
@@ -72,13 +80,20 @@ export default async function KitchenPage() {
         <KitchenOrderCard
             key={order.id}
             order={{
-            ...order,
-
-            items: order.items.map((item) => ({
-                ...item,
-                unitPrice: Number(item.unitPrice),
+              id: order.id,
+              orderType: order.orderType,
+              status: order.status,
+              customerName: order.customerName,
+              requestedDateTime:
+                order.requestedDateTime?.toISOString() ?? null,
+              allergyNotes: order.allergyNotes,
+              items: order.items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                quantity: item.quantity,
                 lineTotal: Number(item.lineTotal),
-            })),
+                notes: item.notes,
+              })),
             }}
         />
         ))}

@@ -10,9 +10,15 @@ import {
   Button
 } from "react-email";
 import { emailStyles } from "@/emails/styles";
+import {
+  formatApprovalStatus,
+  formatServiceRequestType,
+  formatServiceRequestStatus,
+} from "@/lib/format-labels";
 
 type Props = {
   customerName: string;
+  requestType?: string | null;
   eventType: string;
   status: string;
   approvalStatus: string;
@@ -24,6 +30,7 @@ type Props = {
 
 export function CateringStatusEmail({
   customerName,
+  requestType,
   eventType,
   status,
   approvalStatus,
@@ -32,11 +39,14 @@ export function CateringStatusEmail({
   depositAmount,
   requestUrl,
 }: Props) {
+  const requestLabel = formatServiceRequestType(requestType);
+  const requestLabelLower = requestLabel.toLowerCase();
+
   return (
     <Html>
       <Head />
 
-      <Preview>Your catering request has been updated.</Preview>
+      <Preview>Your {requestLabelLower} request has been updated.</Preview>
 
       <Body
         style={emailStyles.body}
@@ -44,22 +54,22 @@ export function CateringStatusEmail({
         <Container
           style={emailStyles.container}
         >
-          <Heading>Catering Request Update</Heading>
+          <Heading>{requestLabel} Request Update</Heading>
 
           <Text>Hello {customerName},</Text>
 
-          <Text>Your catering request has been updated.</Text>
+          <Text>Your {requestLabelLower} request has been updated.</Text>
 
           <Text>
             <strong>Event:</strong> {eventType}
           </Text>
 
           <Text>
-            <strong>Status:</strong> {status}
+            <strong>Status:</strong> {formatServiceRequestStatus(status)}
           </Text>
 
           <Text>
-            <strong>Approval:</strong> {approvalStatus}
+            <strong>Approval:</strong> {formatApprovalStatus(approvalStatus)}
           </Text>
 
           {approvalNote && (
@@ -85,10 +95,10 @@ export function CateringStatusEmail({
               href={requestUrl}
               style={emailStyles.button}
             >
-              View Catering Request
+              View {requestLabel} Request
             </Button>
           <Text>
-            You can log into your account to review catering request details,
+            You can log into your account to review request details,
             quote information, and deposit status.
           </Text>
 

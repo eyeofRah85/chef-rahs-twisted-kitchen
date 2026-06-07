@@ -24,7 +24,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!status) {
       return NextResponse.json(
-        { error: "Invalid catering status." },
+        { error: "Invalid service request status." },
         { status: 400 },
       );
     }
@@ -39,7 +39,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error(error);
 
     return NextResponse.json(
-      { error: "Failed to update catering status." },
+      { error: "Failed to update service request status." },
       { status: 500 },
     );
   }

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatServiceRequestStatus } from "@/lib/format-labels";
 
 const statuses = [
   "NEW",
@@ -38,7 +39,7 @@ export function UpdateCateringStatusForm({ requestId, currentStatus }: Props) {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to update catering status.");
+      alert("Failed to update service request status.");
       return;
     }
 
@@ -47,17 +48,20 @@ export function UpdateCateringStatusForm({ requestId, currentStatus }: Props) {
 
   return (
     <div className="space-y-4">
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value)}
-        className="w-full rounded-xl border px-4 py-3"
-      >
-        {statuses.map((statusOption) => (
-          <option key={statusOption} value={statusOption}>
-            {statusOption}
-          </option>
-        ))}
-      </select>
+      <div>
+        <label className="block text-sm font-medium">New Status</label>
+        <select
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="mt-2 w-full rounded-xl border px-4 py-3"
+        >
+          {statuses.map((statusOption) => (
+            <option key={statusOption} value={statusOption}>
+              {formatServiceRequestStatus(statusOption)}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <button
         type="button"

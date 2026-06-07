@@ -51,6 +51,9 @@ const categories = (await prisma.menuCategory.findMany({
     items: {
          where: {
           archived: false,
+          type: {
+            not: "CATERING",
+          },
         },
       orderBy: {
         createdAt: "desc",         
@@ -70,6 +73,10 @@ const categories = (await prisma.menuCategory.findMany({
     },
   },
 })) as PublicMenuCategory[];
+
+const visibleCategories = categories.filter(
+  (category) => category.items.length > 0,
+);
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -100,10 +107,10 @@ const categories = (await prisma.menuCategory.findMany({
             </p>
           </div>
 
-        <MenuCategoryFilter categories={categories.map((category) => category.name)} />
+        <MenuCategoryFilter categories={visibleCategories.map((category) => category.name)} />
 
         <div className="space-y-10">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <section key={category.id}>
               <h2 className="mb-4 text-2xl font-semibold">{category.name}</h2>
 
@@ -147,15 +154,10 @@ const categories = (await prisma.menuCategory.findMany({
                 ))}
               </div>
 
-              {category.items.length === 0 && (
-                <p className="text-sm text-neutral-500">
-                  No meal plan or menu items are available yet.
-                </p>
-              )}
             </section>
           ))}
 
-          {categories.length === 0 && (
+          {visibleCategories.length === 0 && (
             <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
               <h2 className="text-2xl font-semibold">Menu coming soon</h2>
               <p className="mt-2 text-neutral-600">

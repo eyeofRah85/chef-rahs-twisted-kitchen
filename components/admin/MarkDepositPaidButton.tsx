@@ -12,7 +12,7 @@ export function MarkDepositPaidButton({ requestId }: Props) {
   const [saving, setSaving] = useState(false);
 
   async function markPaid() {
-    const confirmed = confirm("Mark this catering deposit as paid?");
+    const confirmed = confirm("Mark this service request deposit as paid?");
 
     if (!confirmed) return;
 
@@ -28,7 +28,9 @@ export function MarkDepositPaidButton({ requestId }: Props) {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to mark deposit as paid.");
+      const errorData = await response.json().catch(() => null);
+
+      alert(errorData?.error ?? "Failed to mark deposit as paid.");
       return;
     }
 

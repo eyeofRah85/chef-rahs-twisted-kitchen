@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
+import { formatPaymentStatus } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
 
 type PaymentDueOrder = {
@@ -97,8 +98,8 @@ export default async function AdminPaymentsPage() {
                 <th className="p-4">Customer</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Pay By</th>
-                <th className="p-4"></th>
                 <th className="p-4">Total</th>
+                <th className="p-4">Action</th>
                 <th className="p-4">Order</th>
               </tr>
             </thead>
@@ -115,7 +116,7 @@ export default async function AdminPaymentsPage() {
 
                   <td className="p-4">
                     <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                      {order.paymentStatus}
+                      {formatPaymentStatus(order.paymentStatus)}
                     </span>
                   </td>
 
@@ -129,9 +130,9 @@ export default async function AdminPaymentsPage() {
                     ${Number(order.total).toFixed(2)}
                   </td>
 
-                    <td className="p-4">
-                        <MarkOrderPaidButton orderId={order.id} />
-                    </td>
+                  <td className="p-4">
+                    <MarkOrderPaidButton orderId={order.id} />
+                  </td>
 
                   <td className="p-4">
                     <Link

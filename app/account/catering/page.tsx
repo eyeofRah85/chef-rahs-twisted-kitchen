@@ -79,9 +79,7 @@ export default async function AccountCateringPage() {
                     </p>
 
                     <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
-                      {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
-                        ? "Personal Chef"
-                        : "Catering"}
+                      {formatServiceRequestType(request.requestType)}
                     </span>
                   </div>
 

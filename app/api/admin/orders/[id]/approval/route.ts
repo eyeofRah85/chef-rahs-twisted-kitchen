@@ -30,69 +30,79 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid approval status." }, { status: 400 });
     }
 
-    const existingOrder = await prisma.order.findUnique({
-      where: { id },
-      select: {
-        approvalStatus: true,
-      },
+    const nextOrderStatus =
+      approvalStatus === "APPROVED"
+        ? "ACCEPTED"
+        : approvalStatus === "DENIED"
+          ? "CANCELLED"
+          : "PENDING";
+
+    const decisionNote =
+      approvalStatus === "APPROVED"
+        ? approvalNote || "Order approved."
+        : approvalStatus === "DENIED"
+          ? approvalNote || "Order denied."
+          : approvalNote || "Approval reset to pending.";
+
+    const decidedAt = new Date();
+
+    const updated = await prisma.$transaction(async (tx) => {
+      const result = await tx.order.updateMany({
+        where: {
+          id,
+          approvalStatus: "PENDING",
+        },
+        data: {
+          approvalStatus,
+          approvalNote: approvalNote || null,
+          approvedAt: approvalStatus === "APPROVED" ? decidedAt : null,
+          deniedAt: approvalStatus === "DENIED" ? decidedAt : null,
+          status: nextOrderStatus,
+          paymentStatus:
+            approvalStatus === "DENIED"
+              ? "CANCELLED"
+              : undefined,
+        },
+      });
+
+      if (result.count === 0) {
+        return null;
+      }
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: id,
+          status: nextOrderStatus,
+          note: decisionNote,
+        },
+      });
+
+      return tx.order.findUnique({
+        where: { id },
+      });
     });
 
-    if (!existingOrder) {
-      return NextResponse.json(
-        { error: "Order not found." },
-        { status: 404 },
-      );
-    }
+    if (!updated) {
+      const existingOrder = await prisma.order.findUnique({
+        where: { id },
+        select: {
+          approvalStatus: true,
+        },
+      });
 
-    if (
-      existingOrder.approvalStatus === "APPROVED" ||
-      existingOrder.approvalStatus === "DENIED"
-    ) {
+      if (!existingOrder) {
+        return NextResponse.json(
+          { error: "Order not found." },
+          { status: 404 },
+        );
+      }
+
       return NextResponse.json(
         { error: "This order has already received a final approval decision." },
         { status: 400 },
       );
     }
 
-  const updated = await prisma.order.update({
-    where: { id },
-    data: {
-      approvalStatus,
-      approvalNote: approvalNote || null,
-
-      approvedAt: approvalStatus === "APPROVED" ? new Date() : null,
-      deniedAt: approvalStatus === "DENIED" ? new Date() : null,
-
-      status:
-        approvalStatus === "APPROVED"
-          ? "ACCEPTED"
-          : approvalStatus === "DENIED"
-            ? "CANCELLED"
-            : "PENDING",
-
-      paymentStatus:
-        approvalStatus === "DENIED"
-          ? "CANCELLED"
-          : undefined,
-
-      statusHistory: {
-        create: {
-          status:
-            approvalStatus === "APPROVED"
-              ? "ACCEPTED"
-              : approvalStatus === "DENIED"
-                ? "CANCELLED"
-                : "PENDING",
-          note:
-            approvalStatus === "APPROVED"
-              ? approvalNote || "Order approved."
-              : approvalStatus === "DENIED"
-                ? approvalNote || "Order denied."
-                : approvalNote || "Approval reset to pending.",
-        },
-      },
-    },
-  });
     if (approvalStatus === "APPROVED" || approvalStatus === "DENIED") {
         await sendAppEmail({
           to: updated.customerEmail,

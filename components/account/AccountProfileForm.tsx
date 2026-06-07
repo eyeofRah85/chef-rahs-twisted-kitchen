@@ -49,8 +49,8 @@ export function AccountProfileForm({ user, onSaved }: Props) {
       <h2 className="text-2xl font-semibold">Account Information</h2>
 
       <p className="mt-2 text-sm text-neutral-600">
-        Update your contact and delivery information for meal plans, catering,
-        and personal chef requests.
+        Update your contact, delivery, and service-location information for orders
+        and service requests.
       </p>
 
       <div className="mt-6 grid gap-5 md:grid-cols-2">

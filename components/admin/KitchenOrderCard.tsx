@@ -1,6 +1,8 @@
 "use client";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatOrderStatus, formatOrderType } from "@/lib/format-labels";
 
 type KitchenOrderItem = {
   id: string;
@@ -31,32 +33,24 @@ const nextStatuses: Record<string, string> = {
   READY: "COMPLETED",
 };
 
-export function KitchenOrderCard({
-  order,
-}: KitchenOrderCardProps) {
+export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
   const router = useRouter();
 
   async function advanceStatus() {
-    const nextStatus =
-      nextStatuses[order.status];
+    const nextStatus = nextStatuses[order.status];
 
     if (!nextStatus) return;
 
-    const response = await fetch(
-      `/api/admin/orders/${order.id}/status`,
-      {
-        method: "PATCH",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          status: nextStatus,
-          note: `Kitchen updated order to ${nextStatus}.`,
-        }),
+    const response = await fetch(`/api/admin/orders/${order.id}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        status: nextStatus,
+        note: `Kitchen updated order to ${formatOrderStatus(nextStatus)}.`,
+      }),
+    });
 
     if (!response.ok) {
       alert("Failed to update order.");
@@ -71,29 +65,24 @@ export function KitchenOrderCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-            {order.orderType}
+            {formatOrderType(order.orderType)}
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold">
-            {order.customerName}
-          </h2>
+          <h2 className="mt-2 text-2xl font-bold">{order.customerName}</h2>
         </div>
 
         <div className="rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium">
-          {order.status}
+          {formatOrderStatus(order.status)}
         </div>
       </div>
 
       <div className="mt-6 space-y-4">
         {order.items.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-2xl border p-4"
-          >
+          <div key={item.id} className="rounded-2xl border p-4">
             <div className="flex justify-between gap-4">
               <div>
                 <h3 className="text-xl font-semibold">
-                  {item.quantity}× {item.name}
+                  {item.quantity} x {item.name}
                 </h3>
 
                 {item.notes && (
@@ -104,10 +93,7 @@ export function KitchenOrderCard({
               </div>
 
               <div className="text-right font-bold">
-                $
-                {Number(item.lineTotal).toFixed(
-                  2,
-                )}
+                ${Number(item.lineTotal).toFixed(2)}
               </div>
             </div>
           </div>
@@ -120,43 +106,34 @@ export function KitchenOrderCard({
             Allergy Alert
           </p>
 
-          <p className="mt-2 text-red-900">
-            {order.allergyNotes}
-          </p>
+          <p className="mt-2 text-red-900">{order.allergyNotes}</p>
         </div>
       )}
 
       <div className="mt-6 flex items-center justify-between">
         <div>
-          <p className="text-sm text-neutral-500">
-            Requested
-          </p>
+          <p className="text-sm text-neutral-500">Requested</p>
 
           <p className="font-medium">
             {order.requestedDateTime
-              ? new Date(
-                  order.requestedDateTime,
-                ).toLocaleString()
+              ? new Date(order.requestedDateTime).toLocaleString()
               : "ASAP"}
           </p>
         </div>
+
         <Link
           href={`/admin/orders/${order.id}`}
           className="rounded-2xl border px-5 py-3 font-medium"
         >
           View / Print Ticket
         </Link>
+
         {nextStatuses[order.status] && (
           <button
             onClick={advanceStatus}
             className="rounded-2xl bg-black px-5 py-3 font-medium text-white"
           >
-            Mark{" "}
-            {
-              nextStatuses[
-                order.status
-              ]
-            }
+            Mark {formatOrderStatus(nextStatuses[order.status])}
           </button>
         )}
       </div>

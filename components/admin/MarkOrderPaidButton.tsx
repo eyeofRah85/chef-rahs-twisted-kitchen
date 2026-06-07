@@ -25,7 +25,9 @@ export function MarkOrderPaidButton({ orderId }: Props) {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to mark order as paid.");
+      const errorData = await response.json().catch(() => null);
+
+      alert(errorData?.error ?? "Failed to mark order as paid.");
       return;
     }
 

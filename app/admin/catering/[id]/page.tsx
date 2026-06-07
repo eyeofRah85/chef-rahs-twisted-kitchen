@@ -7,9 +7,8 @@ import Link from "next/link";
 import { CateringQuoteForm } from "@/components/admin/CateringQuoteForm";
 import { MarkDepositPaidButton } from "@/components/admin/MarkDepositPaidButton";
 import {
-  formatServiceRequestType,
   formatServiceRequestStatus,
-  formatApprovalStatus,
+  formatServiceRequestType,
 } from "@/lib/format-labels";
 
 type PageProps = {
@@ -35,20 +34,20 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
     notFound();
   }
 
+  const requestTypeLabel = formatServiceRequestType(request.requestType);
+
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <Link className="text-sm font-medium underline" href="/admin/catering">
-            &larr;  Back to Catering Requests
+            &larr; Back to Service Requests
           </Link>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
             Admin
           </p>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
-              ? "Personal Chef Request"
-              : "Catering Request"}
+            {requestTypeLabel} Request
           </p>
 
           <h1 className="mt-3 text-4xl font-bold">{request.name}</h1>
@@ -123,22 +122,23 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
 
           <aside className="space-y-6">
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Approval</h2>
 
-                <div className="mt-6">
-                  <CateringApprovalForm
-                    requestId={request.id}
-                    currentApprovalStatus={formatApprovalStatus(request.approvalStatus)}
-                  />
-                </div>
+              <div className="mt-6">
+                <CateringApprovalForm
+                  requestId={request.id}
+                  currentApprovalStatus={request.approvalStatus}
+                />
+              </div>
 
-                  {request.approvalNote && (
-                    <p className="mt-4 text-sm text-neutral-600">
-                      <strong>Note:</strong> {request.approvalNote}
-                    </p>
-                  )}
-                </div>
+              {request.approvalNote && (
+                <p className="mt-4 text-sm text-neutral-600">
+                  <strong>Note:</strong> {request.approvalNote}
+                </p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Status</h2>
 
               <p className="mt-3 rounded-full bg-neutral-100 px-3 py-2 text-center text-sm font-medium">
@@ -148,7 +148,7 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
               <div className="mt-6">
                 <UpdateCateringStatusForm
                   requestId={request.id}
-                  currentStatus={formatServiceRequestStatus(request.status)}
+                  currentStatus={request.status}
                 />
               </div>
             </div>

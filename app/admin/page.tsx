@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getBusinessSettings } from "@/lib/business-settings";
+import { formatOrderStatus, formatOrderType } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
 
 type AdminRecentOrder = {
@@ -138,7 +139,7 @@ export default async function AdminPage() {
       href: "/admin/orders",
     },
     {
-      label: "Catering Approvals",
+      label: "Service Request Approvals",
       value: pendingCateringApprovals,
       href: "/admin/catering?approval=PENDING",
     },
@@ -255,7 +256,8 @@ export default async function AdminPage() {
                       <p className="font-semibold">{order.customerName}</p>
 
                       <p className="mt-1 text-sm text-neutral-600">
-                        {order.orderType} · {order.items.length} item
+                        {formatOrderType(order.orderType)} -{" "}
+                        {order.items.length} item
                         {order.items.length === 1 ? "" : "s"}
                       </p>
 
@@ -266,7 +268,7 @@ export default async function AdminPage() {
 
                     <div className="text-right">
                       <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                        {order.status}
+                        {formatOrderStatus(order.status)}
                       </span>
 
                       <p className="mt-2 font-bold">
@@ -323,7 +325,7 @@ export default async function AdminPage() {
                     href="/admin/catering?approval=PENDING"
                     className="block rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900"
                   >
-                    {pendingCateringApprovals} catering request
+                    {pendingCateringApprovals} service request
                     {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
                   </Link>
                 )}

@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringStatusEmail } from "@/emails/CateringStatusEmail";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type RouteContext = {
   params: Promise<{
@@ -58,12 +59,16 @@ export async function PATCH(request: Request, context: RouteContext) {
         status: estimatedTotal ? "QUOTED" : undefined,
       },
     });
+    const requestLabel = formatServiceRequestType(updated.requestType);
+    const requestLabelLower = requestLabel.toLowerCase();
+
     await sendAppEmail({
         to: updated.email,
-        subject: "Your catering quote has been updated",
+        subject: `Your ${requestLabelLower} quote has been updated`,
         react: CateringStatusEmail({
           customerName: updated.name,
-          eventType: updated.eventType ?? "Catering Request",
+          requestType: updated.requestType,
+          eventType: updated.eventType ?? `${requestLabel} Request`,
           status: updated.status,
           approvalStatus: updated.approvalStatus,
           approvalNote: updated.approvalNote,

@@ -11,6 +11,11 @@ import {
   Button
 } from "react-email";
 import { emailStyles } from "@/emails/styles";
+import {
+  formatApprovalStatus,
+  formatOrderType,
+  formatPaymentStatus,
+} from "@/lib/format-labels";
 
 type OrderEmailItem = {
   name: string;
@@ -66,6 +71,8 @@ export function OrderConfirmationEmail({
   deliveryPostalCode,
   deliveryNotes,
 }: Props) {
+  const isDelivery = orderType === "DELIVERY";
+
   return (
     <Html>
       <Head />
@@ -94,17 +101,15 @@ export function OrderConfirmationEmail({
             </Text>
 
             <Text>
-              <strong>Order Type:</strong> {orderType}
+              <strong>Order Type:</strong> {formatOrderType(orderType)}
             </Text>
             <Text>
-              <strong>Payment:</strong> {paymentStatus ?? "Not set"}
+              <strong>Payment:</strong> {formatPaymentStatus(paymentStatus)}
             </Text>
 
             <Text>
-              <strong>Approval:</strong> {approvalStatus ?? "Not set"}
+              <strong>Approval:</strong> {formatApprovalStatus(approvalStatus)}
             </Text>
-
-            <Hr />
 
             <Hr />
 
@@ -118,7 +123,7 @@ export function OrderConfirmationEmail({
               <strong>Phone:</strong> {deliveryPhone ?? "Not provided"}
             </Text>
 
-            {orderType === "DELIVERY" && (
+            {isDelivery && (
               <>
                 <Text>
                   <strong>Address:</strong>{" "}
@@ -149,12 +154,12 @@ export function OrderConfirmationEmail({
               <Section key={`${item.name}-${index}`}>
                 <Text>
                   <strong>
-                    {item.quantity}× {item.name}
+                    {item.quantity} x {item.name}
                   </strong>
                 </Text>
 
                 <Text>
-                  ${item.unitPrice.toFixed(2)} each — ${item.lineTotal.toFixed(2)}
+                  ${item.unitPrice.toFixed(2)} each - ${item.lineTotal.toFixed(2)}
                 </Text>
 
                 {item.notes && (
@@ -193,9 +198,6 @@ export function OrderConfirmationEmail({
             >
               View Order Details
             </Button>
-            <Text>
-              <strong>Total:</strong> ${total.toFixed(2)}
-            </Text>
           </Section>
 
           <Hr />

@@ -10,9 +10,11 @@ import {
   Button
 } from "react-email";
 import { emailStyles } from "@/emails/styles";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type Props = {
   customerName: string;
+  requestType?: string | null;
   eventType: string;
   depositAmount: number;
   paidAt: string;
@@ -21,16 +23,20 @@ type Props = {
 
 export function CateringDepositPaidEmail({
   customerName,
+  requestType,
   eventType,
   depositAmount,
   paidAt,
   requestUrl,
 }: Props) {
+  const requestLabel = formatServiceRequestType(requestType);
+  const requestLabelLower = requestLabel.toLowerCase();
+
   return (
     <Html>
       <Head />
 
-      <Preview>Your catering deposit has been received.</Preview>
+      <Preview>Your {requestLabelLower} deposit has been received.</Preview>
 
       <Body
         style={emailStyles.body}
@@ -38,11 +44,11 @@ export function CateringDepositPaidEmail({
         <Container
           style={emailStyles.container}
         >
-          <Heading>Catering Deposit Received</Heading>
+          <Heading>{requestLabel} Deposit Received</Heading>
 
           <Text>Hello {customerName},</Text>
 
-          <Text>Your catering deposit has been marked as received.</Text>
+          <Text>Your {requestLabelLower} deposit has been marked as received.</Text>
 
           <Text>
             <strong>Event:</strong> {eventType}
@@ -59,14 +65,14 @@ export function CateringDepositPaidEmail({
           <Hr />
 
           <Text>
-            Thank you. Your catering request can now continue through the
+            Thank you. Your {requestLabelLower} request can now continue through the
             planning process.
           </Text>
             <Button
               href={requestUrl}
               style={emailStyles.button}
             >
-              View Catering Request
+              View {requestLabel} Request
             </Button>
           <Text
             style={emailStyles.footerText}

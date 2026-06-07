@@ -157,9 +157,7 @@ export default async function AdminCateringPage({ searchParams }: PageProps) {
 
                   <td className="p-4">
                     <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {formatServiceRequestType(request.requestType) === "PERSONAL_CHEF"
-                        ? "Personal Chef"
-                        : "Catering"}
+                      {formatServiceRequestType(request.requestType)}
                     </span>
                   </td>
 
@@ -204,7 +202,7 @@ export default async function AdminCateringPage({ searchParams }: PageProps) {
               {requests.length === 0 && (
                 <tr>
                   <td className="p-6 text-center text-neutral-500" colSpan={8}>
-                    No catering requests yet.
+                    No service requests yet.
                   </td>
                 </tr>
               )}

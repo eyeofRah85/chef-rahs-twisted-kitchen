@@ -3,7 +3,12 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ReorderButton } from "@/components/account/ReorderButton";
-import { formatOrderType, formatPaymentStatus, formatApprovalStatus } from "@/lib/format-labels";
+import {
+  formatApprovalStatus,
+  formatOrderStatus,
+  formatOrderType,
+  formatPaymentStatus,
+} from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
@@ -112,7 +117,7 @@ export default async function AccountOrdersPage() {
 
                 <div className="text-left md:text-right">
                   <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                    {order.status}
+                    {formatOrderStatus(order.status)}
                   </span>
                   <p className="mt-2 text-xs text-neutral-500">
                     Approval: {formatApprovalStatus(order.approvalStatus)}

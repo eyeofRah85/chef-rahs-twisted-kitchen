@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { formatOrderStatus } from "@/lib/format-labels";
 
 const statuses = [
   "PENDING",
@@ -64,7 +65,7 @@ export function UpdateOrderStatusForm({
         >
           {statuses.map((statusOption) => (
             <option key={statusOption} value={statusOption}>
-              {statusOption}
+              {formatOrderStatus(statusOption)}
             </option>
           ))}
         </select>

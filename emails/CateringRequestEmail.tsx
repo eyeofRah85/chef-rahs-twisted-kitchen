@@ -11,10 +11,12 @@ import {
   Button
 } from "react-email";
 import { emailStyles } from "@/emails/styles";
+import { formatServiceRequestType } from "@/lib/format-labels";
 
 type Props = {
   customerName: string;
   requestId: string;
+  requestType?: string | null;
   eventType: string;
   guestCount: number | null;
   eventDate: string | null;
@@ -26,6 +28,7 @@ type Props = {
 
 export function CateringRequestEmail({
   customerName,
+  requestType,
   eventType,
   guestCount,
   eventDate,
@@ -34,12 +37,15 @@ export function CateringRequestEmail({
   specialRequests,
   requestUrl
 }: Props) {
+  const requestLabel = formatServiceRequestType(requestType);
+  const requestLabelLower = requestLabel.toLowerCase();
+
   return (
     <Html>
       <Head />
 
       <Preview>
-        Your catering request has been received.
+        Your {requestLabelLower} request has been received.
       </Preview>
 
       <Body
@@ -48,13 +54,14 @@ export function CateringRequestEmail({
         <Container
           style={emailStyles.container}
         >
-          <Heading>Catering Request Received</Heading>
+          <Heading>{requestLabel} Request Received</Heading>
 
           <Text>Hello {customerName},</Text>
 
           <Text>
             Thank you for contacting Chef Rah&apos;s Twisted Kitchen for your
-            catering event.
+            {" "}
+            {requestLabelLower} request.
           </Text>
 
           <Section>
@@ -92,7 +99,7 @@ export function CateringRequestEmail({
               href={requestUrl}
               style={emailStyles.button}
             >
-              View Catering Request
+              View {requestLabel} Request
             </Button>
           </Section>
 

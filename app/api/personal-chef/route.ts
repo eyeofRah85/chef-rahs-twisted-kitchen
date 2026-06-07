@@ -56,6 +56,7 @@ export async function POST(request: Request) {
     react: CateringRequestEmail({
       customerName: requestRecord.name,
       requestId: requestRecord.id,
+      requestType: requestRecord.requestType,
       eventType: "Personal Chef",
       guestCount: requestRecord.guestCount,
       eventDate: requestRecord.eventDate
