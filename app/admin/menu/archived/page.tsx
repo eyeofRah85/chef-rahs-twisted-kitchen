@@ -67,7 +67,7 @@ export default async function ArchivedMenuItemsPage() {
                   </p>
 
                   <p className="mt-2 text-sm font-medium">
-                    {item.category.name} · ${Number(item.price).toFixed(2)}
+                    {item.category.name} - ${Number(item.price).toFixed(2)}
                   </p>
                 </div>
 

@@ -57,7 +57,7 @@ export default async function MenuCategoriesPage() {
 
                 <p className="mt-1 text-sm text-neutral-600">
                   {category.items.length} item
-                  {category.items.length === 1 ? "" : "s"} · Sort order{" "}
+                  {category.items.length === 1 ? "" : "s"} - Sort order{" "}
                   {category.sortOrder}
                 </p>
               </div>

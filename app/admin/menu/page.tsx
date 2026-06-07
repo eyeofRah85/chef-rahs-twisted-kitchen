@@ -284,11 +284,11 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                           </div>
 
                           <div className="text-sm font-medium text-neutral-500 group-open:hidden">
-                            Open details →
+                            Open details &gt;
                           </div>
 
                           <div className="hidden text-sm font-medium text-neutral-500 group-open:block">
-                            Close details ↑
+                            Close details ^
                           </div>
                         </div>
                       </summary>
@@ -367,19 +367,19 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                       <p className="font-semibold">{group.name}</p>
 
                                       <p className="mt-1 text-xs text-neutral-500">
-                                        {group.required ? "Required" : "Optional"} ·{" "}
-                                        {group.multiple ? "Multiple" : "Single"} ·{" "}
+                                        {group.required ? "Required" : "Optional"} -{" "}
+                                        {group.multiple ? "Multiple" : "Single"} -{" "}
                                         {group.choices.length} choice
                                         {group.choices.length === 1 ? "" : "s"}
                                       </p>
                                     </div>
 
                                     <div className="text-xs font-medium text-neutral-500 group-open:hidden">
-                                      Open choices →
+                                      Open choices &gt;
                                     </div>
 
                                     <div className="hidden text-xs font-medium text-neutral-500 group-open:block">
-                                      Close choices ↑
+                                      Close choices ^
                                     </div>
                                   </div>
                                 </summary>

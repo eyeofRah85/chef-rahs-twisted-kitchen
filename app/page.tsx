@@ -6,7 +6,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-neutral-50">
       <section className="mx-auto flex max-w-6xl flex-col px-6 py-20">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-          Meal Prep • Catering • Personal Chef
+          Meal Prep / Catering / Personal Chef
         </p>
 
         <h1 className="mt-4 text-5xl font-bold tracking-tight md:text-6xl">

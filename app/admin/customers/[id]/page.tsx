@@ -99,7 +99,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
             href="/admin/customers"
             className="text-sm font-medium underline"
           >
-            ← Back to Customers
+            &larr; Back to Customers
           </Link>
 
           <p className="mt-6 text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
