@@ -1,5 +1,6 @@
 import type { MenuItem } from "@/types/menu";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import Image from "next/image";
 
 type MenuCardProps = {
   item: MenuItem;
@@ -10,11 +11,16 @@ export function MenuCard({ item }: MenuCardProps) {
     <div className="rounded-2xl flex flex-col border bg-white p-5 shadow-sm">
       <div className="mb-3 flex flex-col items-start gap-4">
         
-        <img
-          src={item.imageUrl || "/placeholder.png"}
-          alt={item.name}
-          className="h-24 w-24 shrink-0 rounded-xl border object-cover"
-        />
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border">
+          <Image
+            src={item.imageUrl || "/placeholder.png"}
+            alt={item.name}
+            fill
+            sizes="96px"
+            className="object-cover"
+            unoptimized
+          />
+        </div>
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-4">

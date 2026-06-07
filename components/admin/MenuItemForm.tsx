@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
@@ -74,11 +75,16 @@ export function MenuItemForm() {
             )}
 
             {preview && (
-              <img
-                src={preview}
-                alt="Preview"
-                className="h-48 w-full rounded-xl border object-cover"
-              />
+              <div className="relative h-48 w-full overflow-hidden rounded-xl border">
+                <Image
+                  src={preview}
+                  alt="Preview"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 384px"
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
             )}
         </div>
 

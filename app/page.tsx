@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-neutral-50">
@@ -22,7 +24,15 @@ export default function HomePage() {
             href="/menu"
             className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
-            <img className="h-48 w-full rounded-xl object-cover" src="MEAL-PREP.jpg" alt="Prepared meal prep containers"/>
+            <div className="relative h-48 w-full overflow-hidden rounded-xl">
+              <Image
+                src="/MEAL-PREP.jpg"
+                alt="Prepared meal prep containers"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover"
+              />
+            </div>
             <h2 className="text-2xl font-semibold">Meal Plans</h2>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
               Choose 5-day or 7-day meal plan packages with lunch and dinner options,
@@ -34,7 +44,15 @@ export default function HomePage() {
             href="/catering"
             className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
           >
-            <img className="h-48 w-full rounded-xl object-cover" src="CATERING.jpg" alt="Prepared catering containers"/>
+            <div className="relative h-48 w-full overflow-hidden rounded-xl">
+              <Image
+                src="/CATERING.jpg"
+                alt="Prepared catering containers"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover"
+              />
+            </div>
             <h2 className="text-2xl font-semibold">Catering</h2>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
               Submit event details for gatherings, private events, office meals, and
@@ -46,7 +64,15 @@ export default function HomePage() {
             href="/personal-chef"
             className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"   
         >
-            <img className="h-48 w-full rounded-xl object-cover" src="PERSONAL-CHEF.jpg" alt="Prepared person meal"/>
+            <div className="relative h-48 w-full overflow-hidden rounded-xl">
+              <Image
+                src="/PERSONAL-CHEF.jpg"
+                alt="Prepared person meal"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                className="object-cover"
+              />
+            </div>
             <h2 className="text-2xl font-semibold">Personal Chef</h2>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
               Request private chef services for custom dining experiences, personal

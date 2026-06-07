@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import type { MenuItem } from "@/types/menu";
 import type { SelectedCartOption } from "@/store/cart-store";
@@ -216,10 +217,13 @@ export function MenuItemModal({ item, open, onClose }: Props) {
 
                       {choice.imageUrl && (
                         <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-                          <img
+                          <Image
                             src={choice.imageUrl}
                             alt={choice.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            unoptimized
                           />
                         </div>
                       )}

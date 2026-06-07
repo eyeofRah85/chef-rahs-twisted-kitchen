@@ -69,7 +69,7 @@ Progress update - June 6, 2026:
   - Admin order and service request approval APIs guard final decisions with pending-only transactional updates.
   - Duplicate final decisions return an error and do not resend approval/denial emails.
 - Validation:
-  - `npm run lint` passes with existing `@next/next/no-img-element` warnings.
+  - `npm run lint` passes without warnings.
   - `npm run build` passes with the current Next.js/Prisma setup.
 - Service request and order detail polish:
   - Personal Chef requests now use the raw `requestType` value for branching, so they are labeled as Personal Chef instead of falling back to Catering.
@@ -98,3 +98,6 @@ Progress update - June 6, 2026:
 - Service request UI terminology:
   - Shared account and admin service request views now use Service Requests or `requestType`-aware labels where Catering and Personal Chef records can both appear.
   - Admin dashboard, reports, customer detail, request detail, and notification pages avoid Catering-only copy for shared service request counts and approvals.
+- Lint warning cleanup:
+  - Replaced remaining plain image elements with `next/image` on the home page, menu cards, menu customization modal choice images, and admin menu item preview.
+  - `npm run lint` now completes without the prior `@next/next/no-img-element` warnings.
