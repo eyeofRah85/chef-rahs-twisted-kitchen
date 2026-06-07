@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import {
+  formatServiceRequestType,
   formatServiceRequestStatus,
   formatApprovalStatus,
 } from "@/lib/format-labels";
@@ -35,25 +36,22 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
     notFound();
   }
 
+  const requestTypeLabel = formatServiceRequestType(request.requestType);
+
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
       <div className="mx-auto max-w-4xl">
         <Link href="/account/catering" className="text-sm font-medium underline">
-          ← Back to Catering Requests
+          &larr; Back to Service Requests
         </Link>
 
         <div className="mt-8 rounded-2xl border bg-white p-8 shadow-sm">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {request.requestType === "PERSONAL_CHEF"
-              ? "Personal Chef Request"
-              : "Catering Request"}
+            {requestTypeLabel} Request
           </p>
 
           <h1 className="mt-3 text-4xl font-bold">
-            {request.eventType ??
-            (request.requestType === "PERSONAL_CHEF"
-              ? "Personal Chef Request"
-              : "Catering Request")}
+            {request.eventType ?? `${requestTypeLabel} Request`}
           </h1>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
@@ -131,7 +129,7 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
 
                     <p className="mt-2">
                       A deposit of ${Number(request.depositAmount).toFixed(2)} is due before
-                      this catering request can be finalized.
+                      this {requestTypeLabel.toLowerCase()} request can be finalized.
                     </p>
 
                     <p className="mt-2 text-xs">

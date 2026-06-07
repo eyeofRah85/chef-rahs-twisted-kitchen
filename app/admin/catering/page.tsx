@@ -202,7 +202,7 @@ export default async function AdminCateringPage({ searchParams }: PageProps) {
               {requests.length === 0 && (
                 <tr>
                   <td className="p-6 text-center text-neutral-500" colSpan={8}>
-                    No catering requests yet.
+                    No service requests yet.
                   </td>
                 </tr>
               )}

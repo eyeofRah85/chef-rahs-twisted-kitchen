@@ -188,7 +188,7 @@ export default async function AdminReportsPage() {
       value: pendingOrderApprovals,
     },
     {
-      label: "Catering Approvals",
+      label: "Service Request Approvals",
       value: pendingCateringApprovals,
     },
   ];
@@ -210,7 +210,7 @@ export default async function AdminReportsPage() {
 
           <p className="mt-3 max-w-2xl text-neutral-700">
             Monitor revenue, customer activity, kitchen operations,
-            catering requests, and payment tracking.
+            service requests, and payment tracking.
           </p>
         </div>
 
@@ -339,7 +339,7 @@ export default async function AdminReportsPage() {
 
                 {pendingCateringApprovals > 0 && (
                   <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
-                    {pendingCateringApprovals} catering request
+                    {pendingCateringApprovals} service request
                     {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
                   </div>
                 )}

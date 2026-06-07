@@ -6,6 +6,7 @@ import {
   formatOrderStatus,
   formatOrderType,
   formatPaymentStatus,
+  formatServiceRequestType,
   formatServiceRequestStatus,
 } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
@@ -33,6 +34,7 @@ type CustomerOrder = {
 
 type CustomerServiceRequest = {
   id: string;
+  requestType: string;
   eventType: string | null;
   guestCount: number | null;
   eventDate: Date | null;
@@ -191,42 +193,52 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
             </div>
 
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Catering Requests</h2>
+              <h2 className="text-2xl font-semibold">Service Requests</h2>
 
               <div className="mt-5 space-y-4">
-                {cateringRequests.map((request) => (
-                  <Link
-                    key={request.id}
-                    href={`/admin/catering/${request.id}`}
-                    className="block rounded-xl border p-4 transition hover:bg-neutral-50"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold">
-                          {request.eventType ?? "Catering Request"}
-                        </p>
+                {cateringRequests.map((request) => {
+                  const requestTypeLabel = formatServiceRequestType(
+                    request.requestType,
+                  );
 
-                        <p className="mt-1 text-sm text-neutral-600">
-                          Guests: {request.guestCount ?? "Not provided"}
-                        </p>
+                  return (
+                    <Link
+                      key={request.id}
+                      href={`/admin/catering/${request.id}`}
+                      className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="font-semibold">
+                            {request.eventType ?? `${requestTypeLabel} Request`}
+                          </p>
 
-                        <p className="mt-1 text-xs text-neutral-500">
-                          Event:{" "}
-                          {request.eventDate
-                            ? request.eventDate.toLocaleString()
-                            : "Date not provided"}
-                        </p>
+                          <p className="mt-1 text-sm text-neutral-600">
+                            Type: {requestTypeLabel}
+                          </p>
+
+                          <p className="mt-1 text-sm text-neutral-600">
+                            Guests: {request.guestCount ?? "Not provided"}
+                          </p>
+
+                          <p className="mt-1 text-xs text-neutral-500">
+                            Event:{" "}
+                            {request.eventDate
+                              ? request.eventDate.toLocaleString()
+                              : "Date not provided"}
+                          </p>
+                        </div>
+
+                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                          {formatServiceRequestStatus(request.status)}
+                        </span>
                       </div>
-
-                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                        {formatServiceRequestStatus(request.status)}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
 
                 {cateringRequests.length === 0 && (
-                  <p className="text-neutral-500">No catering requests yet.</p>
+                  <p className="text-neutral-500">No service requests yet.</p>
                 )}
               </div>
             </div>

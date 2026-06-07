@@ -6,7 +6,10 @@ import { CateringApprovalForm } from "@/components/admin/CateringApprovalForm";
 import Link from "next/link";
 import { CateringQuoteForm } from "@/components/admin/CateringQuoteForm";
 import { MarkDepositPaidButton } from "@/components/admin/MarkDepositPaidButton";
-import { formatServiceRequestStatus } from "@/lib/format-labels";
+import {
+  formatServiceRequestStatus,
+  formatServiceRequestType,
+} from "@/lib/format-labels";
 
 type PageProps = {
   params: Promise<{
@@ -31,20 +34,20 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
     notFound();
   }
 
+  const requestTypeLabel = formatServiceRequestType(request.requestType);
+
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8">
           <Link className="text-sm font-medium underline" href="/admin/catering">
-            &larr;  Back to Catering Requests
+            &larr; Back to Service Requests
           </Link>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
             Admin
           </p>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {request.requestType === "PERSONAL_CHEF"
-              ? "Personal Chef Request"
-              : "Catering Request"}
+            {requestTypeLabel} Request
           </p>
 
           <h1 className="mt-3 text-4xl font-bold">{request.name}</h1>

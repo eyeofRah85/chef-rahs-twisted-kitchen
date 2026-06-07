@@ -95,3 +95,6 @@ Progress update - June 6, 2026:
 - Service request email terminology:
   - Shared service request emails now use `requestType` so Personal Chef messages are not labeled as Catering.
   - Approval, quote, deposit, catering, and personal chef request email senders pass the request type into their email templates.
+- Service request UI terminology:
+  - Shared account and admin service request views now use Service Requests or `requestType`-aware labels where Catering and Personal Chef records can both appear.
+  - Admin dashboard, reports, customer detail, request detail, and notification pages avoid Catering-only copy for shared service request counts and approvals.

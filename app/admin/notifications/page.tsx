@@ -12,7 +12,7 @@ export default async function AdminNotificationsPage() {
 
   const emailConfigured = Boolean(process.env.RESEND_API_KEY);
   
-  const [pendingOrders, unpaidOrders, cateringRequests] = await Promise.all([
+  const [pendingOrders, unpaidOrders, serviceRequests] = await Promise.all([
     prisma.order.count({
       where: { status: "PENDING" },
     }),
@@ -54,22 +54,22 @@ export default async function AdminNotificationsPage() {
         "Customers receive an email when manual/offline payment is marked as paid.",
     },
     {
-      title: "Catering Request Confirmations",
+      title: "Service Request Confirmations",
       status: "Active",
       description:
-        "Customers receive an email after submitting a catering request.",
+        "Customers receive an email after submitting a catering or personal chef request.",
     },
     {
-      title: "Catering Approval / Quote Updates",
+      title: "Service Request Approval / Quote Updates",
       status: "Active",
       description:
-        "Customers receive an email when catering approval or quote details are updated.",
+        "Customers receive an email when service request approval or quote details are updated.",
     },
     {
-      title: "Catering Deposit Received",
+      title: "Service Request Deposit Received",
       status: "Active",
       description:
-        "Customers receive an email when a catering deposit is marked as paid.",
+        "Customers receive an email when a service request deposit is marked as paid.",
     },
     {
       title: "Kitchen Status Updates",
@@ -100,7 +100,7 @@ export default async function AdminNotificationsPage() {
 
           <p className="mt-3 text-neutral-700">
             Track notification needs for customer orders, payment reminders,
-            kitchen status updates, and catering follow-ups.
+            kitchen status updates, and service request follow-ups.
           </p>
         </div>
 
@@ -116,8 +116,8 @@ export default async function AdminNotificationsPage() {
           </div>
 
           <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Catering Follow-ups</p>
-            <p className="mt-3 text-4xl font-bold">{cateringRequests}</p>
+            <p className="text-sm text-neutral-500">Service Request Follow-ups</p>
+            <p className="mt-3 text-4xl font-bold">{serviceRequests}</p>
           </div>
         </section>
 

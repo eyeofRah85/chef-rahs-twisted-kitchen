@@ -139,7 +139,7 @@ export default async function AdminPage() {
       href: "/admin/orders",
     },
     {
-      label: "Catering Approvals",
+      label: "Service Request Approvals",
       value: pendingCateringApprovals,
       href: "/admin/catering?approval=PENDING",
     },
@@ -325,7 +325,7 @@ export default async function AdminPage() {
                     href="/admin/catering?approval=PENDING"
                     className="block rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900"
                   >
-                    {pendingCateringApprovals} catering request
+                    {pendingCateringApprovals} service request
                     {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
                   </Link>
                 )}
