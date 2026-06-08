@@ -11,8 +11,8 @@ export async function POST(request: Request) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
-  const eventDate = String(formData.get("eventDate") ?? "");
-  const guestCount = Number(formData.get("guestCount") ?? 0);
+  const eventDate = String(formData.get("eventDate") ?? "").trim();
+  const guestCountValue = String(formData.get("guestCount") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const requestedMenu = String(formData.get("requestedMenu") ?? "").trim();
   const allergyNotes = String(formData.get("allergyNotes") ?? "").trim();
@@ -21,6 +21,34 @@ export async function POST(request: Request) {
   if (!name || !email) {
     return NextResponse.json(
       { error: "Name and email are required." },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json(
+      { error: "Please enter a valid email address." },
+      { status: 400 },
+    );
+  }
+
+  const parsedEventDate = eventDate ? new Date(eventDate) : null;
+
+  if (parsedEventDate && Number.isNaN(parsedEventDate.getTime())) {
+    return NextResponse.json(
+      { error: "Please enter a valid event date." },
+      { status: 400 },
+    );
+  }
+
+  const guestCount = guestCountValue ? Number(guestCountValue) : null;
+
+  if (
+    guestCount !== null &&
+    (!Number.isInteger(guestCount) || guestCount < 1)
+  ) {
+    return NextResponse.json(
+      { error: "Guest count must be a whole number greater than zero." },
       { status: 400 },
     );
   }
@@ -40,9 +68,9 @@ export async function POST(request: Request) {
       name,
       email,
       phone: phone || null,
-      eventDate: eventDate ? new Date(eventDate) : null,
+      eventDate: parsedEventDate,
       eventType: "Personal Chef",
-      guestCount: guestCount > 0 ? guestCount : null,
+      guestCount,
       location: location || null,
       requestedMenu: requestedMenu || null,
       allergyNotes: allergyNotes || null,

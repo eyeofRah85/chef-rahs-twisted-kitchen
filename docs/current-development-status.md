@@ -145,3 +145,6 @@ Progress update - June 6, 2026:
   - Order creation now rejects invalid tip selections, negative custom tips, disabled payment methods, and manual-payment submissions without a valid pay-by date.
 - Checkout schedule validation:
   - Order creation now requires a requested date/time and rejects invalid requested date values before applying business date rules.
+- Service request submission validation:
+  - Catering and Personal Chef request APIs now reject invalid email addresses, malformed event dates, and non-whole or non-positive guest counts before creating a request.
+  - Existing service request routes and database models remain unchanged.
