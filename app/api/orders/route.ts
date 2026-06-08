@@ -125,19 +125,30 @@ export async function POST(request: Request) {
       deliveryNotes: String(checkout.deliveryNotes ?? "").trim(),
     };
 
-    let requestedDate: Date | null = null;
+    if (!checkout.requestedDateTime) {
+      return NextResponse.json(
+        { error: "Please choose a requested date and time." },
+        { status: 400 },
+      );
+    }
 
-    if (checkout.requestedDateTime) {
-      requestedDate = new Date(checkout.requestedDateTime);
+    const requestedDate = new Date(checkout.requestedDateTime);
 
-      const requestedDateValidation = await validateServerRequestedDate(requestedDate);
+    if (Number.isNaN(requestedDate.getTime())) {
+      return NextResponse.json(
+        { error: "Please choose a valid requested date and time." },
+        { status: 400 },
+      );
+    }
 
-      if (!requestedDateValidation.valid) {
-        return NextResponse.json(
-          { error: requestedDateValidation.error },
-          { status: 400 },
-        );
-      }
+    const requestedDateValidation =
+      await validateServerRequestedDate(requestedDate);
+
+    if (!requestedDateValidation.valid) {
+      return NextResponse.json(
+        { error: requestedDateValidation.error },
+        { status: 400 },
+      );
     }
 
     if (checkout.orderType === "delivery") {
