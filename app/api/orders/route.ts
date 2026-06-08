@@ -75,6 +75,9 @@ function normalizeSubmittedChoiceName(choiceName: string) {
   return choiceName.replace(/\s+\(Request Only\)$/i, "").trim();
 }
 
+const allowedTipTypes = new Set(["none", "10", "15", "20", "custom"]);
+const allowedPaymentMethods = new Set(["manual", "cash"]);
+
 export async function POST(request: Request) {
   try {
     const session = await auth();
@@ -161,6 +164,50 @@ export async function POST(request: Request) {
         { error: "Pickup orders require your name and phone number." },
         { status: 400 },
       );
+    }
+
+    if (!allowedTipTypes.has(checkout.tipType)) {
+      return NextResponse.json(
+        { error: "Invalid tip selection." },
+        { status: 400 },
+      );
+    }
+
+    const customTipAmount =
+      checkout.tipType === "custom" ? Number(checkout.customTipAmount ?? 0) : 0;
+
+    if (!Number.isFinite(customTipAmount) || customTipAmount < 0) {
+      return NextResponse.json(
+        { error: "Custom tip amount must be zero or greater." },
+        { status: 400 },
+      );
+    }
+
+    if (!allowedPaymentMethods.has(checkout.paymentMethod)) {
+      return NextResponse.json(
+        { error: "Invalid or unavailable payment method." },
+        { status: 400 },
+      );
+    }
+
+    let payByDate: Date | null = null;
+
+    if (checkout.paymentMethod === "manual") {
+      if (!checkout.payByDate) {
+        return NextResponse.json(
+          { error: "Manual payment orders require a pay-by date." },
+          { status: 400 },
+        );
+      }
+
+      payByDate = new Date(checkout.payByDate);
+
+      if (Number.isNaN(payByDate.getTime())) {
+        return NextResponse.json(
+          { error: "Manual payment orders require a valid pay-by date." },
+          { status: 400 },
+        );
+      }
     }
 
     const liveMenuItemIds = Array.from(
@@ -470,7 +517,7 @@ export async function POST(request: Request) {
     const tipAmount = calculateTip(
       subtotal,
       checkout.tipType,
-      checkout.customTipAmount,
+      customTipAmount,
     );
 
     const total = subtotal + deliveryFee + lateFee + tipAmount;
@@ -519,7 +566,7 @@ export async function POST(request: Request) {
         deliveryPostalCode: contact.postalCode || null,
         deliveryNotes: contact.deliveryNotes || null,
 
-        payByDate: checkout.payByDate ? new Date(checkout.payByDate) : null,
+        payByDate,
         paymentProvider: checkout.paymentMethod,
         paymentStatus:
           checkout.paymentMethod === "cash"

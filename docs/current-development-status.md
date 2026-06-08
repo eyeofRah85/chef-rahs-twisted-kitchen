@@ -141,3 +141,5 @@ Progress update - June 6, 2026:
   - Reorders are blocked if the linked current menu item is now a catering/service item.
 - Reorder availability validation:
   - Reorders are blocked when the linked current menu item has been archived or marked unavailable, while still using snapshot pricing for valid linked items.
+- Checkout payment/tip validation:
+  - Order creation now rejects invalid tip selections, negative custom tips, disabled payment methods, and manual-payment submissions without a valid pay-by date.
