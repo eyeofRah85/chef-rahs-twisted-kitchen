@@ -151,3 +151,74 @@ Progress update - June 6, 2026:
 - Service request quote validation:
   - Admin quote updates now reject non-finite or negative estimated totals and deposit amounts on both the form and API.
   - A zero-dollar estimated total is treated as an explicit quote value instead of being ignored by status updates.
+
+Review notes from main branch inspection - June 8, 2026:
+- `package.json` currently exposes `dev`, `build`, `start`, and `lint` scripts only. There is no dedicated `typecheck` script yet, so future validation should either use `npm run build` or add a project script for TypeScript-only checks.
+- Checkout is currently a client page with sectioned UI and profile hydration via `/api/account/profile`. It uses `resetContactDetails()` before loading the signed-in profile and uses `cache: "no-store"` when fetching profile data.
+- Checkout still allows a disabled `stripe` option in the UI, while the order API only accepts `manual` and `cash`. This is intentional for now, but should remain disabled until Stripe is fully implemented.
+- Order creation now performs the authoritative price and option validation server-side. Treat the client cart totals as display-only; do not trust them for order persistence.
+- Prisma still has `OrderType.CATERING` in the schema for legacy compatibility, but checkout and order creation should only create `DELIVERY` and `PICKUP` orders.
+- Catering and Personal Chef remain stored in `CateringRequest`. This is intentionally stable for now even though the UI should say Service Requests where both request types appear.
+
+Next work items - June 8, 2026:
+
+1. Add a dedicated validation/typecheck workflow
+   - Add a `typecheck` script if the project can support it, for example `tsc --noEmit` after confirming the current TypeScript/Next setup.
+   - Consider adding a `check` script that runs lint, Prisma generate, and build in the expected order.
+   - Document the exact local verification commands in this handoff once confirmed.
+   - Keep `npm run build` as the release gate until a dedicated typecheck script exists.
+
+2. Finish checkout UX hardening
+   - Add a clear empty-cart redirect or call-to-action from `/checkout` when no cart items exist.
+   - Consider disabling the Submit Order button when `items.length === 0` in addition to the current alert.
+   - Add a short note that checkout contact fields are prefilled from the account profile and can be saved back to the profile with the checkbox.
+   - Keep the Stripe option disabled until the payment integration is actually wired server-side.
+
+3. Improve account/profile freshness after edits
+   - After account profile modal saves, verify customer pages that depend on profile data refresh consistently.
+   - Confirm `/catering` and `/personal-chef` forms prefill from the latest account profile after edits without requiring a hard browser refresh.
+   - If needed, add `router.refresh()` or no-store server data access where profile-backed forms are rendered.
+
+4. Service request form UX pass
+   - Convert service request form submission errors from raw JSON responses into friendly visible form feedback where practical.
+   - Add helper text for event date, guest count, location, and requested menu/service details.
+   - Confirm Catering and Personal Chef forms share behavior where appropriate but keep distinct customer-facing copy.
+   - Keep both workflows routed through `CateringRequest` unless a future schema migration is explicitly planned.
+
+5. Admin service request workflow polish
+   - Review admin service request detail actions after approval, quote, deposit due, deposit paid, completed, and cancelled states.
+   - Ensure actions that should be final or one-way are hidden or disabled after they are no longer valid.
+   - Ensure quote/deposit forms display current values clearly and do not make zero-dollar quote values look missing.
+   - Add customer-facing notes/history later if the client needs more transparent communication.
+
+6. Weekly meal plan modeling discovery
+   - Do not implement the full weekly menu schema yet.
+   - First document the desired admin workflow for weekly menus:
+     - Create a weekly menu period.
+     - Add prebuilt lunch/dinner menu choices.
+     - Let customers choose package length and possibly 2-meal or 3-meal days.
+     - Decide whether customers choose meals per day or only preferred components.
+   - After the workflow is clear, design a small schema proposal before coding.
+
+7. Gallery and image management next step
+   - Keep current public/static gallery approach for demo readiness.
+   - Decide whether menu item images and option choice images should remain URL-based or move to an admin upload workflow.
+   - If upload is added, define where files live and whether production hosting supports writing to `public/uploads`.
+   - Avoid tying gallery management to weekly meal plan modeling until the weekly menu direction is clearer.
+
+8. Deployment readiness pass
+   - Confirm required environment variables: `DATABASE_URL`, `AUTH_SECRET`, email/Resend settings, and public app URL.
+   - Review image upload assumptions for the deployment platform.
+   - Confirm Prisma migrations and seed process from a clean database.
+   - Confirm admin user creation/role assignment process.
+   - Confirm email links use the production base URL.
+   - Run `npm run lint` and `npm run build` before deployment.
+
+9. Legacy cleanup later, not now
+   - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
+   - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
+   - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
+   - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
+
+10. Suggested next Codex prompt
+   - Inspect the current main branch and complete work item 1 only: add or document a validation/typecheck workflow. Do not change app behavior. If adding a script, run lint/build and report results. Keep changes small and commit with a clear message.
