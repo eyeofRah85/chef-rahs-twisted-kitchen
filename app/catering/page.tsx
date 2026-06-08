@@ -1,8 +1,17 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getServiceRequestErrorMessage } from "@/lib/service-request-form-errors";
 
-export default async function CateringPage() {
+type PageProps = {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+};
+
+export default async function CateringPage({ searchParams }: PageProps) {
   const session = await auth();
+  const params = await searchParams;
+  const errorMessage = getServiceRequestErrorMessage(params.error);
 
   const user = session?.user?.email
     ? await prisma.user.findUnique({
@@ -37,6 +46,15 @@ export default async function CateringPage() {
           your request. Catering may require a 50% deposit after quote approval.
         </p>
 
+        {errorMessage ? (
+          <div
+            role="alert"
+            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900"
+          >
+            {errorMessage}
+          </div>
+        ) : null}
+
         <form action="/api/catering" method="POST" className="mt-8 space-y-5">
           <input
             name="name"
@@ -62,11 +80,20 @@ export default async function CateringPage() {
             className="w-full rounded-xl border px-4 py-3"
           />
 
-          <input
-            name="eventDate"
-            type="datetime-local"
-            className="w-full rounded-xl border px-4 py-3"
-          />
+          <div className="space-y-2">
+            <input
+              name="eventDate"
+              type="datetime-local"
+              aria-describedby="catering-event-date-help"
+              className="w-full rounded-xl border px-4 py-3"
+            />
+            <p
+              id="catering-event-date-help"
+              className="text-sm text-neutral-600"
+            >
+              Choose the event date and time if you already know it.
+            </p>
+          </div>
 
           <input
             name="eventType"
@@ -74,37 +101,64 @@ export default async function CateringPage() {
             className="w-full rounded-xl border px-4 py-3"
           />
 
-          <input
-            name="guestCount"
-            type="number"
-            min="1"
-            placeholder="Guest count"
-            className="w-full rounded-xl border px-4 py-3"
-          />
+          <div className="space-y-2">
+            <input
+              name="guestCount"
+              type="number"
+              min="1"
+              aria-describedby="catering-guest-count-help"
+              placeholder="Guest count"
+              className="w-full rounded-xl border px-4 py-3"
+            />
+            <p
+              id="catering-guest-count-help"
+              className="text-sm text-neutral-600"
+            >
+              Enter a whole number. Estimates are okay for the first request.
+            </p>
+          </div>
 
-          <input
-            name="location"
-            placeholder="Event location"
-            defaultValue={
-              user?.addressLine1
-                ? `${user.addressLine1}${user.addressLine2 ? `, ${user.addressLine2}` : ""}, ${[
-                    user.city,
-                    user.state,
-                    user.postalCode,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}`
-                : ""
-            }
-            className="w-full rounded-xl border px-4 py-3"
-          />
+          <div className="space-y-2">
+            <input
+              name="location"
+              aria-describedby="catering-location-help"
+              placeholder="Event location"
+              defaultValue={
+                user?.addressLine1
+                  ? `${user.addressLine1}${user.addressLine2 ? `, ${user.addressLine2}` : ""}, ${[
+                      user.city,
+                      user.state,
+                      user.postalCode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}`
+                  : ""
+              }
+              className="w-full rounded-xl border px-4 py-3"
+            />
+            <p
+              id="catering-location-help"
+              className="text-sm text-neutral-600"
+            >
+              Add the event address, venue, or delivery/service location.
+            </p>
+          </div>
 
-          <textarea
-            name="requestedMenu"
-            rows={4}
-            placeholder="Requested menu or meal ideas"
-            className="w-full rounded-xl border px-4 py-3"
-          />
+          <div className="space-y-2">
+            <textarea
+              name="requestedMenu"
+              rows={4}
+              aria-describedby="catering-requested-menu-help"
+              placeholder="Requested menu or meal ideas"
+              className="w-full rounded-xl border px-4 py-3"
+            />
+            <p
+              id="catering-requested-menu-help"
+              className="text-sm text-neutral-600"
+            >
+              Share dishes, service style, or menu ideas you have in mind.
+            </p>
+          </div>
 
           <textarea
             name="allergyNotes"

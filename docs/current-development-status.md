@@ -163,6 +163,11 @@ Progress update - June 6, 2026:
 - Account/profile freshness after edits:
   - Account profile saves now revalidate `/account`, `/catering`, and `/personal-chef` after the profile update succeeds.
   - The account profile modal already calls `router.refresh()` after saving, and checkout continues to fetch profile data with `cache: "no-store"` on mount.
+- Service request form UX pass:
+  - Catering and Personal Chef form validation errors now redirect browser form submissions back to the form with friendly visible feedback instead of raw JSON responses.
+  - Non-browser/API validation failures still receive JSON error responses.
+  - Both forms include helper text for event date, guest count, location, and requested menu/service details.
+  - Catering and Personal Chef continue to share the `CateringRequest` workflow while keeping distinct customer-facing copy.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -192,11 +197,11 @@ Next work items - June 8, 2026:
    - The account profile modal refreshes the current route after saving.
    - Checkout keeps using `cache: "no-store"` for profile hydration on mount.
 
-4. Service request form UX pass
-   - Convert service request form submission errors from raw JSON responses into friendly visible form feedback where practical.
-   - Add helper text for event date, guest count, location, and requested menu/service details.
-   - Confirm Catering and Personal Chef forms share behavior where appropriate but keep distinct customer-facing copy.
-   - Keep both workflows routed through `CateringRequest` unless a future schema migration is explicitly planned.
+4. Service request form UX pass - completed June 8, 2026
+   - Browser form validation failures redirect back to the request form with friendly visible feedback.
+   - Non-browser/API validation failures still receive JSON error responses.
+   - Catering and Personal Chef forms include helper text for event date, guest count, location, and requested menu/service details.
+   - Both workflows still route through `CateringRequest` while keeping distinct customer-facing copy.
 
 5. Admin service request workflow polish
    - Review admin service request detail actions after approval, quote, deposit due, deposit paid, completed, and cancelled states.
@@ -234,4 +239,4 @@ Next work items - June 8, 2026:
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
 10. Suggested next Codex prompt
-   - Inspect the current main branch and complete work item 4 only: service request form UX pass. Keep routes stable, keep Catering and Personal Chef on `CateringRequest`, run `npm run check`, and report results.
+   - Inspect the current main branch and complete work item 5 only: admin service request workflow polish. Keep routes stable, keep Catering and Personal Chef on `CateringRequest`, run `npm run check`, and report results.

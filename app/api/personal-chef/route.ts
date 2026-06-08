@@ -3,6 +3,27 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringRequestEmail } from "@/emails/CateringRequestEmail";
+import {
+  serviceRequestErrorMessages,
+  type ServiceRequestErrorCode,
+} from "@/lib/service-request-form-errors";
+
+function serviceRequestValidationError(
+  request: Request,
+  formPath: string,
+  errorCode: ServiceRequestErrorCode,
+) {
+  const message = serviceRequestErrorMessages[errorCode];
+
+  if (request.headers.get("accept")?.includes("text/html")) {
+    const formUrl = new URL(formPath, request.url);
+    formUrl.searchParams.set("error", errorCode);
+
+    return NextResponse.redirect(formUrl, { status: 303 });
+  }
+
+  return NextResponse.json({ error: message }, { status: 400 });
+}
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -19,25 +40,28 @@ export async function POST(request: Request) {
   const specialRequests = String(formData.get("specialRequests") ?? "").trim();
 
   if (!name || !email) {
-    return NextResponse.json(
-      { error: "Name and email are required." },
-      { status: 400 },
+    return serviceRequestValidationError(
+      request,
+      "/personal-chef",
+      "missing-contact",
     );
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json(
-      { error: "Please enter a valid email address." },
-      { status: 400 },
+    return serviceRequestValidationError(
+      request,
+      "/personal-chef",
+      "invalid-email",
     );
   }
 
   const parsedEventDate = eventDate ? new Date(eventDate) : null;
 
   if (parsedEventDate && Number.isNaN(parsedEventDate.getTime())) {
-    return NextResponse.json(
-      { error: "Please enter a valid event date." },
-      { status: 400 },
+    return serviceRequestValidationError(
+      request,
+      "/personal-chef",
+      "invalid-event-date",
     );
   }
 
@@ -47,9 +71,10 @@ export async function POST(request: Request) {
     guestCount !== null &&
     (!Number.isInteger(guestCount) || guestCount < 1)
   ) {
-    return NextResponse.json(
-      { error: "Guest count must be a whole number greater than zero." },
-      { status: 400 },
+    return serviceRequestValidationError(
+      request,
+      "/personal-chef",
+      "invalid-guest-count",
     );
   }
 
