@@ -23,7 +23,32 @@ export function CateringQuoteForm({
   );
   const [saving, setSaving] = useState(false);
 
+  function parseOptionalAmount(value: string) {
+    const trimmedValue = value.trim();
+
+    return trimmedValue ? Number(trimmedValue) : null;
+  }
+
   async function saveQuote() {
+    const nextEstimatedTotal = parseOptionalAmount(estimatedTotal);
+    const nextDepositAmount = parseOptionalAmount(depositAmount);
+
+    if (
+      nextEstimatedTotal !== null &&
+      (!Number.isFinite(nextEstimatedTotal) || nextEstimatedTotal < 0)
+    ) {
+      alert("Estimated total must be a valid amount of zero or more.");
+      return;
+    }
+
+    if (
+      nextDepositAmount !== null &&
+      (!Number.isFinite(nextDepositAmount) || nextDepositAmount < 0)
+    ) {
+      alert("Deposit amount must be a valid amount of zero or more.");
+      return;
+    }
+
     setSaving(true);
 
     const response = await fetch(`/api/admin/catering/${requestId}/quote`, {
@@ -32,15 +57,17 @@ export function CateringQuoteForm({
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        estimatedTotal: estimatedTotal ? Number(estimatedTotal) : null,
-        depositAmount: depositAmount ? Number(depositAmount) : null,
+        estimatedTotal: nextEstimatedTotal,
+        depositAmount: nextDepositAmount,
       }),
     });
 
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to save quote.");
+      const errorData = await response.json().catch(() => null);
+
+      alert(errorData?.error ?? "Failed to save quote.");
       return;
     }
 

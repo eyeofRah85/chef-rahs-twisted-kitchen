@@ -148,3 +148,6 @@ Progress update - June 6, 2026:
 - Service request submission validation:
   - Catering and Personal Chef request APIs now reject invalid email addresses, malformed event dates, and non-whole or non-positive guest counts before creating a request.
   - Existing service request routes and database models remain unchanged.
+- Service request quote validation:
+  - Admin quote updates now reject non-finite or negative estimated totals and deposit amounts on both the form and API.
+  - A zero-dollar estimated total is treated as an explicit quote value instead of being ignored by status updates.

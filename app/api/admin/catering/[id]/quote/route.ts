@@ -12,6 +12,14 @@ type RouteContext = {
   }>;
 };
 
+function parseOptionalAmount(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  return Number(value);
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     await requireAdmin();
@@ -19,21 +27,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
-    const estimatedTotal =
-      body.estimatedTotal === null || body.estimatedTotal === undefined
-        ? null
-        : Number(body.estimatedTotal);
-
-    const depositAmount =
-      body.depositAmount === null || body.depositAmount === undefined
-        ? estimatedTotal !== null
-          ? await calculateServerCateringDeposit(estimatedTotal)
-          : null
-        : Number(body.depositAmount);
+    const estimatedTotal = parseOptionalAmount(body.estimatedTotal);
 
     if (
       estimatedTotal !== null &&
-      (Number.isNaN(estimatedTotal) || estimatedTotal < 0)
+      (!Number.isFinite(estimatedTotal) || estimatedTotal < 0)
     ) {
       return NextResponse.json(
         { error: "Invalid estimated total." },
@@ -41,9 +39,18 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const depositAmount =
+      body.depositAmount === null ||
+      body.depositAmount === undefined ||
+      body.depositAmount === ""
+        ? estimatedTotal !== null
+          ? await calculateServerCateringDeposit(estimatedTotal)
+          : null
+        : parseOptionalAmount(body.depositAmount);
+
     if (
       depositAmount !== null &&
-      (Number.isNaN(depositAmount) || depositAmount < 0)
+      (!Number.isFinite(depositAmount) || depositAmount < 0)
     ) {
       return NextResponse.json(
         { error: "Invalid deposit amount." },
@@ -56,7 +63,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: {
         estimatedTotal,
         depositAmount,
-        status: estimatedTotal ? "QUOTED" : undefined,
+        status: estimatedTotal !== null ? "QUOTED" : undefined,
       },
     });
     const requestLabel = formatServiceRequestType(updated.requestType);
