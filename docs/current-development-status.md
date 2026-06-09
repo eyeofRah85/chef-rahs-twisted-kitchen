@@ -174,6 +174,11 @@ Progress update - June 6, 2026:
   - Quote editing is locked after final states, denied approvals, or paid deposits.
   - Zero-dollar quotes and zero-dollar deposits display as explicit `$0.00` values instead of looking unset.
   - Zero-dollar deposits are treated as no deposit due, so the mark-deposit-paid action is hidden and rejected by the API.
+- Weekly meal plan modeling discovery:
+  - Added `docs/weekly-meal-plan-discovery.md` to document the desired weekly meal plan admin and customer workflows before schema changes.
+  - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, option groups, request-only choices, and order snapshots.
+  - Future weekly meal plans likely need a weekly period, package offerings, weekly meal choices, and order selection snapshots if customers choose meals by week.
+  - Open business decisions are documented before any schema migration is planned.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -217,14 +222,12 @@ Next work items - June 8, 2026:
    - Admin and customer detail pages display zero-dollar quote and deposit values as `$0.00`.
    - Zero-dollar deposits are treated as no deposit due instead of a payable deposit.
 
-6. Weekly meal plan modeling discovery
-   - Do not implement the full weekly menu schema yet.
-   - First document the desired admin workflow for weekly menus:
-     - Create a weekly menu period.
-     - Add prebuilt lunch/dinner menu choices.
-     - Let customers choose package length and possibly 2-meal or 3-meal days.
-     - Decide whether customers choose meals per day or only preferred components.
-   - After the workflow is clear, design a small schema proposal before coding.
+6. Weekly meal plan modeling discovery - completed June 8, 2026
+   - `docs/weekly-meal-plan-discovery.md` documents the desired admin workflow for weekly menu periods, package offerings, lunch/dinner choices, publishing, and fulfillment prep.
+   - The customer workflow keeps weekly meal plans inside `/menu` and cart checkout.
+   - The recommended next model is a hybrid flow where customers choose package length, meals per day, and available meal choices while still allowing preferences/flexible selections.
+   - Open business decisions are listed before schema implementation.
+   - No schema or route changes were made.
 
 7. Gallery and image management next step
    - Keep current public/static gallery approach for demo readiness.
@@ -247,4 +250,4 @@ Next work items - June 8, 2026:
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
 10. Suggested next Codex prompt
-   - Inspect the current main branch and start work item 6 only: weekly meal plan modeling discovery. Do not implement schema changes yet; document the desired admin/customer workflow first, keep routes stable, run validation only if code changes are made, and report results.
+   - Inspect the current main branch and start work item 7 only: gallery and image management next step. Keep the current public/static gallery approach for demo readiness, decide whether menu item and option choice images should remain URL-based or move to an admin upload workflow, avoid tying gallery management to weekly meal plan modeling, run validation only if code changes are made, and report results.
