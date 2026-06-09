@@ -5,6 +5,7 @@ import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringStatusEmail } from "@/emails/CateringStatusEmail";
 import { formatServiceRequestType } from "@/lib/format-labels";
+import { canEditServiceRequestQuote } from "@/lib/service-request-workflow";
 
 type RouteContext = {
   params: Promise<{
@@ -26,6 +27,35 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const body = await request.json();
+
+    const existingRequest = await prisma.cateringRequest.findUnique({
+      where: { id },
+      select: {
+        approvalStatus: true,
+        depositPaidAt: true,
+        status: true,
+      },
+    });
+
+    if (!existingRequest) {
+      return NextResponse.json(
+        { error: "Service request not found." },
+        { status: 404 },
+      );
+    }
+
+    if (
+      !canEditServiceRequestQuote({
+        approvalStatus: existingRequest.approvalStatus,
+        depositPaid: existingRequest.depositPaidAt !== null,
+        status: existingRequest.status,
+      })
+    ) {
+      return NextResponse.json(
+        { error: "Quote editing is locked for this service request." },
+        { status: 409 },
+      );
+    }
 
     const estimatedTotal = parseOptionalAmount(body.estimatedTotal);
 
@@ -70,25 +100,25 @@ export async function PATCH(request: Request, context: RouteContext) {
     const requestLabelLower = requestLabel.toLowerCase();
 
     await sendAppEmail({
-        to: updated.email,
-        subject: `Your ${requestLabelLower} quote has been updated`,
-        react: CateringStatusEmail({
-          customerName: updated.name,
-          requestType: updated.requestType,
-          eventType: updated.eventType ?? `${requestLabel} Request`,
-          status: updated.status,
-          approvalStatus: updated.approvalStatus,
-          approvalNote: updated.approvalNote,
-          estimatedTotal: updated.estimatedTotal
-            ? Number(updated.estimatedTotal)
-            : null,
-          depositAmount: updated.depositAmount
-            ? Number(updated.depositAmount)
-            : null,
-            requestUrl: `${appUrl}/account/catering/${updated.id}`,
-        }),
-      });
- 
+      to: updated.email,
+      subject: `Your ${requestLabelLower} quote has been updated`,
+      react: CateringStatusEmail({
+        customerName: updated.name,
+        requestType: updated.requestType,
+        eventType: updated.eventType ?? `${requestLabel} Request`,
+        status: updated.status,
+        approvalStatus: updated.approvalStatus,
+        approvalNote: updated.approvalNote,
+        estimatedTotal:
+          updated.estimatedTotal === null
+            ? null
+            : Number(updated.estimatedTotal),
+        depositAmount:
+          updated.depositAmount === null ? null : Number(updated.depositAmount),
+        requestUrl: `${appUrl}/account/catering/${updated.id}`,
+      }),
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);

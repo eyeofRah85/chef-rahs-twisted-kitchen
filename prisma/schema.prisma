@@ -200,6 +200,21 @@ model MenuItem {
   archived Boolean @default(false)
 }
 
+model GalleryImage {
+  id        String   @id @default(cuid())
+  src       String
+  alt       String
+  title     String
+  category  String
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category, sortOrder])
+  @@index([sortOrder])
+}
+
 model Allergen {
   id        String   @id @default(cuid())
   name      String   @unique
@@ -307,7 +322,7 @@ model OrderItem {
   order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   menuItemId String?
-  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id])
+  menuItem   MenuItem? @relation(fields: [menuItemId], references: [id], onDelete: SetNull)
 
   name       String
   quantity   Int

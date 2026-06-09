@@ -14,6 +14,10 @@ type PageProps = {
   }>;
 };
 
+function formatOptionalCurrency(value: number | null) {
+  return value === null ? "Not set" : `$${value.toFixed(2)}`;
+}
+
 export default async function AccountCateringDetailsPage({ params }: PageProps) {
   const session = await auth();
 
@@ -37,6 +41,10 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
   }
 
   const requestTypeLabel = formatServiceRequestType(request.requestType);
+  const estimatedTotal =
+    request.estimatedTotal === null ? null : Number(request.estimatedTotal);
+  const depositAmount =
+    request.depositAmount === null ? null : Number(request.depositAmount);
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -111,30 +119,39 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
               <div className="mt-4 space-y-2 text-sm text-neutral-700">
                 <p>
                   <strong>Estimated Total:</strong>{" "}
-                  {request.estimatedTotal
-                    ? `$${Number(request.estimatedTotal).toFixed(2)}`
-                    : "Not set"}
+                  {formatOptionalCurrency(estimatedTotal)}
                 </p>
 
                 <p>
                   <strong>Deposit:</strong>{" "}
-                  {request.depositAmount
-                    ? `$${Number(request.depositAmount).toFixed(2)}`
-                    : "Not set"}
+                  {formatOptionalCurrency(depositAmount)}
                 </p>
 
-                {request.depositAmount && !request.depositPaidAt && (
-                  <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                    <p className="font-semibold">Deposit Pending</p>
+                {depositAmount !== null &&
+                  depositAmount > 0 &&
+                  !request.depositPaidAt && (
+                    <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+                      <p className="font-semibold">Deposit Pending</p>
+
+                      <p className="mt-2">
+                        A deposit of ${depositAmount.toFixed(2)} is due before
+                        this {requestTypeLabel.toLowerCase()} request can be
+                        finalized.
+                      </p>
+
+                      <p className="mt-2 text-xs">
+                        Online deposit payments are coming soon. For now, the
+                        business will provide manual payment instructions.
+                      </p>
+                    </div>
+                  )}
+
+                {depositAmount === 0 && !request.depositPaidAt && (
+                  <div className="mt-4 rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
+                    <p className="font-semibold">No Deposit Due</p>
 
                     <p className="mt-2">
-                      A deposit of ${Number(request.depositAmount).toFixed(2)} is due before
-                      this {requestTypeLabel.toLowerCase()} request can be finalized.
-                    </p>
-
-                    <p className="mt-2 text-xs">
-                      Online deposit payments are coming soon. For now, the business will
-                      provide manual payment instructions.
+                      No deposit is due for this service request.
                     </p>
                   </div>
                 )}

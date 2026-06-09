@@ -3,6 +3,7 @@
 import { useCheckoutStore } from "@/store/checkout-store";
 import { useCartStore } from "@/store/cart-store";
 import { calculateTip } from "@/lib/order-calculations";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
@@ -93,6 +94,44 @@ export default function CheckoutPage() {
 
   if (!mounted) {
     return null;
+  }
+
+  const hasCartItems = items.length > 0;
+
+  if (!hasCartItems) {
+    return (
+      <main className="min-h-screen bg-neutral-50 px-4 py-10 text-neutral-950 sm:px-6">
+        <div className="mx-auto max-w-3xl">
+          <div className={sectionClass}>
+            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
+              Checkout
+            </p>
+
+            <h1 className="mt-3 text-4xl font-bold">Your Cart Is Empty</h1>
+
+            <p className="mt-4 text-neutral-700">
+              Add meal plans or a la carte items before starting checkout.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/menu"
+                className="rounded-lg bg-black px-5 py-3 text-sm font-medium text-white"
+              >
+                Browse Menu
+              </Link>
+
+              <Link
+                href="/cart"
+                className="rounded-lg border border-neutral-300 px-5 py-3 text-sm font-medium"
+              >
+                View Cart
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
   }
 
   const subtotal = items.reduce(
@@ -369,6 +408,11 @@ export default function CheckoutPage() {
                   ? "Contact / Delivery Info"
                   : "Contact Info"}
               </h2>
+
+              <p className="mt-3 text-sm text-neutral-600">
+                Prefilled from your account profile when available. Check the
+                box below to save changes back to your profile after ordering.
+              </p>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <label className={labelClass}>
@@ -699,10 +743,14 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !hasCartItems}
                 className="mt-6 w-full rounded-lg bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
               >
-                {submitting ? "Submitting..." : "Submit Order"}
+                {submitting
+                  ? "Submitting..."
+                  : hasCartItems
+                    ? "Submit Order"
+                    : "Cart Is Empty"}
               </button>
             </section>
           </aside>

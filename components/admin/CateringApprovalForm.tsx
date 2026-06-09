@@ -75,9 +75,7 @@ export function CateringApprovalForm({
   }
 
   return (
-    <section className="rounded-2xl border bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-semibold">Approval Decision</h2>
-
+    <div>
       <p className="mt-2 text-sm text-neutral-600">
         Approve this request to continue quoting and planning, or deny it if the
         request cannot be fulfilled.
@@ -110,6 +108,6 @@ export function CateringApprovalForm({
           {saving ? "Saving..." : "Deny Request"}
         </button>
       </div>
-    </section>
+    </div>
   );
 }

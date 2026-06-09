@@ -1,0 +1,121 @@
+import { revalidatePath } from "next/cache";
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth-guards";
+import {
+  isGalleryImageCategory,
+  type GalleryImageCategory,
+} from "@/lib/gallery-images";
+import { prisma } from "@/lib/prisma";
+import {
+  removePublicUpload,
+  savePublicImageUpload,
+} from "@/lib/public-upload";
+
+type RouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+function parseGalleryFields(formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim();
+  const alt = String(formData.get("alt") ?? "").trim();
+  const category = String(formData.get("category") ?? "").trim();
+  const sortOrderValue = Number(formData.get("sortOrder") ?? 0);
+
+  if (!title || !alt || !isGalleryImageCategory(category)) {
+    throw new Error("Title, alt text, and a valid category are required.");
+  }
+
+  if (!Number.isInteger(sortOrderValue) || sortOrderValue < 0) {
+    throw new Error("Sort order must be a whole number.");
+  }
+
+  return {
+    title,
+    alt,
+    category: category as GalleryImageCategory,
+    sortOrder: sortOrderValue,
+  };
+}
+
+export async function PATCH(request: Request, context: RouteContext) {
+  try {
+    await requireAdmin();
+
+    const { id } = await context.params;
+    const existing = await prisma.galleryImage.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Gallery image not found." },
+        { status: 404 },
+      );
+    }
+
+    const formData = await request.formData();
+    const fields = parseGalleryFields(formData);
+    const image = formData.get("image") as File | null;
+    const src =
+      image && image.size > 0
+        ? await savePublicImageUpload(image, "gallery")
+        : existing.src;
+
+    const updated = await prisma.galleryImage.update({
+      where: { id },
+      data: {
+        ...fields,
+        src,
+      },
+    });
+
+    if (src !== existing.src) {
+      await removePublicUpload(existing.src, "gallery");
+    }
+
+    revalidatePath("/gallery");
+    revalidatePath("/admin/gallery");
+
+    return NextResponse.json(updated);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update gallery image.";
+
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  try {
+    await requireAdmin();
+
+    const { id } = await context.params;
+    const existing = await prisma.galleryImage.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Gallery image not found." },
+        { status: 404 },
+      );
+    }
+
+    await prisma.galleryImage.delete({
+      where: { id },
+    });
+    await removePublicUpload(existing.src, "gallery");
+
+    revalidatePath("/gallery");
+    revalidatePath("/admin/gallery");
+
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to delete gallery image." },
+      { status: 500 },
+    );
+  }
+}

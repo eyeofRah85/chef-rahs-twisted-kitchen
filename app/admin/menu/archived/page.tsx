@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { RestoreMenuItemButton } from "@/components/admin/RestoreMenuItemButton";
+import { DeleteMenuItemButton } from "@/components/admin/DeleteMenuItemButton";
 import Link from "next/link";
 import type { DecimalLike } from "@/types/display";
 
@@ -71,7 +72,13 @@ export default async function ArchivedMenuItemsPage() {
                   </p>
                 </div>
 
-                <RestoreMenuItemButton menuItemId={item.id} />
+                <div className="flex flex-wrap gap-3">
+                  <RestoreMenuItemButton menuItemId={item.id} />
+                  <DeleteMenuItemButton
+                    menuItemId={item.id}
+                    itemName={item.name}
+                  />
+                </div>
               </div>
             </div>
           ))}

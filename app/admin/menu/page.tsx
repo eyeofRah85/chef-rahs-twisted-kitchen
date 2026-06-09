@@ -9,6 +9,8 @@ import { MenuItemEditForm } from "@/components/admin/MenuItemEditForm";
 import { DeleteOptionGroupButton } from "@/components/admin/DeleteOptionGroupButton";
 import { EditOptionChoiceForm } from "@/components/admin/EditOptionChoiceForm";
 import { ApplyMealPlanTemplateButton } from "@/components/admin/ApplyMealPlanTemplateButton";
+import { ArchiveMenuItemButton } from "@/components/admin/ArchiveMenuItemButton";
+import { DeleteMenuItemButton } from "@/components/admin/DeleteMenuItemButton";
 import { formatMenuItemType } from "@/lib/format-labels";
 import { parseEnumValue } from "@/lib/enum-values";
 import { menuItemTypes } from "@/lib/prisma-enums";
@@ -330,6 +332,14 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                     item.customerInstructionsEnabled,
                                 }}
                               />
+
+                              <ArchiveMenuItemButton menuItemId={item.id} />
+
+                              <DeleteMenuItemButton
+                                menuItemId={item.id}
+                                itemName={item.name}
+                              />
+
                               {item.type === "MEAL_PLAN" && (
                               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                                 <p className="mb-2 text-xs text-amber-900">

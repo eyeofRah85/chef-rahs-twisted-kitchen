@@ -189,6 +189,7 @@ export default async function AdminPage() {
     { label: "Orders", href: "/admin/orders" },
     { label: "Kitchen View", href: "/admin/kitchen" },
     { label: "Menu Manager", href: "/admin/menu" },
+    { label: "Gallery Manager", href: "/admin/gallery" },
     { label: "Service Requests", href: "/admin/catering" },
     { label: "Customers", href: "/admin/customers" },
     { label: "Reports", href: "/admin/reports" },

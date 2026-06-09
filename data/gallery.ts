@@ -1,39 +1,122 @@
+export const galleryCategoryOptions = [
+  "Meal Prep",
+  "Meal Plans",
+  "Catering",
+  "Personal Chef",
+  "Behind the Scenes",
+] as const;
+
+export type GalleryImageCategory = (typeof galleryCategoryOptions)[number];
+
 export type GalleryImage = {
   src: string;
   alt: string;
   title: string;
-  category:
-  | "Meal Prep"
-  | "Meal Plans"
-  | "Catering"
-  | "Personal Chef"
-  | "Behind the Scenes";
+  category: GalleryImageCategory;
 };
 
 export const galleryImages: GalleryImage[] = [
   {
-    src: "/gallery/meal-prep-1.jpg",
-    alt: "Prepared meal prep containers",
-    title: "Meal Prep",
+    src: "/gallery/webp/IMG_1416.webp",
+    alt: "Chicken and broccoli meal prep with scallions",
+    title: "Chicken and Broccoli Meal Prep",
     category: "Meal Prep",
   },
   {
-    src: "/gallery/meal-plan-1.jpg",
-    alt: "Chef-prepared meal plan option",
-    title: "Meal Plan Option",
+    src: "/gallery/webp/IMG_1417.webp",
+    alt: "Tomato braised meal prep with herbs and cheese",
+    title: "Tomato Braised Meal Prep",
+    category: "Meal Prep",
+  },
+  {
+    src: "/gallery/webp/IMG_1420.webp",
+    alt: "Stuffed peppers topped with tomato and cheese",
+    title: "Stuffed Pepper Meal",
     category: "Meal Plans",
   },
   {
-    src: "/gallery/catering-1.jpg",
-    alt: "Catering food setup",
-    title: "Catering Setup",
+    src: "/gallery/webp/IMG_1428.webp",
+    alt: "Stuffed peppers prepared on a catering tray",
+    title: "Stuffed Pepper Tray",
     category: "Catering",
   },
   {
-    src: "/gallery/personal-chef-1.jpg",
-    alt: "Private chef prepared meal",
-    title: "Personal Chef Service",
+    src: "/gallery/webp/IMG_1429.webp",
+    alt: "Close-up of stuffed peppers with savory filling",
+    title: "Savory Stuffed Peppers",
+    category: "Catering",
+  },
+  {
+    src: "/gallery/webp/IMG_1432.webp",
+    alt: "Crab cake meal with lemon garnish",
+    title: "Crab Cake Plate",
     category: "Personal Chef",
+  },
+  {
+    src: "/gallery/webp/IMG_1469.webp",
+    alt: "Salmon meal prep over rice and vegetables",
+    title: "Salmon Rice Bowl",
+    category: "Meal Prep",
+  },
+  {
+    src: "/gallery/webp/IMG_1471.webp",
+    alt: "Savory meal prep with rice, jalapenos, and sauce",
+    title: "Savory Rice Meal",
+    category: "Meal Prep",
+  },
+  {
+    src: "/gallery/webp/IMG_1478.webp",
+    alt: "Shrimp saute with vegetables in a bowl",
+    title: "Shrimp Saute",
+    category: "Personal Chef",
+  },
+  {
+    src: "/gallery/webp/IMG_1481.webp",
+    alt: "Shrimp pasta with grated cheese",
+    title: "Shrimp Pasta",
+    category: "Personal Chef",
+  },
+  {
+    src: "/gallery/webp/IMG_1487.webp",
+    alt: "Salmon meal with broccoli and rice",
+    title: "Salmon and Broccoli Plate",
+    category: "Meal Plans",
+  },
+  {
+    src: "/gallery/webp/IMG_1490.webp",
+    alt: "Barbecue chicken meal prep with vegetables",
+    title: "Barbecue Chicken Meal Prep",
+    category: "Meal Prep",
+  },
+  {
+    src: "/gallery/webp/IMG_1491.webp",
+    alt: "Meal prep plate with rice and a pastry",
+    title: "Seasonal Meal Prep Plate",
+    category: "Meal Plans",
+  },
+  {
+    src: "/gallery/webp/IMG_1535.webp",
+    alt: "Grilled chicken plate with greens",
+    title: "Grilled Chicken Plate",
+    category: "Meal Plans",
+  },
+  {
+    src: "/gallery/webp/IMG_1544.webp",
+    alt: "Composed plate with greens, mash, and braised meat",
+    title: "Composed Dinner Plate",
+    category: "Personal Chef",
+  },
+  {
+    src: "/gallery/webp/IMG_1546.webp",
+    alt: "Rice bowl with chicken, chickpeas, and herbs",
+    title: "Chicken Rice Bowl",
+    category: "Meal Prep",
+  },
+  {
+    src: "/gallery/webp/IMG_1550.webp",
+    alt: "Meal prep plate with beans, rice, and lime",
+    title: "Rice and Bean Meal Prep",
+    category: "Meal Prep",
   },
 ];
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
@@ -68,6 +69,10 @@ export async function PATCH(request: Request) {
       deliveryNotes: deliveryNotes || null,
     },
   });
+
+  revalidatePath("/account");
+  revalidatePath("/catering");
+  revalidatePath("/personal-chef");
 
   return NextResponse.json(updatedUser);
 }

@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { galleryImages } from "@/data/gallery";
+import { getPublicGalleryImages } from "@/lib/gallery-images";
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const galleryImages = await getPublicGalleryImages();
   const categories = Array.from(
     new Set(galleryImages.map((image) => image.category)),
   );

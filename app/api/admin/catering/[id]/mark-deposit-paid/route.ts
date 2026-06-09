@@ -23,9 +23,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         where: {
           id,
           depositAmount: {
-            not: null,
+            gt: 0,
           },
           depositPaidAt: null,
+          approvalStatus: {
+            not: "DENIED",
+          },
+          status: {
+            notIn: ["COMPLETED", "CANCELLED"],
+          },
         },
         data: {
           status: "DEPOSIT_PAID",
@@ -46,8 +52,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       const existingRequest = await prisma.cateringRequest.findUnique({
         where: { id },
         select: {
+          approvalStatus: true,
           depositAmount: true,
           depositPaidAt: true,
+          status: true,
         },
       });
 
@@ -58,9 +66,41 @@ export async function PATCH(request: Request, context: RouteContext) {
         );
       }
 
-      if (!existingRequest.depositAmount) {
+      if (existingRequest.approvalStatus === "DENIED") {
+        return NextResponse.json(
+          { error: "Denied service requests cannot accept deposits." },
+          { status: 409 },
+        );
+      }
+
+      if (existingRequest.status === "COMPLETED") {
+        return NextResponse.json(
+          { error: "Completed service requests cannot accept deposits." },
+          { status: 409 },
+        );
+      }
+
+      if (existingRequest.status === "CANCELLED") {
+        return NextResponse.json(
+          { error: "Cancelled service requests cannot accept deposits." },
+          { status: 409 },
+        );
+      }
+
+      const depositAmount = existingRequest.depositAmount
+        ? Number(existingRequest.depositAmount)
+        : null;
+
+      if (depositAmount === null) {
         return NextResponse.json(
           { error: "Set a deposit amount before marking it as paid." },
+          { status: 400 },
+        );
+      }
+
+      if (depositAmount <= 0) {
+        return NextResponse.json(
+          { error: "No deposit is due for this service request." },
           { status: 400 },
         );
       }

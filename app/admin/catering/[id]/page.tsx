@@ -10,12 +10,21 @@ import {
   formatServiceRequestStatus,
   formatServiceRequestType,
 } from "@/lib/format-labels";
+import {
+  canEditServiceRequestQuote,
+  canMarkServiceRequestDepositPaid,
+  isTerminalServiceRequestStatus,
+} from "@/lib/service-request-workflow";
 
 type PageProps = {
   params: Promise<{
     id: string;
   }>;
 };
+
+function formatOptionalCurrency(value: number | null) {
+  return value === null ? "Not set" : `$${value.toFixed(2)}`;
+}
 
 export default async function AdminCateringDetailsPage({ params }: PageProps) {
   try {
@@ -35,6 +44,31 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
   }
 
   const requestTypeLabel = formatServiceRequestType(request.requestType);
+  const estimatedTotal =
+    request.estimatedTotal === null ? null : Number(request.estimatedTotal);
+  const depositAmount =
+    request.depositAmount === null ? null : Number(request.depositAmount);
+  const depositPaid = request.depositPaidAt !== null;
+  const terminalStatus = isTerminalServiceRequestStatus(request.status);
+  const quoteLockedReason = canEditServiceRequestQuote({
+    approvalStatus: request.approvalStatus,
+    depositPaid,
+    status: request.status,
+  })
+    ? null
+    : depositPaid
+      ? "Quote editing is locked after the deposit is marked paid."
+      : request.approvalStatus === "DENIED"
+        ? "Quote editing is locked because this service request was denied."
+        : terminalStatus
+          ? "Quote editing is locked because this service request is final."
+          : "Quote editing is not available for this request.";
+  const canMarkDepositPaid = canMarkServiceRequestDepositPaid({
+    approvalStatus: request.approvalStatus,
+    depositAmount,
+    depositPaid,
+    status: request.status,
+  });
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-12">
@@ -149,51 +183,59 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
                 <UpdateCateringStatusForm
                   requestId={request.id}
                   currentStatus={request.status}
+                  currentApprovalStatus={request.approvalStatus}
+                  depositPaid={depositPaid}
+                  hasDepositDue={depositAmount !== null && depositAmount > 0}
                 />
               </div>
             </div>
 
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
-
               <h2 className="text-2xl font-semibold">Quote / Deposit</h2>
-                <div className="mt-5 space-y-3 text-sm">
-                  <p>
-                    <strong>Estimated Total:</strong>{" "}
-                    {request.estimatedTotal
-                      ? `$${Number(request.estimatedTotal).toFixed(2)}`
-                      : "Not set"}
-                  </p>
 
-                  <p>
-                    <strong>Deposit Amount:</strong>{" "}
-                    {request.depositAmount
-                      ? `$${Number(request.depositAmount).toFixed(2)}`
-                      : "Not set"}
-                  </p>
+              <div className="mt-5 space-y-3 text-sm">
+                <p>
+                  <strong>Estimated Total:</strong>{" "}
+                  {formatOptionalCurrency(estimatedTotal)}
+                </p>
 
-                  <p>
-                    <strong>Deposit Paid:</strong>{" "}
-                    {request.depositPaidAt
-                      ? request.depositPaidAt.toLocaleString()
-                      : "Not paid"}
-                  </p>
+                <p>
+                  <strong>Deposit Amount:</strong>{" "}
+                  {formatOptionalCurrency(depositAmount)}
+                </p>
 
-                  <div className="mt-6 border-t pt-5">
-                    <CateringQuoteForm
-                      requestId={request.id}
-                      currentEstimatedTotal={
-                        request.estimatedTotal ? Number(request.estimatedTotal) : null
-                      }
-                      currentDepositAmount={
-                        request.depositAmount ? Number(request.depositAmount) : null
-                      }
-                    />
-                    {request.depositAmount && !request.depositPaidAt && (
-                      <div className="mt-5">
-                        <MarkDepositPaidButton requestId={request.id} />
-                      </div>
-                    )}
-                  </div>
+                <p>
+                  <strong>Deposit Paid:</strong>{" "}
+                  {request.depositPaidAt
+                    ? request.depositPaidAt.toLocaleString()
+                    : "Not paid"}
+                </p>
+
+                <div className="mt-6 border-t pt-5">
+                  <CateringQuoteForm
+                    requestId={request.id}
+                    currentEstimatedTotal={estimatedTotal}
+                    currentDepositAmount={depositAmount}
+                    lockedReason={quoteLockedReason}
+                  />
+                  {canMarkDepositPaid && (
+                    <div className="mt-5">
+                      <MarkDepositPaidButton requestId={request.id} />
+                    </div>
+                  )}
+                  {depositAmount === 0 && !depositPaid ? (
+                    <p className="mt-4 rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
+                      No deposit is due for this service request.
+                    </p>
+                  ) : null}
+                  {depositAmount !== null &&
+                    depositAmount > 0 &&
+                    depositPaid ? (
+                    <p className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
+                      Deposit has already been marked paid.
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </div>
           </aside>

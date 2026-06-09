@@ -7,19 +7,21 @@ type Props = {
   requestId: string;
   currentEstimatedTotal: number | null;
   currentDepositAmount: number | null;
+  lockedReason?: string | null;
 };
 
 export function CateringQuoteForm({
   requestId,
   currentEstimatedTotal,
   currentDepositAmount,
+  lockedReason,
 }: Props) {
   const router = useRouter();
   const [estimatedTotal, setEstimatedTotal] = useState(
-    currentEstimatedTotal?.toString() ?? "",
+    currentEstimatedTotal === null ? "" : currentEstimatedTotal.toString(),
   );
   const [depositAmount, setDepositAmount] = useState(
-    currentDepositAmount?.toString() ?? "",
+    currentDepositAmount === null ? "" : currentDepositAmount.toString(),
   );
   const [saving, setSaving] = useState(false);
 
@@ -30,6 +32,8 @@ export function CateringQuoteForm({
   }
 
   async function saveQuote() {
+    if (lockedReason) return;
+
     const nextEstimatedTotal = parseOptionalAmount(estimatedTotal);
     const nextDepositAmount = parseOptionalAmount(depositAmount);
 
@@ -74,6 +78,14 @@ export function CateringQuoteForm({
     router.refresh();
   }
 
+  if (lockedReason) {
+    return (
+      <div className="rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
+        {lockedReason}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div>
@@ -86,6 +98,9 @@ export function CateringQuoteForm({
           onChange={(e) => setEstimatedTotal(e.target.value)}
           className="mt-2 w-full rounded-xl border px-4 py-3"
         />
+        <p className="mt-2 text-xs text-neutral-500">
+          Use 0.00 only when there is intentionally no charge.
+        </p>
       </div>
 
       <div>
@@ -99,7 +114,8 @@ export function CateringQuoteForm({
           className="mt-2 w-full rounded-xl border px-4 py-3"
         />
         <p className="mt-2 text-xs text-neutral-500">
-          Leave blank to automatically calculate the deposit from business settings.
+          Leave blank to automatically calculate the deposit from business
+          settings. Use 0.00 when no deposit is due.
         </p>
       </div>
 

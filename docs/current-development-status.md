@@ -3,8 +3,11 @@ You are helping continue development on a Next.js/Prisma food service web app fo
 Current business model:
 - Meal Plans / Meal Prep and A La Carte items are purchased through cart checkout.
 - Catering and Personal Chef are service request / quote workflows, not direct checkout purchases.
-- Meal plans support rich customizations such as plan length, meals per day, protein, vegetable, starch, substitutions, request-only options, descriptions, dietary info, image URLs, and price deltas.
+- Meal plans are purchased through checkout but should be treated as fixed business-created offerings, not fully customizable meals.
+- Meal plan customer-facing choices should be limited to spice level and protein substitutions.
+- Meal plan packages should support 1-meal or 2-meal package options; the 3-meal package should be removed.
 - Pork and beef are request-only for meal plans. Pricing may vary and chef approval may be required.
+- Customer accounts should include allergen preferences, and meal plans containing those allergens should show alerts before cart/checkout completion.
 - Customer accounts now include phone, delivery address fields, and delivery notes.
 - Checkout preloads account profile data and can save edited checkout contact info back to the customer profile.
 - Orders store a delivery/contact snapshot so historical orders keep the delivery info used at order time.
@@ -151,9 +154,52 @@ Progress update - June 6, 2026:
 - Service request quote validation:
   - Admin quote updates now reject non-finite or negative estimated totals and deposit amounts on both the form and API.
   - A zero-dollar estimated total is treated as an explicit quote value instead of being ignored by status updates.
+- Validation/typecheck workflow:
+  - Added `npm run typecheck` using `next typegen && tsc --noEmit`.
+  - Added `npm run prisma:generate` and `npm run check`.
+  - `npm run check` now runs lint, Prisma generate, typecheck, and build in order.
+  - Verified `npm run typecheck`, `npm run prisma:generate`, and `npm run check` on June 8, 2026.
+- Checkout empty-cart UX hardening:
+  - `/checkout` now shows a focused empty-cart state with actions to browse the menu or view the cart when no cart items exist.
+  - The checkout submit button is disabled when the cart has no items as a defensive UI guard.
+  - Contact and delivery fields now include a short note explaining account profile prefill and optional profile saving.
+- Account/profile freshness after edits:
+  - Account profile saves now revalidate `/account`, `/catering`, and `/personal-chef` after the profile update succeeds.
+  - The account profile modal already calls `router.refresh()` after saving, and checkout continues to fetch profile data with `cache: "no-store"` on mount.
+- Service request form UX pass:
+  - Catering and Personal Chef form validation errors now redirect browser form submissions back to the form with friendly visible feedback instead of raw JSON responses.
+  - Non-browser/API validation failures still receive JSON error responses.
+  - Both forms include helper text for event date, guest count, location, and requested menu/service details.
+  - Catering and Personal Chef continue to share the `CateringRequest` workflow while keeping distinct customer-facing copy.
+- Admin service request workflow polish:
+  - Admin service request status controls now lock completed, cancelled, and denied requests.
+  - Deposit due and deposit paid status transitions are guarded in both the admin UI and API.
+  - Quote editing is locked after final states, denied approvals, or paid deposits.
+  - Zero-dollar quotes and zero-dollar deposits display as explicit `$0.00` values instead of looking unset.
+  - Zero-dollar deposits are treated as no deposit due, so the mark-deposit-paid action is hidden and rejected by the API.
+- Weekly meal plan modeling discovery:
+  - Added `docs/weekly-meal-plan-discovery.md` to document the desired weekly meal plan admin and customer workflows before schema changes.
+  - Updated the discovery on June 9, 2026 with client clarification that meal plans are fixed offerings, not truly customizable meals.
+  - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, limited option groups, request-only choices, and order snapshots.
+  - Future weekly meal plans likely need a weekly period, package offerings, fixed meal plan offerings, limited spice/protein options, customer allergen preferences, and allergen warning acknowledgement snapshots.
+  - Open business decisions are documented before any schema migration is planned.
+- Gallery and image management:
+  - Added `docs/gallery-image-management.md` to document the current gallery and image upload direction.
+  - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
+  - Original HEIC gallery files should be treated as source assets, while WebP copies are used for the public page.
+  - Added a `GalleryImage` model and migration seeded with the current optimized gallery images.
+  - Public `/gallery` now reads gallery database records and falls back to `data/gallery.ts` if records are unavailable.
+  - Admin `/admin/gallery` supports creating, editing, reordering, categorizing, replacing, and deleting gallery images.
+  - Added `/api/admin/gallery` and `/api/admin/gallery/[id]` for admin gallery CRUD.
+  - Runtime uploads to `public/uploads` should be treated as local/demo-only until production storage is confirmed.
+- Admin menu item deletion:
+  - Added a guarded hard-delete path for menu items.
+  - `OrderItem.menuItem` now explicitly uses `onDelete: SetNull` so historical order snapshots remain intact after menu item deletion.
+  - Active menu items expose Archive and Delete actions, and archived menu items can be restored or deleted.
 
 Review notes from main branch inspection - June 8, 2026:
-- `package.json` currently exposes `dev`, `build`, `start`, and `lint` scripts only. There is no dedicated `typecheck` script yet, so future validation should either use `npm run build` or add a project script for TypeScript-only checks.
+- `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
+- Use `npm run typecheck` for standalone TypeScript validation, `npm run prisma:generate` when Prisma client output needs refreshing, and `npm run check` for the full local verification workflow.
 - Checkout is currently a client page with sectioned UI and profile hydration via `/api/account/profile`. It uses `resetContactDetails()` before loading the signed-in profile and uses `cache: "no-store"` when fetching profile data.
 - Checkout still allows a disabled `stripe` option in the UI, while the order API only accepts `manual` and `cash`. This is intentional for now, but should remain disabled until Stripe is fully implemented.
 - Order creation now performs the authoritative price and option validation server-side. Treat the client cart totals as display-only; do not trust them for order persistence.
@@ -162,51 +208,64 @@ Review notes from main branch inspection - June 8, 2026:
 
 Next work items - June 8, 2026:
 
-1. Add a dedicated validation/typecheck workflow
-   - Add a `typecheck` script if the project can support it, for example `tsc --noEmit` after confirming the current TypeScript/Next setup.
-   - Consider adding a `check` script that runs lint, Prisma generate, and build in the expected order.
-   - Document the exact local verification commands in this handoff once confirmed.
-   - Keep `npm run build` as the release gate until a dedicated typecheck script exists.
+1. Add a dedicated validation/typecheck workflow - completed June 8, 2026
+   - `npm run typecheck` runs `next typegen && tsc --noEmit`.
+   - `npm run prisma:generate` runs `prisma generate`.
+   - `npm run check` runs lint, Prisma generate, typecheck, and build in order.
+   - Keep `npm run build` as the release gate; it is included in `npm run check`.
 
-2. Finish checkout UX hardening
-   - Add a clear empty-cart redirect or call-to-action from `/checkout` when no cart items exist.
-   - Consider disabling the Submit Order button when `items.length === 0` in addition to the current alert.
-   - Add a short note that checkout contact fields are prefilled from the account profile and can be saved back to the profile with the checkbox.
-   - Keep the Stripe option disabled until the payment integration is actually wired server-side.
+2. Finish checkout UX hardening - completed June 8, 2026
+   - `/checkout` shows an empty-cart call-to-action when no cart items exist.
+   - Submit is defensively disabled if the cart has no items.
+   - Checkout contact fields explain profile prefill and optional profile saving.
+   - The Stripe option remains disabled until payment integration is wired server-side.
 
-3. Improve account/profile freshness after edits
-   - After account profile modal saves, verify customer pages that depend on profile data refresh consistently.
-   - Confirm `/catering` and `/personal-chef` forms prefill from the latest account profile after edits without requiring a hard browser refresh.
-   - If needed, add `router.refresh()` or no-store server data access where profile-backed forms are rendered.
+3. Improve account/profile freshness after edits - completed June 8, 2026
+   - Profile saves revalidate `/account`, `/catering`, and `/personal-chef`.
+   - The account profile modal refreshes the current route after saving.
+   - Checkout keeps using `cache: "no-store"` for profile hydration on mount.
 
-4. Service request form UX pass
-   - Convert service request form submission errors from raw JSON responses into friendly visible form feedback where practical.
-   - Add helper text for event date, guest count, location, and requested menu/service details.
-   - Confirm Catering and Personal Chef forms share behavior where appropriate but keep distinct customer-facing copy.
-   - Keep both workflows routed through `CateringRequest` unless a future schema migration is explicitly planned.
+4. Service request form UX pass - completed June 8, 2026
+   - Browser form validation failures redirect back to the request form with friendly visible feedback.
+   - Non-browser/API validation failures still receive JSON error responses.
+   - Catering and Personal Chef forms include helper text for event date, guest count, location, and requested menu/service details.
+   - Both workflows still route through `CateringRequest` while keeping distinct customer-facing copy.
 
-5. Admin service request workflow polish
-   - Review admin service request detail actions after approval, quote, deposit due, deposit paid, completed, and cancelled states.
-   - Ensure actions that should be final or one-way are hidden or disabled after they are no longer valid.
-   - Ensure quote/deposit forms display current values clearly and do not make zero-dollar quote values look missing.
-   - Add customer-facing notes/history later if the client needs more transparent communication.
+5. Admin service request workflow polish - completed June 8, 2026
+   - Admin service request status controls lock completed, cancelled, and denied requests.
+   - Deposit due requires a positive deposit amount.
+   - Deposit paid must go through the mark-deposit-paid action so `depositPaidAt` and customer email behavior stay consistent.
+   - Quote editing is locked after final states, denied approvals, or paid deposits.
+   - Admin and customer detail pages display zero-dollar quote and deposit values as `$0.00`.
+   - Zero-dollar deposits are treated as no deposit due instead of a payable deposit.
 
-6. Weekly meal plan modeling discovery
-   - Do not implement the full weekly menu schema yet.
-   - First document the desired admin workflow for weekly menus:
-     - Create a weekly menu period.
-     - Add prebuilt lunch/dinner menu choices.
-     - Let customers choose package length and possibly 2-meal or 3-meal days.
-     - Decide whether customers choose meals per day or only preferred components.
-   - After the workflow is clear, design a small schema proposal before coding.
+6. Weekly meal plan modeling discovery - completed June 8, 2026
+   - `docs/weekly-meal-plan-discovery.md` documents the desired admin workflow for weekly menu periods, package offerings, lunch/dinner choices, publishing, and fulfillment prep.
+   - The customer workflow keeps weekly meal plans inside `/menu` and cart checkout.
+   - Updated June 9, 2026: the recommended next model is a fixed-offering flow where customers choose package length, 1- or 2-meal package options, spice level, and allowed protein substitutions only.
+   - Updated June 9, 2026: customer account allergen preferences and allergen conflict alerts should be added before checkout completion.
+   - Open business decisions are listed before schema implementation.
+   - No schema or route changes were made.
 
-7. Gallery and image management next step
-   - Keep current public/static gallery approach for demo readiness.
-   - Decide whether menu item images and option choice images should remain URL-based or move to an admin upload workflow.
-   - If upload is added, define where files live and whether production hosting supports writing to `public/uploads`.
-   - Avoid tying gallery management to weekly meal plan modeling until the weekly menu direction is clearer.
+7. Gallery and image management next step - completed June 9, 2026
+   - `docs/gallery-image-management.md` documents the current static gallery approach and image upload direction.
+   - Public gallery data now points at optimized WebP image assets so the demo gallery does not reference missing `/gallery/*.jpg` files.
+   - Keep gallery curation static/code-based for now.
+   - Keep image fields URL-based.
+   - Keep original HEIC files as source assets and use WebP copies for public gallery rendering.
+   - Treat `public/uploads` runtime writes as local/demo-only until production storage is confirmed.
+   - Avoid tying gallery management to weekly meal plan modeling.
 
-8. Deployment readiness pass
+8. Admin gallery management and menu item deletion - completed June 9, 2026
+   - Added a `GalleryImage` Prisma model and migration seeded with the existing optimized WebP gallery.
+   - Added `/admin/gallery` and dashboard navigation for gallery image upload, edit, categorization, ordering, replacement, and deletion.
+   - Public `/gallery` reads from database records with `data/gallery.ts` as a static fallback.
+   - Gallery uploads are stored under `public/uploads/gallery` for local/demo use.
+   - Added guarded menu item hard-delete support while preserving historical order snapshots with `OrderItem.menuItem` set null on delete.
+   - Restored active menu item Archive action and added Delete action to active and archived menu item views.
+   - Applied migration `20260609210000_add_gallery_images` to the configured local development database.
+
+9. Deployment readiness pass
    - Confirm required environment variables: `DATABASE_URL`, `AUTH_SECRET`, email/Resend settings, and public app URL.
    - Review image upload assumptions for the deployment platform.
    - Confirm Prisma migrations and seed process from a clean database.
@@ -214,11 +273,11 @@ Next work items - June 8, 2026:
    - Confirm email links use the production base URL.
    - Run `npm run lint` and `npm run build` before deployment.
 
-9. Legacy cleanup later, not now
+10. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-10. Suggested next Codex prompt
-   - Inspect the current main branch and complete work item 1 only: add or document a validation/typecheck workflow. Do not change app behavior. If adding a script, run lint/build and report results. Keep changes small and commit with a clear message.
+11. Suggested next Codex prompt
+   - Inspect the current main branch and start work item 9 only: deployment readiness pass. Confirm required environment variables, review image upload/storage assumptions, confirm Prisma migration and seed process, confirm admin user creation/role assignment, confirm production email links, run `npm run check`, and report results.
