@@ -183,6 +183,12 @@ Progress update - June 6, 2026:
   - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, limited option groups, request-only choices, and order snapshots.
   - Future weekly meal plans likely need a weekly period, package offerings, fixed meal plan offerings, limited spice/protein options, customer allergen preferences, and allergen warning acknowledgement snapshots.
   - Open business decisions are documented before any schema migration is planned.
+- Gallery and image management:
+  - Added `docs/gallery-image-management.md` to document the current static gallery and image upload direction.
+  - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
+  - Current gallery should remain static/code-curated for now.
+  - Original HEIC gallery files should be treated as source assets, while WebP copies are used for the public page.
+  - Runtime uploads to `public/uploads` should be treated as local/demo-only until production storage is confirmed.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -234,11 +240,14 @@ Next work items - June 8, 2026:
    - Open business decisions are listed before schema implementation.
    - No schema or route changes were made.
 
-7. Gallery and image management next step
-   - Keep current public/static gallery approach for demo readiness.
-   - Decide whether menu item images and option choice images should remain URL-based or move to an admin upload workflow.
-   - If upload is added, define where files live and whether production hosting supports writing to `public/uploads`.
-   - Avoid tying gallery management to weekly meal plan modeling until the weekly menu direction is clearer.
+7. Gallery and image management next step - completed June 9, 2026
+   - `docs/gallery-image-management.md` documents the current static gallery approach and image upload direction.
+   - Public gallery data now points at optimized WebP image assets so the demo gallery does not reference missing `/gallery/*.jpg` files.
+   - Keep gallery curation static/code-based for now.
+   - Keep image fields URL-based.
+   - Keep original HEIC files as source assets and use WebP copies for public gallery rendering.
+   - Treat `public/uploads` runtime writes as local/demo-only until production storage is confirmed.
+   - Avoid tying gallery management to weekly meal plan modeling.
 
 8. Deployment readiness pass
    - Confirm required environment variables: `DATABASE_URL`, `AUTH_SECRET`, email/Resend settings, and public app URL.
@@ -255,4 +264,4 @@ Next work items - June 8, 2026:
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
 10. Suggested next Codex prompt
-   - Inspect the current main branch and start work item 7 only: gallery and image management next step. Keep the current public/static gallery approach for demo readiness, decide whether menu item and option choice images should remain URL-based or move to an admin upload workflow, avoid tying gallery management to weekly meal plan modeling, run validation only if code changes are made, and report results.
+   - Inspect the current main branch and start work item 8 only: deployment readiness pass. Confirm required environment variables, review image upload/storage assumptions, confirm Prisma migration and seed process, confirm admin user creation/role assignment, confirm production email links, run `npm run check`, and report results.
