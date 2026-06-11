@@ -12,6 +12,8 @@ import {
 } from "@/lib/business-rules";
 import { useBusinessSettings } from "@/hooks/useBusinessSettings";
 import type { CheckoutDetails } from "@/types/order";
+import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
+import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 
 const sectionClass =
   "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm";
@@ -41,10 +43,26 @@ export default function CheckoutPage() {
 
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
+  const { selectedAllergenIdSet } = useCustomerAllergens();
 
   const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const checkoutAllergenConflicts = items.flatMap((item) =>
+    (item.allergens ?? []).filter((allergen) =>
+      selectedAllergenIdSet.has(allergen.id),
+    ),
+  );
+
+  const uniqueCheckoutAllergenConflicts = Array.from(
+    new Map(
+      checkoutAllergenConflicts.map((allergen) => [allergen.id, allergen]),
+    ).values(),
+  );
+
+  const requiresAllergenAcknowledgement =
+    uniqueCheckoutAllergenConflicts.length > 0 &&
+    !details.allergenAcknowledged;
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -86,18 +104,26 @@ export default function CheckoutPage() {
         resetContactDetails();
       }
     });
-
+    
     return () => {
       cancelled = true;
     };
   }, [resetContactDetails, updateContactDetails]);
 
+useEffect(() => {
+      if (uniqueCheckoutAllergenConflicts.length === 0 && details.allergenAcknowledged) {
+        updateField("allergenAcknowledged", false);
+      }
+    }, [
+      details.allergenAcknowledged,
+      uniqueCheckoutAllergenConflicts.length,
+      updateField,
+    ]);
+
   if (!mounted) {
     return null;
   }
-
   const hasCartItems = items.length > 0;
-
   if (!hasCartItems) {
     return (
       <main className="min-h-screen bg-neutral-50 px-4 py-10 text-neutral-950 sm:px-6">
@@ -158,6 +184,7 @@ export default function CheckoutPage() {
   const total = subtotal + deliveryFee + lateFee + tipAmount;
   const requiresApproval = items.some((item) => item.requiresApproval);
 
+
   const cutoffDayNames = [
     "Sunday",
     "Monday",
@@ -189,6 +216,14 @@ export default function CheckoutPage() {
     try {
       if (items.length === 0) {
         alert("Your cart is empty.");
+        return;
+      }
+
+      if (
+        uniqueCheckoutAllergenConflicts.length > 0 &&
+        !details.allergenAcknowledged
+      ) {
+        alert("Please acknowledge the allergen warning before submitting your order.");
         return;
       }
 
@@ -333,7 +368,14 @@ export default function CheckoutPage() {
                 </button>
               </div>
 
-              <div className="mt-5 divide-y divide-neutral-200">
+              <div className="mt-5 divide-y divide-neutral-200">            
+                
+                {uniqueCheckoutAllergenConflicts.length > 0 && (
+                  <div className="mb-5">
+                    <AllergenConflictWarning conflicts={uniqueCheckoutAllergenConflicts} />
+                  </div>
+                )}
+
                 {items.map((item) => (
                   <div key={item.cartId} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -343,6 +385,19 @@ export default function CheckoutPage() {
                         <p className="mt-1 text-sm text-neutral-600">
                           Quantity: {item.quantity}
                         </p>
+
+                        {(item.allergens ?? []).filter((allergen) =>
+                          selectedAllergenIdSet.has(allergen.id),
+                        ).length > 0 && (
+                          <div className="mt-3">
+                            <AllergenConflictWarning
+                              conflicts={(item.allergens ?? []).filter((allergen) =>
+                                selectedAllergenIdSet.has(allergen.id),
+                              )}
+                              compact
+                            />
+                          </div>
+                        )}
 
                         {item.selectedOptions &&
                           item.selectedOptions.length > 0 && (
@@ -741,16 +796,49 @@ export default function CheckoutPage() {
                 </div>
               )}
 
+              {uniqueCheckoutAllergenConflicts.length > 0 && (
+                <div className="mt-5 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+                  <p className="font-semibold">Allergen acknowledgement required</p>
+
+                  <p className="mt-2 leading-6">
+                    This order contains allergen tags that match your account preferences.
+                    Please review the warning before submitting.
+                  </p>
+
+                  <label className="mt-4 flex items-start gap-3 text-sm font-medium">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(details.allergenAcknowledged)}
+                      onChange={(event) =>
+                        updateField("allergenAcknowledged", event.target.checked)
+                      }
+                      className="mt-1 h-4 w-4"
+                    />
+
+                    <span>
+                      I understand this order contains allergen tags that match my account
+                      preferences, and I have reviewed the warning before submitting.
+                    </span>
+                  </label>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={submitting || !hasCartItems}
+                disabled={
+                  submitting ||
+                  !hasCartItems ||
+                  requiresAllergenAcknowledgement
+                }
                 className="mt-6 w-full rounded-lg bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
               >
                 {submitting
                   ? "Submitting..."
-                  : hasCartItems
-                    ? "Submit Order"
-                    : "Cart Is Empty"}
+                  : !hasCartItems
+                    ? "Cart Is Empty"
+                    : requiresAllergenAcknowledgement
+                      ? "Acknowledge Allergen Warning"
+                      : "Submit Order"}
               </button>
             </section>
           </aside>

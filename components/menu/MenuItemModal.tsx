@@ -5,6 +5,8 @@ import { useState } from "react";
 import type { MenuItem } from "@/types/menu";
 import type { SelectedCartOption } from "@/store/cart-store";
 import { useCartStore } from "@/store/cart-store";
+import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
+import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 
 type Props = {
   item: MenuItem;
@@ -17,6 +19,12 @@ export function MenuItemModal({ item, open, onClose }: Props) {
   const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [customerInstructions, setCustomerInstructions] = useState("");
   const [showRequiredErrors, setShowRequiredErrors] = useState(false);
+  const { selectedAllergenIdSet } = useCustomerAllergens();
+
+  const allergenConflicts =
+    item.allergens?.filter((allergen) =>
+      selectedAllergenIdSet.has(allergen.id),
+    ) ?? [];
 
   if (!open) return null;
 
@@ -155,6 +163,12 @@ export function MenuItemModal({ item, open, onClose }: Props) {
             {item.allergens.map((a) => a.name).join(", ")}
           </div>
         ) : null}
+
+        {allergenConflicts.length > 0 && (
+          <div className="mt-4">
+            <AllergenConflictWarning conflicts={allergenConflicts} />
+          </div>
+        )}
 
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {item.optionGroups?.map((group) => {

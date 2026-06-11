@@ -516,7 +516,52 @@ export async function POST(request: Request) {
             .join("\n") || null,
       });
     }
+const userAllergens = await prisma.userAllergen.findMany({
+  where: {
+    user: {
+      email: session.user.email,
+    },
+  },
+  select: {
+    allergenId: true,
+  },
+});
 
+const userAllergenIds = new Set(
+  userAllergens.map((entry) => entry.allergenId),
+);
+
+const submittedMenuItemIds = validatedItems
+  .map((item) => item.menuItemId)
+  .filter((id): id is string => Boolean(id));
+
+const submittedMenuItemAllergens =
+  submittedMenuItemIds.length > 0
+    ? await prisma.menuItemAllergen.findMany({
+        where: {
+          menuItemId: {
+            in: submittedMenuItemIds,
+          },
+        },
+        select: {
+          allergenId: true,
+        },
+      })
+    : [];
+
+const hasAllergenConflict = submittedMenuItemAllergens.some((entry) =>
+  userAllergenIds.has(entry.allergenId),
+);
+
+if (hasAllergenConflict && !checkout.allergenAcknowledged) {
+  return NextResponse.json(
+    {
+      error:
+        "Please acknowledge the allergen warning before submitting your order.",
+    },
+    { status: 400 },
+  );
+}
     const subtotal = validatedItems.reduce(
       (sum, item) => sum + item.lineTotal,
       0,
@@ -561,6 +606,12 @@ export async function POST(request: Request) {
 
         allergyNotes: checkout.allergyNotes,
         substitutionPreference: checkout.substitutionPreference,
+
+        allergenAcknowledged: hasAllergenConflict
+          ? Boolean(checkout.allergenAcknowledged)
+          : false,
+        allergenAcknowledgedAt:
+          hasAllergenConflict && checkout.allergenAcknowledged ? new Date() : null,
 
         subtotal,
         deliveryFee,
@@ -656,6 +707,8 @@ export async function POST(request: Request) {
         deliveryState: order.deliveryState,
         deliveryPostalCode: order.deliveryPostalCode,
         deliveryNotes: order.deliveryNotes,
+        allergenAcknowledged: order.allergenAcknowledged,
+        allergenAcknowledgedAt: order.allergenAcknowledgedAt,
 
         items: order.items.map((item: CreatedOrderItem) => ({
           name: item.name,

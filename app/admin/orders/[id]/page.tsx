@@ -38,6 +38,8 @@ type AdminOrderDetail = {
   approvalNote: string | null;
   status: string;
   allergyNotes: string | null;
+  allergenAcknowledged: boolean;
+  allergenAcknowledgedAt: Date | null;
   substitutionPreference: string | null;
   subtotal: DecimalLike;
   deliveryFee: DecimalLike;
@@ -249,8 +251,24 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                 ))}
               </div>
             </div>
+            {order.allergenAcknowledged && (
+              <section className="rounded-2xl border border-red-300 bg-red-50 p-5 text-sm text-red-900">
+                <h2 className="text-xl font-semibold">Allergen Warning Acknowledged</h2>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+                <p className="mt-2 leading-6">
+                  The customer acknowledged that this order may contain allergen tags
+                  matching their account preferences before submitting.
+                </p>
+
+                {order.allergenAcknowledgedAt && (
+                  <p className="mt-2 text-xs">
+                    Acknowledged on{" "}
+                    {order.allergenAcknowledgedAt.toLocaleString()}
+                  </p>
+                )}
+              </section>
+            )}
+                        <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-2xl font-semibold">Notes</h2>
 
               <div className="mt-4 space-y-4 text-sm">

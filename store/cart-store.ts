@@ -11,6 +11,11 @@ export type SelectedCartOption = {
   requestOnly?: boolean;
 };
 
+export type CartItemAllergen = {
+  id: string;
+  name: string;
+};
+
 export type CartItem = {
   cartId: string;
   menuItemId: string;
@@ -19,6 +24,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   category: string;
+  allergens?: CartItemAllergen[];
   selectedOptions?: SelectedCartOption[];
   allergyNotes?: string;
   substitutionPreference?: string;
@@ -37,7 +43,11 @@ export type RecoveredOrderItem = {
 
 type CartState = {
   items: CartItem[];
-  addItem: (item: MenuItem, selectedOptions?: SelectedCartOption[], customerInstructions?: string) => void;
+  addItem: (
+    item: MenuItem,
+    selectedOptions?: SelectedCartOption[],
+    customerInstructions?: string,
+  ) => void;
   removeItem: (cartId: string) => void;
   increaseQuantity: (cartId: string) => void;
   decreaseQuantity: (cartId: string) => void;
@@ -51,7 +61,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      
+
       addRecoveredItem: (item) => {
         set((state) => ({
           items: [
@@ -64,6 +74,7 @@ export const useCartStore = create<CartState>()(
               price: item.unitPrice,
               quantity: item.quantity,
               category: "Reorder",
+              allergens: [],
               selectedOptions: item.notes
                 ? [
                     {
@@ -95,6 +106,7 @@ export const useCartStore = create<CartState>()(
           price: item.price + optionsTotal,
           quantity: 1,
           category: item.category,
+          allergens: item.allergens ?? [],
           selectedOptions,
           customerInstructions,
           requiresApproval: item.requiresApproval || hasRequestOnlyOption,
@@ -146,6 +158,20 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "chef-rahs-cart",
+      version: 2,
+      merge: (persisted, current) => {
+        const persistedState = persisted as Partial<CartState>;
+
+        return {
+          ...current,
+          ...persistedState,
+          items:
+            persistedState.items?.map((item) => ({
+              ...item,
+              allergens: item.allergens ?? [],
+            })) ?? [],
+        };
+      },
     },
   ),
 );

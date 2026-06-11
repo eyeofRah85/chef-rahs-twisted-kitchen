@@ -10,6 +10,7 @@ import {
   formatPaymentStatus,
 } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
+import { AccountAllergenPreferencesForm } from "@/components/account/AccountAllergenPreferencesForm";
 
 type DashboardOrderItem = {
   id: string;
@@ -179,6 +180,10 @@ export default async function AccountPage() {
           </Link>
         </section>
 
+        <section className="mt-8">
+          <AccountAllergenPreferencesForm />
+        </section>
+        
         {unpaidOrders.length > 0 && (
           <section className="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950 shadow-sm">
             <h2 className="text-2xl font-semibold">Payment Reminder</h2>

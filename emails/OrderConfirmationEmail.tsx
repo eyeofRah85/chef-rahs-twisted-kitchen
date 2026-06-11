@@ -38,6 +38,8 @@ type Props = {
   approvalStatus?: string | null;
   orderUrl: string;
   items: OrderEmailItem[];
+  allergenAcknowledged?: boolean;
+  allergenAcknowledgedAt?: Date | string | null;
 
   deliveryName?: string | null;
   deliveryPhone?: string | null;
@@ -70,6 +72,8 @@ export function OrderConfirmationEmail({
   deliveryState,
   deliveryPostalCode,
   deliveryNotes,
+  allergenAcknowledged,
+  allergenAcknowledgedAt,
 }: Props) {
   const isDelivery = orderType === "DELIVERY";
 
@@ -145,11 +149,29 @@ export function OrderConfirmationEmail({
                   <Text>
                     <strong>Delivery Notes:</strong> {deliveryNotes}
                   </Text>
-                )}
+                )}                
               </>
             )}
             <Heading as="h2">Order Summary</Heading>
+              {allergenAcknowledged && (
+                <>
+                  <Hr />
 
+                  <Heading as="h2">Allergen Warning Acknowledged</Heading>
+
+                  <Text>
+                    You acknowledged that this order may contain allergen tags matching your
+                    account preferences before submitting.
+                  </Text>
+
+                  {allergenAcknowledgedAt && (
+                    <Text>
+                      <strong>Acknowledged:</strong>{" "}
+                      {new Date(allergenAcknowledgedAt).toLocaleString()}
+                    </Text>
+                  )}
+                </>
+              )}
             {items.map((item, index) => (
               <Section key={`${item.name}-${index}`}>
                 <Text>

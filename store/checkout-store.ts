@@ -46,6 +46,7 @@ const defaultCheckout: CheckoutDetails = {
   orderType: "delivery",
   requestedDateTime: "",
   allergyNotes: "",
+  allergenAcknowledged: false,
   substitutionPreference: "",
   tipType: "none",
   customTipAmount: 0,

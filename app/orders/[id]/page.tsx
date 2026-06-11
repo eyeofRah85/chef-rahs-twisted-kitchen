@@ -38,6 +38,8 @@ type OrderDetail = {
   deliveryPostalCode: string | null;
   deliveryNotes: string | null;
   allergyNotes: string | null;
+  allergenAcknowledged: boolean;
+  allergenAcknowledgedAt: Date | null;
   substitutionPreference: string | null;
   subtotal: DecimalLike;
   deliveryFee: DecimalLike;
@@ -67,7 +69,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
     where: { id },
     include: {
       items: true,
-      user: true,
+      user: true,      
     },
   })) as OrderDetail | null;
 
@@ -335,6 +337,24 @@ export default async function OrderPage({ params }: OrderPageProps) {
                 <p className="mt-2 text-sm text-neutral-700">None provided.</p>
               )}
             </div>
+
+            {order.allergenAcknowledged && (
+              <div className="rounded-2xl border border-red-300 bg-red-50 p-5 text-sm text-red-900">
+                <h2 className="text-xl font-semibold">Allergen Warning Acknowledged</h2>
+
+                <p className="mt-2 leading-6">
+                  You acknowledged that this order may contain allergen tags matching your
+                  account preferences before submitting.
+                </p>
+
+                {order.allergenAcknowledgedAt && (
+                  <p className="mt-2 text-xs">
+                    Acknowledged on{" "}
+                    {order.allergenAcknowledgedAt.toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <h2 className="text-xl font-semibold">
