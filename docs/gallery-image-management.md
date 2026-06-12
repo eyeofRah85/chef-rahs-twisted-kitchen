@@ -14,6 +14,7 @@ This note captures the current image setup and the safest next direction. It is 
 - Admin `/admin/gallery` supports uploading, editing, reordering, categorizing, and deleting gallery images.
 - The gallery upload API stores new files under `public/uploads/gallery`.
 - Admin menu item creation supports uploading an image file to `public/uploads/menu`.
+- Local public uploads are blocked in production unless `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION="true"` is set after durable storage is confirmed.
 - Admin menu item editing does not currently replace an item image.
 - Option choice images are URL-based text fields.
 - Existing `MenuItem.imageUrl` and `MenuItemOptionChoice.imageUrl` fields are URL strings, which can support local paths or hosted image URLs.
@@ -38,6 +39,8 @@ For menu item and option choice images:
 ## Production Upload Concern
 
 Writing uploads to `public/uploads` is acceptable for a local demo or a single persistent server, but it is usually unsafe for serverless or immutable deployments. On many platforms, files written at runtime can disappear on redeploy or may not be shared across instances.
+
+The app now refuses local public upload writes in production by default. Set `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION="true"` only when the production host provides durable, shared local storage for `public/uploads`.
 
 Before building a full admin upload workflow, confirm the production hosting target supports one of these:
 
