@@ -345,8 +345,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                               {item.type === "MEAL_PLAN" && (
                               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                                 <p className="mb-2 text-xs text-amber-900">
-                                  Adds meal plan length, meals per day, protein, vegetable, starch, and
-                                  substitution choices.
+                                  Adds customer-facing spice level and protein substitution choices for fixed meal plans.
                                 </p>
 
                                 <ApplyMealPlanTemplateButton menuItemId={item.id} />

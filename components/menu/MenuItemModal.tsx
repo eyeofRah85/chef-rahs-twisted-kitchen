@@ -143,9 +143,9 @@ export function MenuItemModal({ item, open, onClose }: Props) {
 
           {item.type === "MEAL_PLAN" && (
             <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-              Meal plans are package-based. Choose your plan length, meal count, and
-              preferred meal components. Pork and beef are available by request only and
-              pricing may vary.
+              Meal plans are fixed offerings. Choose spice level and allowed protein
+              substitutions only. Pork and beef are available by request only and pricing
+              may vary.
             </div>
           )}
           </div>
@@ -300,13 +300,13 @@ export function MenuItemModal({ item, open, onClose }: Props) {
               Special Instructions
             </label>
 
-            <textarea
-              rows={4}
-              value={customerInstructions}
-              onChange={(e) => setCustomerInstructions(e.target.value)}
-              className="mt-3 w-full rounded-xl border px-4 py-3 text-sm"
-              placeholder="Describe your custom meal plan request, substitutions, or preferences."
-            />
+              <textarea
+                rows={4}
+                value={customerInstructions}
+                onChange={(e) => setCustomerInstructions(e.target.value)}
+                className="mt-3 w-full rounded-xl border px-4 py-3 text-sm"
+                placeholder="Share relevant preferences or notes for this item."
+              />
           </section>
         )}
           {selectedSummary.length > 0 && (

@@ -216,6 +216,11 @@ Progress update - June 6, 2026:
   - This keeps admin uploads usable for local demos while preventing accidental non-durable production uploads.
   - Gallery create/edit and menu item create/edit forms now accept public image URLs, so production can point records at externally hosted durable storage without choosing an upload SDK yet.
   - The remaining deployment decision is whether direct in-app production uploads should use durable local disk or a specific object storage provider.
+- Meal plan fixed-offering alignment:
+  - The meal plan template now adds only spice level and protein substitution option groups.
+  - Older template entries for meal count, vegetable choice, starch choice, and broad meal-plan substitutions were removed from the admin template dropdown.
+  - Applying the meal plan template no longer enables free-form customer item instructions by default.
+  - Public meal plan copy now describes fixed offerings rather than broad meal-component customization.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -300,11 +305,16 @@ Next work items - June 8, 2026:
    - Gallery image create/edit and menu item create/edit now accept public image URLs for externally hosted durable assets.
    - Remaining optional decision: implement direct object-storage uploads after the production storage provider is selected.
 
-11. Legacy cleanup later, not now
+11. Meal plan fixed-offering alignment - completed June 12, 2026
+   - The existing admin meal plan template now creates spice level and protein substitution choices only.
+   - Removed stale meal-plan template entries that exposed meal count, vegetable, starch, or broad substitution choices.
+   - Public menu and item modal copy now describes fixed meal plan offerings with limited spice/protein substitution options.
+
+12. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-12. Suggested next Codex prompt
+13. Suggested next Codex prompt
    - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.

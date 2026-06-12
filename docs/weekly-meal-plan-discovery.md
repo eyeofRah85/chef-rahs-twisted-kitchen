@@ -12,12 +12,12 @@ Meal plans currently use the existing menu and cart model:
 - Meal plans are `MenuItem` records with `type = MEAL_PLAN`.
 - Public `/menu` displays meal plans and a la carte items together.
 - Admin `/admin/menu` manages meal plan menu items, availability, pricing, images, allergens, and option groups.
-- The meal plan template adds option groups for plan length, meals per day, protein, vegetable, starch, and substitutions.
+- The meal plan template now adds only customer-facing spice level and protein substitution groups.
 - Pork and beef are represented as request-only protein choices.
 - Request-only choices and meal-plan-level approval flags can make checkout orders require admin approval.
 - Orders snapshot selected option text into `OrderItem.notes`, preserving what the customer chose at order time.
 
-This works for package-style meal plans, but it does not model a weekly menu period, weekly publishing, customer allergen preferences, or allergen conflict alerts.
+This works for the current fixed-offering flow, but it does not model a weekly menu period, weekly publishing, package records, or reporting by weekly period.
 
 ## Client Update - June 9, 2026
 

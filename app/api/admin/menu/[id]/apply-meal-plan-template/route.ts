@@ -16,12 +16,8 @@ type MenuItemWithOptionGroups = {
 };
 
 const mealPlanTemplateNames = [
-  "Meal Plan Length",
-  "Meals Per Day",
-  "Protein Choice",
-  "Vegetable Choice",
-  "Starch Choice",
-  "Meal Plan Substitutions",
+  "Spice Level",
+  "Protein Substitution",
 ];
 
 export async function POST(request: Request, context: RouteContext) {
@@ -82,7 +78,7 @@ export async function POST(request: Request, context: RouteContext) {
       data: {
         type: "MEAL_PLAN",
         requiresApproval: true,
-        customerInstructionsEnabled: true,
+        customerInstructionsEnabled: false,
       },
     });
 

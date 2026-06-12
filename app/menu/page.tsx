@@ -87,23 +87,22 @@ const visibleCategories = categories.filter(
           </p>
 
           <h1 className="mt-3 text-5xl font-bold">
-            Weekly meal plans and custom chef-prepared options.
+            Weekly meal plans and chef-prepared a la carte options.
           </h1>
 
           <p className="mt-4 max-w-2xl text-neutral-700">
-            Choose meal plan packages, customize meal components, select substitutions,
-            or explore a la carte options. Pork and beef are available by request only
-            for meal plans, and pricing may vary.
+            Choose fixed meal plan offerings, select spice level and allowed protein
+            substitutions, or explore a la carte options. Pork and beef are available
+            by request only for meal plans, and pricing may vary.
           </p>
                   </div>
           <div className="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
             <h2 className="text-xl font-semibold">Meal Plan Notes</h2>
 
             <p className="mt-2 text-sm leading-6">
-              Meal plans are package-based. Standard meal plans include lunch and dinner
-              options, with protein, starch, and vegetable selections. Pork and beef are
-              not included in standard meal plans and are available by request only.
-              Pricing may vary.
+              Meal plans are fixed offerings prepared by the business. Customer-facing
+              choices are limited to spice level and allowed protein substitutions.
+              Pork and beef are available by request only and pricing may vary.
             </p>
           </div>
 
