@@ -6,6 +6,7 @@ import { GalleryImageEditForm } from "@/components/admin/GalleryImageEditForm";
 import { GalleryImageForm } from "@/components/admin/GalleryImageForm";
 import { requireAdmin } from "@/lib/auth-guards";
 import { getAdminGalleryImages } from "@/lib/gallery-images";
+import { isRemoteImageUrl } from "@/lib/image-urls";
 
 export default async function AdminGalleryPage() {
   try {
@@ -75,6 +76,7 @@ export default async function AdminGalleryPage() {
                       fill
                       sizes="(min-width: 1024px) 50vw, 100vw"
                       className="object-cover"
+                      unoptimized={isRemoteImageUrl(image.src)}
                     />
                   </div>
 

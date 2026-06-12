@@ -73,7 +73,6 @@ export function GalleryImageForm() {
             accept="image/jpeg,image/png,image/webp"
             onChange={handleImageChange}
             className="hidden"
-            required
           />
 
           <label
@@ -99,6 +98,13 @@ export function GalleryImageForm() {
               />
             </div>
           )}
+
+          <input
+            name="imageUrl"
+            type="text"
+            placeholder="Public image URL"
+            className="w-full rounded-xl border px-4 py-3"
+          />
         </div>
 
         <input
@@ -148,8 +154,8 @@ export function GalleryImageForm() {
         </div>
 
         <p className="text-xs text-neutral-500">
-          Upload JPG, PNG, or WebP images up to 5 MB. WebP is preferred for the
-          public gallery.
+          Upload JPG, PNG, or WebP images up to 5 MB, or use a public image
+          URL. WebP is preferred for the public gallery.
         </p>
 
         <button

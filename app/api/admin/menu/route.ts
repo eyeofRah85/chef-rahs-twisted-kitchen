@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
+import { parsePublicImageUrl } from "@/lib/image-urls";
 import { menuItemTypes } from "@/lib/prisma-enums";
 import { savePublicImageUpload } from "@/lib/public-upload";
 
@@ -21,8 +22,10 @@ export async function POST(request: Request) {
     const requiresApproval = formData.get("requiresApproval") === "on";
     const customerInstructionsEnabled =
       formData.get("customerInstructionsEnabled") === "on";
-    const image = formData.get("imageUrl") as File | null;
+    const imageEntry = formData.get("imageUpload") ?? formData.get("imageUrl");
+    const image = imageEntry instanceof File ? imageEntry : null;
     const menuItemType = parseEnumValue(menuItemTypes, type);
+    const submittedImageUrl = parsePublicImageUrl(formData.get("imageUrl"));
 
     if (!name || !description || !categoryName || price <= 0 || !menuItemType) {
       return NextResponse.json(
@@ -31,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let imageUrl: string | null = null;
+    let imageUrl: string | null = submittedImageUrl;
 
     if (image && image.size > 0) {
       try {
@@ -74,6 +77,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json(item);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "Enter a valid public image URL."
+    ) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 },
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(

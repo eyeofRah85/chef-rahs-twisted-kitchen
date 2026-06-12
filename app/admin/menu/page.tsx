@@ -61,6 +61,7 @@ type AdminMenuItem = {
   name: string;
   description: string;
   price: DecimalLike;
+  imageUrl: string | null;
   type: string;
   available: boolean;
   seasonal: boolean;
@@ -324,6 +325,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                   name: item.name,
                                   description: item.description,
                                   price: Number(item.price),
+                                  imageUrl: item.imageUrl,
                                   type: item.type,
                                   categoryName: category.name,
                                   seasonal: item.seasonal,

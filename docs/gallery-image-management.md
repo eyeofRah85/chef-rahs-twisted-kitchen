@@ -13,7 +13,9 @@ This note captures the current image setup and the safest next direction. It is 
 - `data/gallery.ts` remains the static fallback and category source.
 - Admin `/admin/gallery` supports uploading, editing, reordering, categorizing, and deleting gallery images.
 - The gallery upload API stores new files under `public/uploads/gallery`.
+- Gallery create/edit forms also accept public image URLs, so production records can point at externally hosted durable storage without uploading through the app.
 - Admin menu item creation supports uploading an image file to `public/uploads/menu`.
+- Admin menu item creation and editing support public image URLs for externally hosted durable storage.
 - Local public uploads are blocked in production unless `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION="true"` is set after durable storage is confirmed.
 - Admin menu item editing does not currently replace an item image.
 - Option choice images are URL-based text fields.
@@ -32,7 +34,7 @@ Keep the current database-backed gallery approach for demo readiness:
 For menu item and option choice images:
 
 - Keep URL string fields in the database.
-- Keep menu item upload as a local/demo convenience only.
+- Keep menu item upload as a local/demo convenience only, and use the public image URL field for production-hosted assets.
 - Keep option choice images URL-based until production image storage is decided.
 - Add image replacement/editing later only after the deployment target is confirmed.
 
@@ -49,16 +51,16 @@ Before building a full admin upload workflow, confirm the production hosting tar
 
 The production-safe pattern is:
 
-1. Admin uploads an image.
-2. The app stores the file in durable object storage.
-3. The app saves the returned public URL in `imageUrl`.
-4. Menu cards, option choices, and gallery entries render that URL.
+1. Store the image in durable object storage, hosted media storage, or a confirmed persistent deployment volume.
+2. Save the returned public URL in `src` for gallery records or `imageUrl` for menu records.
+3. Menu cards, option choices, and gallery entries render that URL.
+4. Add direct object-storage uploads later only after the client confirms the production storage provider.
 
 ## Next Safe Patch Later
 
 After deployment assumptions are confirmed, the next image patch should be small:
 
-- Add menu item image replacement to the edit form.
+- Add direct object-storage upload support for the selected provider if admins should upload through the app in production.
 - Decide whether option choice image upload is needed or whether URL entry is enough.
 - Expand validation if larger image files or other image formats are needed.
 - Revisit gallery curation once the client selects final photos and captions.

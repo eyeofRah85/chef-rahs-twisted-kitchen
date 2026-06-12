@@ -4,6 +4,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+async function readError(response: Response, fallback: string) {
+  const data = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
+
+  return data?.error ?? fallback;
+}
+
 export function MenuItemForm() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -14,10 +22,14 @@ export function MenuItemForm() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
 
-    if (file) {
-      setPreview(URL.createObjectURL(file));
-      setFileName(file.name);
+    if (!file) {
+      setPreview(null);
+      setFileName("");
+      return;
     }
+
+    setPreview(URL.createObjectURL(file));
+    setFileName(file.name);
   };
 
   async function handleSubmit(formData: FormData) {
@@ -31,7 +43,7 @@ export function MenuItemForm() {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to create menu item.");
+      alert(await readError(response, "Failed to create menu item."));
       return;
     }
 
@@ -55,8 +67,8 @@ export function MenuItemForm() {
             <input
               id="imageUpload"
               type="file"
-              name="imageUrl"
-              accept="image/*"
+              name="imageUpload"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleImageChange}
               className="hidden"
             />
@@ -86,6 +98,13 @@ export function MenuItemForm() {
                 />
               </div>
             )}
+
+            <input
+              name="imageUrl"
+              type="text"
+              placeholder="Public image URL"
+              className="w-full rounded-xl border px-4 py-3"
+            />
         </div>
 
         <input

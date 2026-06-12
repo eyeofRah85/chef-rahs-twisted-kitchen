@@ -214,7 +214,8 @@ Progress update - June 6, 2026:
 - Production upload storage guard:
   - Local public uploads are now blocked in production unless `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION="true"` is set.
   - This keeps admin uploads usable for local demos while preventing accidental non-durable production uploads.
-  - The remaining deployment decision is still whether to use durable local disk or move gallery/menu uploads to object storage.
+  - Gallery create/edit and menu item create/edit forms now accept public image URLs, so production can point records at externally hosted durable storage without choosing an upload SDK yet.
+  - The remaining deployment decision is whether direct in-app production uploads should use durable local disk or a specific object storage provider.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -293,10 +294,11 @@ Next work items - June 8, 2026:
    - `npm run check` passes as the release validation workflow.
    - Remaining deployment decision: replace or back `public/uploads` with durable production storage before relying on admin image uploads in production.
 
-10. Production upload storage decision - in progress
+10. Production upload storage decision - safe interim completed June 12, 2026
    - Local `public/uploads` writes are blocked by default in production.
    - Set `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION="true"` only after confirming the deployment target has durable, shared local storage.
-   - Remaining decision: use durable local disk for `public/uploads`, or move gallery/menu uploads to object storage.
+   - Gallery image create/edit and menu item create/edit now accept public image URLs for externally hosted durable assets.
+   - Remaining optional decision: implement direct object-storage uploads after the production storage provider is selected.
 
 11. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
@@ -305,4 +307,4 @@ Next work items - June 8, 2026:
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
 12. Suggested next Codex prompt
-   - Inspect the current branch and finish work item 10 only: choose durable local storage or object storage for production uploads, then implement or document the selected production path.
+   - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.

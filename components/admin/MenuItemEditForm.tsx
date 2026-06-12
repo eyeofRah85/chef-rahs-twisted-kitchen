@@ -3,12 +3,21 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+async function readError(response: Response, fallback: string) {
+  const data = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
+
+  return data?.error ?? fallback;
+}
+
 type Props = {
   item: {
     id: string;
     name: string;
     description: string;
     price: number;
+    imageUrl: string | null;
     type: string;
     categoryName:string;
     seasonal: boolean;
@@ -33,7 +42,7 @@ export function MenuItemEditForm({ item }: Props) {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to update menu item.");
+      alert(await readError(response, "Failed to update menu item."));
       return;
     }
 
@@ -68,6 +77,14 @@ export function MenuItemEditForm({ item }: Props) {
         rows={3}
         className="w-full rounded-xl border px-4 py-3 text-sm"
         required
+      />
+
+      <input
+        name="imageUrl"
+        type="text"
+        defaultValue={item.imageUrl ?? ""}
+        placeholder="Public image URL"
+        className="w-full rounded-xl border px-4 py-3 text-sm"
       />
 
       <input
