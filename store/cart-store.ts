@@ -57,6 +57,10 @@ type CartState = {
   addRecoveredItem: (item: RecoveredOrderItem) => void;
 };
 
+type PersistedCartState = Pick<CartState, "items">;
+
+const cartStorageVersion = 3;
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -158,9 +162,11 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "chef-rahs-cart",
-      version: 2,
+      version: cartStorageVersion,
+      partialize: (state): PersistedCartState => ({ items: state.items }),
+      migrate: (): PersistedCartState => ({ items: [] }),
       merge: (persisted, current) => {
-        const persistedState = persisted as Partial<CartState>;
+        const persistedState = persisted as Partial<PersistedCartState>;
 
         return {
           ...current,

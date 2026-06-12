@@ -224,6 +224,8 @@ Progress update - June 6, 2026:
 - Meal plan customer option enforcement:
   - Public `/menu` now filters meal plan option groups to spice level and protein substitution only.
   - Order creation validates meal plan submitted options against the same allowed customer-facing groups, so stale carts cannot submit old meal-count, vegetable, starch, or broad-substitution options.
+- Cart persistence reset:
+  - Client-side cart persistence was bumped after the old menu items were archived so browsers with stale cart data start from an empty cart.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -317,11 +319,15 @@ Next work items - June 8, 2026:
    - Public meal plan cards expose only spice level and protein substitution option groups.
    - Order creation rejects stale meal plan cart selections for older customer-facing option groups.
 
-13. Legacy cleanup later, not now
+13. Client cart persistence reset - completed June 12, 2026
+   - Bumped the persisted cart store version so older local browser carts are cleared on hydration.
+   - Keep the cart client-side for now; revisit database-backed carts only if the product needs cross-device cart continuity.
+
+14. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-14. Suggested next Codex prompt
+15. Suggested next Codex prompt
    - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.
