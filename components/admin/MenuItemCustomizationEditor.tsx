@@ -27,6 +27,14 @@ const blankChoice = (): OptionChoiceInput => ({
   priceDelta: "0",
 });
 
+async function readError(response: Response, fallback: string) {
+  const data = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
+
+  return data?.error ?? fallback;
+}
+
 type Props = {
   menuItemId: string;
   allergens: Allergen[];
@@ -66,7 +74,7 @@ export function MenuItemCustomizationEditor({
     });
 
     if (!response.ok) {
-      alert("Failed to save allergens.");
+      alert(await readError(response, "Failed to save allergens."));
       return;
     }
 
@@ -85,6 +93,15 @@ export function MenuItemCustomizationEditor({
         requestOnly: Boolean(choice.requestOnly),
         priceDelta: Number(choice.priceDelta || 0),
       }));
+
+    const hasInvalidPriceDelta = cleanedChoices.some(
+      (choice) => !Number.isFinite(choice.priceDelta) || choice.priceDelta < 0,
+    );
+
+    if (hasInvalidPriceDelta) {
+      alert("Option price deltas must be zero or more.");
+      return;
+    }
 
     if (!groupName.trim() || cleanedChoices.length === 0) {
       alert("Group name and at least one choice are required.");
@@ -105,7 +122,7 @@ export function MenuItemCustomizationEditor({
     });
 
     if (!response.ok) {
-      alert("Failed to save option group.");
+      alert(await readError(response, "Failed to save option group."));
       return;
     }
 

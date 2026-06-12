@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import {
+  isMenuOptionValidationError,
+  normalizeMenuOptionChoice,
+  normalizeMenuOptionGroupName,
+  type MenuOptionChoiceInput,
+} from "@/lib/menu-option-validation";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
 type RouteContext = {
@@ -9,20 +15,11 @@ type RouteContext = {
   }>;
 };
 
-type OptionChoiceInput = {
-  name: string;
-  description?: string | null;
-  dietaryInfo?: string | null;
-  imageUrl?: string | null;
-  requestOnly?: boolean;
-  priceDelta?: number;
-};
-
 type CreateOptionGroupInput = {
-  groupName?: string;
+  groupName?: unknown;
   required?: boolean;
   multiple?: boolean;
-  choices?: OptionChoiceInput[];
+  choices?: unknown;
 };
 
 export async function POST(request: Request, context: RouteContext) {
@@ -34,28 +31,26 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { groupName, required, multiple, choices } = body;
 
-    if (!groupName || !choices?.length) {
+    if (!Array.isArray(choices) || choices.length === 0) {
       return NextResponse.json(
         { error: "Group name and at least one choice required." },
         { status: 400 },
       );
     }
 
+    const normalizedGroupName = normalizeMenuOptionGroupName(groupName);
+    const normalizedChoices = choices.map((choice) =>
+      normalizeMenuOptionChoice(choice as MenuOptionChoiceInput),
+    );
+
     const optionGroup = await prisma.menuItemOptionGroup.create({
       data: {
         menuItemId: id,
-        name: groupName,
+        name: normalizedGroupName,
         required: Boolean(required),
         multiple: Boolean(multiple),
         choices: {
-          create: choices.map((choice) => ({
-            name: choice.name,
-            description: choice.description || null,
-            dietaryInfo: choice.dietaryInfo || null,
-            imageUrl: choice.imageUrl || null,
-            requestOnly: Boolean(choice.requestOnly),
-            priceDelta: choice.priceDelta ?? 0,
-          })),
+          create: normalizedChoices,
         },
       },
       include: {
@@ -67,6 +62,10 @@ export async function POST(request: Request, context: RouteContext) {
 
     return NextResponse.json(optionGroup);
   } catch (error) {
+    if (isMenuOptionValidationError(error)) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
     console.error(error);
 
     return NextResponse.json(

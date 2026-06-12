@@ -231,6 +231,9 @@ Progress update - June 6, 2026:
   - Saving menu item allergens now validates menu item and allergen IDs before replacing tags, and the replacement runs transactionally.
 - Admin menu cache revalidation:
   - Admin menu item, option, allergen, template, availability, archive/restore, delete, and category mutations now revalidate the affected public/admin menu pages.
+- Admin option validation:
+  - Admin option group and option choice saves now validate choice names, non-negative price deltas, and public image URLs before saving.
+  - Option edit forms surface validation messages returned by the API.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -337,11 +340,15 @@ Next work items - June 8, 2026:
    - Added a shared menu revalidation helper for menu-related route handlers.
    - Menu create, edit, delete, archive, restore, availability, option, allergen, template, and category mutations now invalidate the affected public/admin menu pages.
 
-16. Legacy cleanup later, not now
+16. Admin option validation hardening - completed June 12, 2026
+   - Option group creation and option choice editing now validate choice names, non-negative price deltas, and public image URLs server-side.
+   - Admin option forms now show validation messages returned from the API.
+
+17. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-17. Suggested next Codex prompt
+18. Suggested next Codex prompt
    - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.

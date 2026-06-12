@@ -15,6 +15,14 @@ type Props = {
   };
 };
 
+async function readError(response: Response, fallback: string) {
+  const data = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
+
+  return data?.error ?? fallback;
+}
+
 export function EditOptionChoiceForm({ choice }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -34,7 +42,7 @@ export function EditOptionChoiceForm({ choice }: Props) {
     setSaving(false);
 
     if (!response.ok) {
-      alert("Failed to update option choice.");
+      alert(await readError(response, "Failed to update option choice."));
       return;
     }
 
