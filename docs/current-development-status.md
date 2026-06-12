@@ -221,6 +221,9 @@ Progress update - June 6, 2026:
   - Older template entries for meal count, vegetable choice, starch choice, and broad meal-plan substitutions were removed from the admin template dropdown.
   - Applying the meal plan template no longer enables free-form customer item instructions by default.
   - Public meal plan copy now describes fixed offerings rather than broad meal-component customization.
+- Meal plan customer option enforcement:
+  - Public `/menu` now filters meal plan option groups to spice level and protein substitution only.
+  - Order creation validates meal plan submitted options against the same allowed customer-facing groups, so stale carts cannot submit old meal-count, vegetable, starch, or broad-substitution options.
 
 Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
@@ -310,11 +313,15 @@ Next work items - June 8, 2026:
    - Removed stale meal-plan template entries that exposed meal count, vegetable, starch, or broad substitution choices.
    - Public menu and item modal copy now describes fixed meal plan offerings with limited spice/protein substitution options.
 
-12. Legacy cleanup later, not now
+12. Meal plan customer option enforcement - completed June 12, 2026
+   - Public meal plan cards expose only spice level and protein substitution option groups.
+   - Order creation rejects stale meal plan cart selections for older customer-facing option groups.
+
+13. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-13. Suggested next Codex prompt
+14. Suggested next Codex prompt
    - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.

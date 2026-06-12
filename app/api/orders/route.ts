@@ -7,6 +7,7 @@ import {
   calculateServerLateFee,
   validateServerRequestedDate,
 } from "@/lib/server-business-rules";
+import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import type { CartItem } from "@/store/cart-store";
@@ -417,6 +418,10 @@ export async function POST(request: Request) {
       }
 
       const selectedOptions = item.selectedOptions ?? [];
+      const customerOptionGroups = filterMealPlanCustomerOptionGroups(
+        menuItem.type,
+        menuItem.optionGroups,
+      );
       const selectedByGroup = new Map<string, string[]>();
       const seenSelections = new Set<string>();
       let unitPrice = Number(menuItem.price);
@@ -429,7 +434,7 @@ export async function POST(request: Request) {
           String(option.choiceName ?? ""),
         );
 
-        const group = menuItem.optionGroups.find(
+        const group = customerOptionGroups.find(
           (entry) => entry.name === groupName,
         );
 
@@ -470,7 +475,7 @@ export async function POST(request: Request) {
         );
       }
 
-      for (const group of menuItem.optionGroups) {
+      for (const group of customerOptionGroups) {
         const selectedChoices = selectedByGroup.get(group.name) ?? [];
 
         if (group.required && selectedChoices.length === 0) {

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
+import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import type { DecimalLike } from "@/types/display";
 
 type PublicMenuCategory = {
@@ -114,43 +115,51 @@ const visibleCategories = categories.filter(
               <h2 className="mb-4 text-2xl font-semibold">{category.name}</h2>
 
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                {category.items.map((item) => (
-                  <MenuCard
-                    key={item.id}
-                    item={{
-                      id: item.id,
-                      name: item.name,
-                      type: item.type,
-                      description: item.description,
-                      price: Number(item.price),
-                      category: category.name,
-                      imageUrl: item.imageUrl ?? undefined,
-                      available: item.available,
-                      seasonal: item.seasonal,
-                      allergens: item.allergens.map((entry) => ({
-                        id: entry.allergen.id,
-                        name: entry.allergen.name,
-                      })),
-                      requiresApproval: item.requiresApproval,
-                      customerInstructionsEnabled: item.customerInstructionsEnabled,
-                      optionGroups: item.optionGroups.map((group) => ({
-                        id: group.id,
-                        name: group.name,
-                        required: group.required,
-                        multiple: group.multiple,
-                        choices: group.choices.map((choice) => ({
-                          id: choice.id,
-                          name: choice.name,
-                          description: choice.description,
-                          dietaryInfo: choice.dietaryInfo,
-                          imageUrl: choice.imageUrl,
-                          requestOnly: choice.requestOnly,
-                          priceDelta: Number(choice.priceDelta),
+                {category.items.map((item) => {
+                  const optionGroups = filterMealPlanCustomerOptionGroups(
+                    item.type,
+                    item.optionGroups,
+                  );
+
+                  return (
+                    <MenuCard
+                      key={item.id}
+                      item={{
+                        id: item.id,
+                        name: item.name,
+                        type: item.type,
+                        description: item.description,
+                        price: Number(item.price),
+                        category: category.name,
+                        imageUrl: item.imageUrl ?? undefined,
+                        available: item.available,
+                        seasonal: item.seasonal,
+                        allergens: item.allergens.map((entry) => ({
+                          id: entry.allergen.id,
+                          name: entry.allergen.name,
                         })),
-                      })),
-                    }}
-                  />
-                ))}
+                        requiresApproval: item.requiresApproval,
+                        customerInstructionsEnabled:
+                          item.customerInstructionsEnabled,
+                        optionGroups: optionGroups.map((group) => ({
+                          id: group.id,
+                          name: group.name,
+                          required: group.required,
+                          multiple: group.multiple,
+                          choices: group.choices.map((choice) => ({
+                            id: choice.id,
+                            name: choice.name,
+                            description: choice.description,
+                            dietaryInfo: choice.dietaryInfo,
+                            imageUrl: choice.imageUrl,
+                            requestOnly: choice.requestOnly,
+                            priceDelta: Number(choice.priceDelta),
+                          })),
+                        })),
+                      }}
+                    />
+                  );
+                })}
               </div>
 
             </section>
