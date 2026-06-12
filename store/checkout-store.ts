@@ -42,6 +42,14 @@ const emptyContactDetails: CheckoutContactDetails = {
   saveContactInfo: false,
 };
 
+const transientCheckoutDetails: Pick<
+  CheckoutDetails,
+  keyof CheckoutContactDetails | "allergenAcknowledged"
+> = {
+  ...emptyContactDetails,
+  allergenAcknowledged: false,
+};
+
 const defaultCheckout: CheckoutDetails = {
   orderType: "delivery",
   requestedDateTime: "",
@@ -97,7 +105,7 @@ export const useCheckoutStore = create<CheckoutState>()(
         ...state,
         details: {
           ...state.details,
-          ...emptyContactDetails,
+          ...transientCheckoutDetails,
         },
       }),
       merge: (persisted, current) => {
@@ -109,7 +117,7 @@ export const useCheckoutStore = create<CheckoutState>()(
           details: {
             ...defaultCheckout,
             ...persistedState.details,
-            ...emptyContactDetails,
+            ...transientCheckoutDetails,
           },
         };
       },

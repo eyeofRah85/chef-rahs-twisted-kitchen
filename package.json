@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "check": "npm run lint && npm run prisma:generate && npm run typecheck && npm run build"
+    "check": "npm run lint && npm run prisma:generate && npm run typecheck && npm run build",
+    "admin:promote": "tsx prisma/promote-admin.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

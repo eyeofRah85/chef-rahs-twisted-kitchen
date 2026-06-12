@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { parseEnumValue } from "@/lib/enum-values";
 import { menuItemTypes } from "@/lib/prisma-enums";
+import { savePublicImageUpload } from "@/lib/public-upload";
 
 export async function POST(request: Request) {
   try {
@@ -25,31 +24,29 @@ export async function POST(request: Request) {
     const image = formData.get("imageUrl") as File | null;
     const menuItemType = parseEnumValue(menuItemTypes, type);
 
-    let imageUrl: string | null = null;
-
-    if (image && image.size > 0) {
-      const bytes = await image.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "menu");
-      await mkdir(uploadDir, { recursive: true });
-
-      const safeFileName = `${Date.now()}-${image.name
-        .replaceAll(" ", "-")
-        .replace(/[^a-zA-Z0-9.-]/g, "")}`;
-
-      const filePath = path.join(uploadDir, safeFileName);
-
-      await writeFile(filePath, buffer);
-
-      imageUrl = `/uploads/menu/${safeFileName}`;
-    }
-
     if (!name || !description || !categoryName || price <= 0 || !menuItemType) {
       return NextResponse.json(
         { error: "Name, description, category, valid price, and valid type are required." },
         { status: 400 },
       );
+    }
+
+    let imageUrl: string | null = null;
+
+    if (image && image.size > 0) {
+      try {
+        imageUrl = await savePublicImageUpload(image, "menu");
+      } catch (uploadError) {
+        return NextResponse.json(
+          {
+            error:
+              uploadError instanceof Error
+                ? uploadError.message
+                : "Invalid image upload.",
+          },
+          { status: 400 },
+        );
+      }
     }
 
     const category = await prisma.menuCategory.upsert({
