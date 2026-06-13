@@ -414,11 +414,19 @@ Next work items - June 8, 2026:
    - Order creation now writes `OrderWeeklyMealPlanSelection` snapshots and item-level allergen acknowledgement/conflict snapshots for weekly and regular menu items.
    - This slice intentionally does not fully surface weekly snapshots in customer order detail, admin order detail, kitchen prep, or confirmation emails yet.
 
-25. Legacy cleanup later, not now
+25. Weekly meal plan order snapshot visibility slice - completed June 13, 2026
+   - Customer order detail pages now include saved weekly meal plan package, offering, spice, protein, price delta, request-only, and approval-required snapshot details.
+   - Admin order detail and printable kitchen ticket pages now include the same weekly snapshot details.
+   - The admin kitchen board now selects weekly order snapshots and passes only serializable values into the client kitchen card.
+   - Order confirmation emails now include weekly meal plan snapshot details for weekly order items.
+   - Order creation now includes `OrderWeeklyMealPlanSelection` records when building the immediate confirmation email payload.
+   - No route or data model changes were made.
+
+26. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-26. Suggested next Codex prompt
-   - Surface weekly meal plan snapshots in customer order detail, admin order detail, kitchen prep, and confirmation emails, using the existing `OrderWeeklyMealPlanSelection` records and without changing the weekly checkout data model.
+27. Suggested next Codex prompt
+   - Review weekly meal plan reorder behavior, account order history summaries, and admin/customer list views. Decide whether weekly items should remain display-only from historical orders or get a current-week reorder flow with fresh validation.

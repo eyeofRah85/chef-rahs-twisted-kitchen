@@ -16,6 +16,10 @@ import {
   formatOrderType,
   formatPaymentStatus,
 } from "@/lib/format-labels";
+import {
+  getWeeklyMealPlanSelectionDetails,
+  type WeeklyOrderSelectionDisplay,
+} from "@/lib/weekly-order-display";
 
 type OrderEmailItem = {
   name: string;
@@ -23,6 +27,7 @@ type OrderEmailItem = {
   unitPrice: number;
   lineTotal: number;
   notes?: string | null;
+  weeklyMealPlanSelection?: WeeklyOrderSelectionDisplay | null;
 };
 
 type Props = {
@@ -172,25 +177,48 @@ export function OrderConfirmationEmail({
                   )}
                 </>
               )}
-            {items.map((item, index) => (
-              <Section key={`${item.name}-${index}`}>
-                <Text>
-                  <strong>
-                    {item.quantity} x {item.name}
-                  </strong>
-                </Text>
+            {items.map((item, index) => {
+              const weeklyDetails = item.weeklyMealPlanSelection
+                ? getWeeklyMealPlanSelectionDetails(
+                    item.weeklyMealPlanSelection,
+                  )
+                : [];
 
-                <Text>
-                  ${item.unitPrice.toFixed(2)} each - ${item.lineTotal.toFixed(2)}
-                </Text>
-
-                {item.notes && (
-                  <Text style={{ whiteSpace: "pre-wrap" }}>
-                    {item.notes}
+              return (
+                <Section key={`${item.name}-${index}`}>
+                  <Text>
+                    <strong>
+                      {item.quantity} x {item.name}
+                    </strong>
                   </Text>
-                )}
-              </Section>
-            ))}
+
+                  <Text>
+                    ${item.unitPrice.toFixed(2)} each - $
+                    {item.lineTotal.toFixed(2)}
+                  </Text>
+
+                  {weeklyDetails.length > 0 && (
+                    <>
+                      <Text>
+                        <strong>Weekly Meal Plan Snapshot</strong>
+                      </Text>
+
+                      {weeklyDetails.map((detail) => (
+                        <Text key={detail.label}>
+                          <strong>{detail.label}:</strong> {detail.value}
+                        </Text>
+                      ))}
+                    </>
+                  )}
+
+                  {item.notes && (
+                    <Text style={{ whiteSpace: "pre-wrap" }}>
+                      {item.notes}
+                    </Text>
+                  )}
+                </Section>
+              );
+            })}
 
             <Hr />
 

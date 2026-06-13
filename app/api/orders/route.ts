@@ -13,6 +13,7 @@ import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
+import type { WeeklyOrderSelectionDisplay } from "@/lib/weekly-order-display";
 import type { Prisma } from "@prisma/client";
 
 type CreateOrderRequest = {
@@ -26,11 +27,16 @@ type CreatedOrderItem = {
   unitPrice: DecimalLike;
   lineTotal: DecimalLike;
   notes: string | null;
+  weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
 };
 
 type CreatedOrderWithItems = Prisma.OrderGetPayload<{
   include: {
-    items: true;
+    items: {
+      include: {
+        weeklyMealPlanSelection: true;
+      };
+    };
   };
 }>;
 
@@ -1009,7 +1015,11 @@ export async function POST(request: Request) {
         },
 
         include: {
-          items: true,
+          items: {
+            include: {
+              weeklyMealPlanSelection: true,
+            },
+          },
         },
       });
     });
@@ -1069,6 +1079,23 @@ export async function POST(request: Request) {
           unitPrice: Number(item.unitPrice),
           lineTotal: Number(item.lineTotal),
           notes: item.notes,
+          weeklyMealPlanSelection: item.weeklyMealPlanSelection
+            ? {
+                periodLabel: item.weeklyMealPlanSelection.periodLabel,
+                packageName: item.weeklyMealPlanSelection.packageName,
+                packageDays: item.weeklyMealPlanSelection.packageDays,
+                packageMealsPerDay:
+                  item.weeklyMealPlanSelection.packageMealsPerDay,
+                packagePrice: Number(item.weeklyMealPlanSelection.packagePrice),
+                offeringName: item.weeklyMealPlanSelection.offeringName,
+                spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
+                proteinSubstitution:
+                  item.weeklyMealPlanSelection.proteinSubstitution,
+                requestOnly: item.weeklyMealPlanSelection.requestOnly,
+                requiresApproval: item.weeklyMealPlanSelection.requiresApproval,
+                priceDelta: Number(item.weeklyMealPlanSelection.priceDelta),
+              }
+            : null,
         })),
       }),
     });
