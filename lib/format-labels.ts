@@ -184,3 +184,27 @@ export function formatServiceRequestStatus(
   }
 }
 
+export function formatWeeklyMenuStatus(status: string | null | undefined) {
+  switch (status) {
+    case "DRAFT":
+      return "Draft";
+
+    case "PUBLISHED":
+      return "Published";
+
+    case "CLOSED":
+      return "Closed";
+
+    case "ARCHIVED":
+      return "Archived";
+
+    default:
+      return status
+        ? status
+            .toLowerCase()
+            .replaceAll("_", " ")
+            .replace(/\b\w/g, (char) => char.toUpperCase())
+        : "Not set";
+  }
+}
+

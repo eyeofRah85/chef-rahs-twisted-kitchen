@@ -184,7 +184,8 @@ Progress update - June 6, 2026:
   - Added `docs/weekly-meal-plan-schema-proposal.md` with an additive weekly menu schema proposal and rollout plan.
   - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, limited option groups, request-only choices, and order snapshots.
   - Added and applied migration `20260613014948_add_weekly_meal_plan_models` with weekly period, package, offering, allowed-option, weekly allergen, order weekly selection snapshot, and item-level allergen acknowledgement fields.
-  - The new weekly models are not wired to admin UI, `/menu`, cart, checkout, kitchen prep, or emails yet.
+  - Added the first admin weekly menu management slice for listing, creating, and editing weekly periods and 1-/2-meal packages.
+  - The new weekly models are not wired to weekly offerings/options/allergens, cloning, public `/menu`, cart, checkout, kitchen prep, or emails yet.
 - Gallery and image management:
   - Added `docs/gallery-image-management.md` to document the current gallery and image upload direction.
   - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
@@ -365,11 +366,20 @@ Next work items - June 8, 2026:
    - Applied the migration to the configured local development database and confirmed `prisma migrate status` reports the database is up to date.
    - `npm run check` passes after the schema migration.
 
-20. Legacy cleanup later, not now
+20. Admin weekly menu management slice - completed June 13, 2026
+   - Added `/admin/menu/weekly` as a stable admin subroute from the existing Menu Manager.
+   - Admins can list, create, and edit weekly menu periods with label, date range, ordering cutoff, status, capacity, and fulfillment notes.
+   - Admins can add and edit weekly meal plan packages for each period.
+   - Package validation is limited to 5- or 7-day packages with 1 or 2 meals per day.
+   - Duplicate packages for the same weekly menu/day/meal count are blocked by API validation and the schema uniqueness rule.
+   - Published weekly menus cannot overlap another published weekly menu date range.
+   - This slice intentionally does not wire weekly offerings, allergens, cloning/rotation, public `/menu`, cart, checkout, kitchen prep, or emails yet.
+
+21. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-21. Suggested next Codex prompt
-   - Build the first admin weekly menu management slice: list/create/edit weekly periods and packages behind `/admin/menu` or a stable admin subroute, without wiring public `/menu`, cart, or checkout to the weekly models yet.
+22. Suggested next Codex prompt
+   - Build the next admin weekly menu slice: manage weekly offerings, allergens, and allowed spice/protein options for each weekly period, without wiring public `/menu`, cart, or checkout to the weekly models yet.

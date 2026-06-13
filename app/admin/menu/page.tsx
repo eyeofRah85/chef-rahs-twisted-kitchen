@@ -159,6 +159,13 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
 
         <div className="mb-6 flex flex-wrap gap-3">
           <Link
+            href="/admin/menu/weekly"
+            className="inline-flex rounded-xl border bg-white px-4 py-2 text-sm font-medium shadow-sm"
+          >
+            Manage Weekly Menus
+          </Link>
+
+          <Link
             href="/admin/menu/archived"
             className="inline-flex rounded-xl border bg-white px-4 py-2 text-sm font-medium shadow-sm"
           >
