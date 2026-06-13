@@ -428,5 +428,13 @@ Next work items - June 8, 2026:
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-27. Suggested next Codex prompt
-   - Review weekly meal plan reorder behavior, account order history summaries, and admin/customer list views. Decide whether weekly items should remain display-only from historical orders or get a current-week reorder flow with fresh validation.
+27. Weekly meal plan reorder and list summary slice - completed June 13, 2026
+   - Historical weekly meal plan order items are now treated as display-only for generic reorder.
+   - The account reorder button skips weekly meal plan snapshots and explains that weekly meal plans must be ordered from the current weekly menu.
+   - Order creation rejects recovered/reorder submissions that point at a previous weekly meal plan snapshot, covering stale persisted carts and direct payloads.
+   - Account order history now includes weekly meal plan snapshot details for weekly items.
+   - Account dashboard, admin dashboard, admin order list, admin customer detail, and admin customer list views now show compact weekly meal plan indicators/counts.
+   - No route or data model changes were made.
+
+28. Suggested next Codex prompt
+   - Review remaining weekly meal plan operational gaps: current-week capacity visibility, admin fulfillment prep needs beyond the kitchen ticket, and any manual QA checklist needed while Codex Browser verification remains blocked.

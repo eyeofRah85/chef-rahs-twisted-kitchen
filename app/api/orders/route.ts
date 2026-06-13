@@ -101,6 +101,9 @@ type ServerRecoveredOrderItem = {
   name: string;
   unitPrice: DecimalLike;
   notes: string | null;
+  weeklyMealPlanSelection: {
+    id: string;
+  } | null;
   menuItem: {
     type: string;
     available: boolean;
@@ -339,6 +342,11 @@ export async function POST(request: Request) {
         name: true,
         unitPrice: true,
         notes: true,
+        weeklyMealPlanSelection: {
+          select: {
+            id: true,
+          },
+        },
         menuItem: {
           select: {
             type: true,
@@ -580,6 +588,16 @@ export async function POST(request: Request) {
         if (!recoveredItem) {
           return NextResponse.json(
             { error: "One or more reorder items could not be verified." },
+            { status: 400 },
+          );
+        }
+
+        if (recoveredItem.weeklyMealPlanSelection) {
+          return NextResponse.json(
+            {
+              error:
+                "Weekly meal plan items must be ordered from the current weekly menu.",
+            },
             { status: 400 },
           );
         }

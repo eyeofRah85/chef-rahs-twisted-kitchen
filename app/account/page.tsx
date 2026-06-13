@@ -15,6 +15,9 @@ import { AccountAllergenPreferencesForm } from "@/components/account/AccountAlle
 type DashboardOrderItem = {
   id: string;
   name: string;
+  weeklyMealPlanSelection: {
+    id: string;
+  } | null;
 };
 
 type DashboardOrder = {
@@ -50,7 +53,15 @@ export default async function AccountPage() {
           createdAt: "desc",
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              weeklyMealPlanSelection: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       },
       cateringRequests: {
@@ -252,56 +263,69 @@ export default async function AccountPage() {
           </div>
 
           <div className="space-y-4">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-xl border p-4 transition hover:bg-neutral-50"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold">
-                      {formatOrderType(order.orderType)} Order
-                    </p>
+            {orders.map((order) => {
+              const weeklyItemCount = order.items.filter(
+                (item) => item.weeklyMealPlanSelection,
+              ).length;
 
-                    <p className="mt-1 text-sm text-neutral-600">
-                      {order.items.length} item
-                      {order.items.length === 1 ? "" : "s"} -{" "}
-                      {order.createdAt.toLocaleDateString()}
-                    </p>
-
-                    <p className="mt-1 text-xs text-neutral-500">
-                      Requested:{" "}
-                      {order.requestedDateTime
-                        ? order.requestedDateTime.toLocaleString()
-                        : "Not provided"}
-                    </p>
-
-                    {order.paymentStatus && (
-                      <p className="mt-2 text-xs font-medium text-amber-700">
-                        Payment: {formatPaymentStatus(order.paymentStatus)}
+              return (
+                <div
+                  key={order.id}
+                  className="rounded-xl border p-4 transition hover:bg-neutral-50"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold">
+                        {formatOrderType(order.orderType)} Order
                       </p>
-                    )}
-                  </div>
 
-                  <div className="text-right">
-                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {formatOrderStatus(order.status)}
-                    </span>
+                      <p className="mt-1 text-sm text-neutral-600">
+                        {order.items.length} item
+                        {order.items.length === 1 ? "" : "s"} -{" "}
+                        {order.createdAt.toLocaleDateString()}
+                      </p>
 
-                    <p className="mt-2 font-bold">
-                      ${Number(order.total).toFixed(2)}
-                    </p>
+                      {weeklyItemCount > 0 && (
+                        <p className="mt-1 text-xs font-medium text-emerald-700">
+                          {weeklyItemCount} weekly meal plan
+                          {weeklyItemCount === 1 ? "" : "s"}
+                        </p>
+                      )}
 
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="mt-3 inline-flex rounded-xl border px-4 py-2 text-xs font-medium"
-                    >
-                      View Details
-                    </Link>
+                      <p className="mt-1 text-xs text-neutral-500">
+                        Requested:{" "}
+                        {order.requestedDateTime
+                          ? order.requestedDateTime.toLocaleString()
+                          : "Not provided"}
+                      </p>
+
+                      {order.paymentStatus && (
+                        <p className="mt-2 text-xs font-medium text-amber-700">
+                          Payment: {formatPaymentStatus(order.paymentStatus)}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="text-right">
+                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        {formatOrderStatus(order.status)}
+                      </span>
+
+                      <p className="mt-2 font-bold">
+                        ${Number(order.total).toFixed(2)}
+                      </p>
+
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="mt-3 inline-flex rounded-xl border px-4 py-2 text-xs font-medium"
+                      >
+                        View Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {orders.length === 0 && (
               <div className="rounded-xl bg-neutral-100 p-6 text-center">

@@ -17,6 +17,12 @@ type CustomerListOrder = {
   paymentStatus: string | null;
   total: DecimalLike;
   createdAt: Date;
+  items: {
+    id: string;
+    weeklyMealPlanSelection: {
+      id: string;
+    } | null;
+  }[];
 };
 
 type CustomerListRow = {
@@ -46,7 +52,16 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
     include: {
       orders: {
         include: {
-          items: true,
+          items: {
+            select: {
+              id: true,
+              weeklyMealPlanSelection: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -62,6 +77,13 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
       ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"].includes(order.paymentStatus ?? ""),
     ).length;
 
+    const weeklyMealPlanItemCount = customer.orders.reduce(
+      (count, order) =>
+        count +
+        order.items.filter((item) => item.weeklyMealPlanSelection).length,
+      0,
+    );
+
     const lastOrder = customer.orders.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     )[0];
@@ -73,6 +95,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
       orderCount: customer.orders.length,
       totalSpent,
       paymentDueCount,
+      weeklyMealPlanItemCount,
       lastOrderDate: lastOrder?.createdAt ?? null,
     };
   });
@@ -151,6 +174,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
               <tr>
                 <th className="p-4">Customer</th>
                 <th className="p-4">Orders</th>
+                <th className="p-4">Weekly Plans</th>
                 <th className="p-4">Total Spent</th>
                 <th className="p-4">Payments Due</th>
                 <th className="p-4">Last Order</th>
@@ -167,6 +191,16 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
                   </td>
 
                   <td className="p-4">{customer.orderCount}</td>
+
+                  <td className="p-4">
+                    {customer.weeklyMealPlanItemCount > 0 ? (
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
+                        {customer.weeklyMealPlanItemCount}
+                      </span>
+                    ) : (
+                      <span className="text-neutral-500">None</span>
+                    )}
+                  </td>
 
                   <td className="p-4 font-medium">
                     ${customer.totalSpent.toFixed(2)}
@@ -201,7 +235,7 @@ export default async function AdminCustomersPage({ searchParams }: PageProps) {
 
               {filteredCustomerRows.length === 0 && (
                 <tr>
-                  <td className="p-6 text-center text-neutral-500" colSpan={6}>
+                  <td className="p-6 text-center text-neutral-500" colSpan={7}>
                     No customers match the selected filters.
                   </td>
                 </tr>
