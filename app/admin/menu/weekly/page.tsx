@@ -25,6 +25,8 @@ import {
 import { WeeklyOfferingAllergenEditor } from "@/components/admin/WeeklyOfferingAllergenEditor";
 import { requireAdmin } from "@/lib/auth-guards";
 import {
+  formatApprovalStatus,
+  formatOrderStatus,
   formatWeeklyMealPlanOptionType,
   formatWeeklyMenuStatus,
 } from "@/lib/format-labels";
@@ -33,6 +35,34 @@ import { prisma } from "@/lib/prisma";
 type AdminAllergen = {
   id: string;
   name: string;
+};
+
+type WeeklyFulfillmentSelection = {
+  id: string;
+  packageName: string;
+  offeringName: string;
+  spiceLevel: string | null;
+  proteinSubstitution: string | null;
+  requestOnly: boolean;
+  requiresApproval: boolean;
+  orderItem: {
+    quantity: number;
+    allergenAcknowledged: boolean;
+    allergenConflictSnapshot: unknown;
+    order: {
+      id: string;
+      customerName: string;
+      status: string;
+      approvalStatus: string;
+      requestedDateTime: Date | null;
+    };
+  };
+};
+
+type FulfillmentCountRow = {
+  label: string;
+  quantity: number;
+  orderCount: number;
 };
 
 function formatDateInput(date: Date) {
@@ -54,6 +84,17 @@ function formatDisplayDate(date: Date) {
     month: "short",
     day: "numeric",
     year: "numeric",
+  }).format(date);
+}
+
+function formatDisplayDateTime(date: Date | null) {
+  if (!date) {
+    return "Not scheduled";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
   }).format(date);
 }
 
@@ -182,6 +223,115 @@ function toOptionFormData(option: {
   };
 }
 
+function isActiveFulfillmentSelection(selection: WeeklyFulfillmentSelection) {
+  const order = selection.orderItem.order;
+
+  return (
+    order.approvalStatus !== "DENIED" &&
+    order.status !== "CANCELLED" &&
+    order.status !== "REFUNDED"
+  );
+}
+
+function sumSelectionQuantity(selections: WeeklyFulfillmentSelection[]) {
+  return selections.reduce(
+    (total, selection) => total + selection.orderItem.quantity,
+    0,
+  );
+}
+
+function countFlaggedQuantity(
+  selections: WeeklyFulfillmentSelection[],
+  predicate: (selection: WeeklyFulfillmentSelection) => boolean,
+) {
+  return selections.reduce(
+    (total, selection) =>
+      predicate(selection) ? total + selection.orderItem.quantity : total,
+    0,
+  );
+}
+
+function getAllergenConflictNames(snapshot: unknown) {
+  if (!Array.isArray(snapshot)) {
+    return [];
+  }
+
+  return snapshot
+    .map((entry) => {
+      if (!entry || typeof entry !== "object" || !("name" in entry)) {
+        return null;
+      }
+
+      const name = (entry as { name?: unknown }).name;
+
+      return typeof name === "string" ? name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+}
+
+function buildFulfillmentCountRows(
+  selections: WeeklyFulfillmentSelection[],
+  getLabel: (selection: WeeklyFulfillmentSelection) => string,
+) {
+  const rowsByLabel = new Map<
+    string,
+    {
+      quantity: number;
+      orderIds: Set<string>;
+    }
+  >();
+
+  for (const selection of selections) {
+    const label = getLabel(selection);
+    const current = rowsByLabel.get(label) ?? {
+      quantity: 0,
+      orderIds: new Set<string>(),
+    };
+
+    current.quantity += selection.orderItem.quantity;
+    current.orderIds.add(selection.orderItem.order.id);
+    rowsByLabel.set(label, current);
+  }
+
+  return Array.from(rowsByLabel.entries())
+    .map(([label, row]): FulfillmentCountRow => ({
+      label,
+      quantity: row.quantity,
+      orderCount: row.orderIds.size,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <p className="rounded-lg bg-white/70 p-3 text-sm text-neutral-500">
+        No active weekly selections.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {rows.map((row) => (
+        <div
+          key={row.label}
+          className="flex items-start justify-between gap-3 rounded-lg bg-white/80 p-3 text-sm"
+        >
+          <div>
+            <p className="font-medium text-neutral-900">{row.label}</p>
+            <p className="mt-1 text-xs text-neutral-500">
+              {row.orderCount} order{row.orderCount === 1 ? "" : "s"}
+            </p>
+          </div>
+
+          <p className="font-semibold">{row.quantity}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function AdminWeeklyMenuPage() {
   try {
     await requireAdmin();
@@ -245,6 +395,36 @@ export default async function AdminWeeklyMenuPage() {
             orderSelections: true,
           },
         },
+        orderSelections: {
+          orderBy: {
+            createdAt: "asc",
+          },
+          select: {
+            id: true,
+            packageName: true,
+            offeringName: true,
+            spiceLevel: true,
+            proteinSubstitution: true,
+            requestOnly: true,
+            requiresApproval: true,
+            orderItem: {
+              select: {
+                quantity: true,
+                allergenAcknowledged: true,
+                allergenConflictSnapshot: true,
+                order: {
+                  select: {
+                    id: true,
+                    customerName: true,
+                    status: true,
+                    approvalStatus: true,
+                    requestedDateTime: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.allergen.findMany({
@@ -275,7 +455,7 @@ export default async function AdminWeeklyMenuPage() {
 
           <p className="mt-3 max-w-3xl text-neutral-700">
             Draft and maintain weekly meal plan periods and fixed-price 1- or
-            2-meal packages before the public weekly menu is wired into checkout.
+            2-meal packages for the public weekly menu and fulfillment prep.
           </p>
         </div>
 
@@ -291,6 +471,65 @@ export default async function AdminWeeklyMenuPage() {
               const dateRange = `${formatDisplayDate(
                 period.startDate,
               )} - ${formatDisplayDate(period.endDate)}`;
+              const spotsRemaining = Math.max(
+                period.capacity - period.ordersPlaced,
+                0,
+              );
+              const fulfillmentSelections =
+                period.orderSelections as WeeklyFulfillmentSelection[];
+              const activeFulfillmentSelections =
+                fulfillmentSelections.filter(isActiveFulfillmentSelection);
+              const inactiveSelectionCount =
+                fulfillmentSelections.length - activeFulfillmentSelections.length;
+              const activeFulfillmentQuantity = sumSelectionQuantity(
+                activeFulfillmentSelections,
+              );
+              const activeFulfillmentOrderCount = new Set(
+                activeFulfillmentSelections.map(
+                  (selection) => selection.orderItem.order.id,
+                ),
+              ).size;
+              const packageRows = buildFulfillmentCountRows(
+                activeFulfillmentSelections,
+                (selection) => selection.packageName,
+              );
+              const offeringRows = buildFulfillmentCountRows(
+                activeFulfillmentSelections,
+                (selection) => selection.offeringName,
+              );
+              const spiceRows = buildFulfillmentCountRows(
+                activeFulfillmentSelections,
+                (selection) => selection.spiceLevel ?? "No spice selected",
+              );
+              const proteinRows = buildFulfillmentCountRows(
+                activeFulfillmentSelections,
+                (selection) =>
+                  selection.proteinSubstitution ?? "No protein substitution",
+              );
+              const requestOnlyQuantity = countFlaggedQuantity(
+                activeFulfillmentSelections,
+                (selection) => selection.requestOnly,
+              );
+              const approvalRequiredQuantity = countFlaggedQuantity(
+                activeFulfillmentSelections,
+                (selection) => selection.requiresApproval,
+              );
+              const allergenFlagQuantity = countFlaggedQuantity(
+                activeFulfillmentSelections,
+                (selection) =>
+                  getAllergenConflictNames(
+                    selection.orderItem.allergenConflictSnapshot,
+                  ).length > 0,
+              );
+              const allergenConflictNames = Array.from(
+                new Set(
+                  activeFulfillmentSelections.flatMap((selection) =>
+                    getAllergenConflictNames(
+                      selection.orderItem.allergenConflictSnapshot,
+                    ),
+                  ),
+                ),
+              ).sort((a, b) => a.localeCompare(b));
 
               return (
                 <details
@@ -316,7 +555,12 @@ export default async function AdminWeeklyMenuPage() {
 
                         <div className="mt-3 flex flex-wrap gap-3 text-sm text-neutral-600">
                           <span>
-                            Capacity: {period.ordersPlaced}/{period.capacity}
+                            Capacity used: {period.ordersPlaced}/
+                            {period.capacity}
+                            {" - "}
+                            {spotsRemaining === 0
+                              ? "sold out"
+                              : `${spotsRemaining} left`}
                           </span>
 
                           <span>
@@ -342,6 +586,224 @@ export default async function AdminWeeklyMenuPage() {
                   <div className="border-t p-5">
                     <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_380px]">
                       <section className="space-y-5">
+                        <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+                          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+                            <div>
+                              <h3 className="text-lg font-semibold">
+                                Weekly Fulfillment Prep
+                              </h3>
+
+                              <p className="mt-1 text-sm text-emerald-950">
+                                {activeFulfillmentQuantity} weekly meal plan
+                                item
+                                {activeFulfillmentQuantity === 1 ? "" : "s"}{" "}
+                                across {activeFulfillmentOrderCount} active
+                                order
+                                {activeFulfillmentOrderCount === 1 ? "" : "s"}.
+                              </p>
+                            </div>
+
+                            <Link
+                              href="/admin/kitchen"
+                              className="inline-flex rounded-xl border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-950"
+                            >
+                              Open Kitchen Board
+                            </Link>
+                          </div>
+
+                          {period.fulfillmentNotes && (
+                            <div className="mt-4 rounded-xl border border-emerald-200 bg-white p-4 text-sm text-emerald-950">
+                              <p className="font-semibold">
+                                Fulfillment Notes
+                              </p>
+                              <p className="mt-2 whitespace-pre-wrap">
+                                {period.fulfillmentNotes}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                            <div className="rounded-xl bg-white p-4">
+                              <p className="text-xs font-medium uppercase text-neutral-500">
+                                Capacity
+                              </p>
+                              <p className="mt-2 text-2xl font-bold">
+                                {period.ordersPlaced}/{period.capacity}
+                              </p>
+                              <p className="mt-1 text-xs text-neutral-500">
+                                {spotsRemaining} remaining
+                              </p>
+                            </div>
+
+                            <div className="rounded-xl bg-white p-4">
+                              <p className="text-xs font-medium uppercase text-neutral-500">
+                                Active Orders
+                              </p>
+                              <p className="mt-2 text-2xl font-bold">
+                                {activeFulfillmentOrderCount}
+                              </p>
+                            </div>
+
+                            <div className="rounded-xl bg-white p-4">
+                              <p className="text-xs font-medium uppercase text-neutral-500">
+                                Request Only
+                              </p>
+                              <p className="mt-2 text-2xl font-bold">
+                                {requestOnlyQuantity}
+                              </p>
+                            </div>
+
+                            <div className="rounded-xl bg-white p-4">
+                              <p className="text-xs font-medium uppercase text-neutral-500">
+                                Approval Required
+                              </p>
+                              <p className="mt-2 text-2xl font-bold">
+                                {approvalRequiredQuantity}
+                              </p>
+                            </div>
+
+                            <div className="rounded-xl bg-white p-4">
+                              <p className="text-xs font-medium uppercase text-neutral-500">
+                                Allergen Flags
+                              </p>
+                              <p className="mt-2 text-2xl font-bold">
+                                {allergenFlagQuantity}
+                              </p>
+                            </div>
+                          </div>
+
+                          {inactiveSelectionCount > 0 && (
+                            <p className="mt-3 text-xs text-neutral-600">
+                              {inactiveSelectionCount} selection
+                              {inactiveSelectionCount === 1 ? "" : "s"} from
+                              denied, cancelled, or refunded orders excluded
+                              from prep counts.
+                            </p>
+                          )}
+
+                          {allergenConflictNames.length > 0 && (
+                            <p className="mt-3 text-sm font-medium text-red-800">
+                              Allergen conflicts:{" "}
+                              {allergenConflictNames.join(", ")}
+                            </p>
+                          )}
+
+                          <div className="mt-5 grid gap-4 xl:grid-cols-4">
+                            <div>
+                              <h4 className="mb-2 text-sm font-semibold">
+                                By Offering
+                              </h4>
+                              <FulfillmentCountList rows={offeringRows} />
+                            </div>
+
+                            <div>
+                              <h4 className="mb-2 text-sm font-semibold">
+                                By Package
+                              </h4>
+                              <FulfillmentCountList rows={packageRows} />
+                            </div>
+
+                            <div>
+                              <h4 className="mb-2 text-sm font-semibold">
+                                By Spice Level
+                              </h4>
+                              <FulfillmentCountList rows={spiceRows} />
+                            </div>
+
+                            <div>
+                              <h4 className="mb-2 text-sm font-semibold">
+                                By Protein
+                              </h4>
+                              <FulfillmentCountList rows={proteinRows} />
+                            </div>
+                          </div>
+
+                          <div className="mt-5">
+                            <h4 className="mb-2 text-sm font-semibold">
+                              Active Weekly Orders
+                            </h4>
+
+                            {activeFulfillmentSelections.length > 0 ? (
+                              <div className="space-y-2">
+                                {activeFulfillmentSelections.map(
+                                  (selection) => {
+                                    const order = selection.orderItem.order;
+
+                                    return (
+                                      <Link
+                                        key={selection.id}
+                                        href={`/admin/orders/${order.id}`}
+                                        className="block rounded-lg bg-white/80 p-3 text-sm transition hover:bg-white"
+                                      >
+                                        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
+                                          <div>
+                                            <p className="font-medium">
+                                              {order.customerName}
+                                            </p>
+
+                                            <p className="mt-1 text-neutral-600">
+                                              {selection.orderItem.quantity} x{" "}
+                                              {selection.packageName} -{" "}
+                                              {selection.offeringName}
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-neutral-500">
+                                              Spice:{" "}
+                                              {selection.spiceLevel ??
+                                                "Not selected"}{" "}
+                                              | Protein:{" "}
+                                              {selection.proteinSubstitution ??
+                                                "No substitution"}
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-neutral-500">
+                                              Requested:{" "}
+                                              {formatDisplayDateTime(
+                                                order.requestedDateTime,
+                                              )}
+                                            </p>
+                                          </div>
+
+                                          <div className="flex flex-wrap gap-2 lg:justify-end">
+                                            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
+                                              {formatOrderStatus(order.status)}
+                                            </span>
+
+                                            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
+                                              {formatApprovalStatus(
+                                                order.approvalStatus,
+                                              )}
+                                            </span>
+
+                                            {selection.requestOnly && (
+                                              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                                                Request Only
+                                              </span>
+                                            )}
+
+                                            {getAllergenConflictNames(
+                                              selection.orderItem
+                                                .allergenConflictSnapshot,
+                                            ).length > 0 && (
+                                              <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
+                                                Allergen Flag
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </Link>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            ) : (
+                              <p className="rounded-lg bg-white/70 p-3 text-sm text-neutral-500">
+                                No active weekly orders for this period yet.
+                              </p>
+                            )}
+                          </div>
+                        </section>
+
                         <div>
                           <h3 className="text-lg font-semibold">
                             Weekly Packages

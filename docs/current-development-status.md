@@ -436,5 +436,15 @@ Next work items - June 8, 2026:
    - Account dashboard, admin dashboard, admin order list, admin customer detail, and admin customer list views now show compact weekly meal plan indicators/counts.
    - No route or data model changes were made.
 
-28. Suggested next Codex prompt
-   - Review remaining weekly meal plan operational gaps: current-week capacity visibility, admin fulfillment prep needs beyond the kitchen ticket, and any manual QA checklist needed while Codex Browser verification remains blocked.
+28. Weekly meal plan fulfillment prep and manual QA checklist - completed June 13, 2026
+   - Public weekly capacity was confirmed as visible on `/menu`, and checkout already blocks over-capacity weekly orders.
+   - Admin weekly menu periods now show clearer capacity used/remaining copy.
+   - `/admin/menu/weekly` now includes a read-only Weekly Fulfillment Prep summary for each period.
+   - Fulfillment prep groups active weekly selections by offering, package, spice level, and protein substitution.
+   - Fulfillment prep shows active weekly order counts plus request-only, approval-required, and allergen conflict counts.
+   - Fulfillment prep lists active weekly orders for the period with links back to the admin order detail/kitchen ticket.
+   - Added `docs/weekly-meal-plan-manual-qa.md` for local browser testing while Codex Browser verification remains blocked.
+   - No route or data model changes were made.
+
+29. Suggested next Codex prompt
+   - Run the weekly meal plan manual QA checklist locally and report any issues. If manual QA is clean, review the remaining production readiness items: durable upload storage decision, email configuration, payment instruction copy, and launch environment variables.
