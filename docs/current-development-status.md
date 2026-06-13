@@ -183,8 +183,8 @@ Progress update - June 6, 2026:
   - Updated the discovery on June 13, 2026 with resolved business decisions for allergens, capacity, cloning/rotation, current-week ordering, fixed package pricing, and request-only proteins.
   - Added `docs/weekly-meal-plan-schema-proposal.md` with an additive weekly menu schema proposal and rollout plan.
   - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, limited option groups, request-only choices, and order snapshots.
-  - Future weekly meal plans likely need a weekly period, package offerings, fixed meal plan offerings, limited spice/protein options, customer allergen preferences, and allergen warning acknowledgement snapshots.
-  - A dedicated weekly menu model is now the recommended next design direction, but no schema migration has been applied yet.
+  - Added and applied migration `20260613014948_add_weekly_meal_plan_models` with weekly period, package, offering, allowed-option, weekly allergen, order weekly selection snapshot, and item-level allergen acknowledgement fields.
+  - The new weekly models are not wired to admin UI, `/menu`, cart, checkout, kitchen prep, or emails yet.
 - Gallery and image management:
   - Added `docs/gallery-image-management.md` to document the current gallery and image upload direction.
   - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
@@ -356,11 +356,20 @@ Next work items - June 8, 2026:
    - The proposal keeps the existing `MenuItem` checkout flow stable and adds dedicated weekly period, package, offering, allowed-option, allergen, capacity, clone-source, and order snapshot models as the recommended first migration direction.
    - The first migration should be additive only and should not rewrite existing menu items, historical orders, routes, or checkout behavior.
 
-19. Legacy cleanup later, not now
+19. First weekly meal plan schema migration - completed June 13, 2026
+   - Added migration `20260613014948_add_weekly_meal_plan_models`.
+   - Added `WeeklyMenuStatus` and `WeeklyMealPlanOptionType`.
+   - Added weekly menu period, package, offering, allowed option, and weekly offering allergen models.
+   - Added `OrderWeeklyMealPlanSelection` for order item weekly meal plan snapshots.
+   - Added item-level allergen acknowledgement fields to `OrderItem`.
+   - Applied the migration to the configured local development database and confirmed `prisma migrate status` reports the database is up to date.
+   - `npm run check` passes after the schema migration.
+
+20. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-20. Suggested next Codex prompt
-   - Inspect `docs/weekly-meal-plan-schema-proposal.md`, add the first additive Prisma migration for the weekly meal plan models, run Prisma generate/typecheck/build, and do not wire checkout to the weekly models yet.
+21. Suggested next Codex prompt
+   - Build the first admin weekly menu management slice: list/create/edit weekly periods and packages behind `/admin/menu` or a stable admin subroute, without wiring public `/menu`, cart, or checkout to the weekly models yet.

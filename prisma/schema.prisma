@@ -67,6 +67,18 @@ enum ServiceRequestType {
   PERSONAL_CHEF
 }
 
+enum WeeklyMenuStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum WeeklyMealPlanOptionType {
+  SPICE_LEVEL
+  PROTEIN_SUBSTITUTION
+}
+
 
 model CateringRequest {
   id              String         @id @default(cuid())
@@ -216,10 +228,11 @@ model GalleryImage {
 }
 
 model Allergen {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  users     UserAllergen[]
-  menuItems MenuItemAllergen[]
+  id                      String   @id @default(cuid())
+  name                    String   @unique
+  users                   UserAllergen[]
+  menuItems               MenuItemAllergen[]
+  weeklyMealPlanOfferings AllergenWeeklyMealPlanOffering[]
 
   createdAt DateTime @default(now())
 }
@@ -266,6 +279,110 @@ model MenuItemOptionChoice {
   priceDelta      Decimal             @db.Decimal(10, 2) @default(0)
 
   createdAt       DateTime            @default(now())
+}
+
+model WeeklyMenuPeriod {
+  id               String           @id @default(cuid())
+  label            String
+  startDate        DateTime
+  endDate          DateTime
+  orderCutoffAt    DateTime?
+  fulfillmentNotes String?
+  status           WeeklyMenuStatus @default(DRAFT)
+
+  capacity     Int @default(10)
+  ordersPlaced Int @default(0)
+
+  cloneSourceId String?
+  cloneSource   WeeklyMenuPeriod?  @relation("WeeklyMenuPeriodClones", fields: [cloneSourceId], references: [id], onDelete: SetNull)
+  clones        WeeklyMenuPeriod[] @relation("WeeklyMenuPeriodClones")
+
+  packages        WeeklyMealPlanPackage[]
+  offerings       WeeklyMealPlanOffering[]
+  orderSelections OrderWeeklyMealPlanSelection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, startDate, endDate])
+}
+
+model WeeklyMealPlanPackage {
+  id          String @id @default(cuid())
+  periodId    String
+  period      WeeklyMenuPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  name         String
+  days         Int
+  mealsPerDay  Int
+  price        Decimal @db.Decimal(10, 2)
+  available    Boolean @default(true)
+  displayOrder Int @default(0)
+  notes        String?
+
+  orderSelections OrderWeeklyMealPlanSelection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([periodId, days, mealsPerDay])
+  @@index([periodId, available, displayOrder])
+}
+
+model WeeklyMealPlanOffering {
+  id          String @id @default(cuid())
+  periodId    String
+  period      WeeklyMenuPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  name         String
+  description  String
+  imageUrl     String?
+  dietaryInfo  String?
+  available    Boolean @default(true)
+  displayOrder Int @default(0)
+
+  allergens       AllergenWeeklyMealPlanOffering[]
+  options         WeeklyMealPlanAllowedOption[]
+  orderSelections OrderWeeklyMealPlanSelection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([periodId, name])
+  @@index([periodId, available, displayOrder])
+}
+
+model AllergenWeeklyMealPlanOffering {
+  id         String @id @default(cuid())
+  offeringId String
+  allergenId String
+
+  offering WeeklyMealPlanOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  allergen Allergen               @relation(fields: [allergenId], references: [id], onDelete: Cascade)
+
+  @@unique([offeringId, allergenId])
+}
+
+model WeeklyMealPlanAllowedOption {
+  id         String @id @default(cuid())
+  offeringId String
+  offering   WeeklyMealPlanOffering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+
+  optionType       WeeklyMealPlanOptionType
+  name             String
+  description      String?
+  dietaryInfo      String?
+  priceDelta       Decimal @db.Decimal(10, 2) @default(0)
+  requestOnly      Boolean @default(false)
+  requiresApproval Boolean @default(false)
+  available        Boolean @default(true)
+  displayOrder     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([offeringId, optionType, name])
+  @@index([offeringId, optionType, displayOrder])
 }
 
 model Order {
@@ -333,6 +450,40 @@ model OrderItem {
   lineTotal  Decimal  @db.Decimal(10, 2)
 
   notes      String?
+
+  allergenAcknowledged     Boolean   @default(false)
+  allergenAcknowledgedAt   DateTime?
+  allergenConflictSnapshot Json?
+
+  weeklyMealPlanSelection OrderWeeklyMealPlanSelection?
+}
+
+model OrderWeeklyMealPlanSelection {
+  id          String   @id @default(cuid())
+  orderItemId String   @unique
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  weeklyMenuPeriodId       String?
+  weeklyMealPlanPackageId  String?
+  weeklyMealPlanOfferingId String?
+
+  weeklyMenuPeriod       WeeklyMenuPeriod? @relation(fields: [weeklyMenuPeriodId], references: [id], onDelete: SetNull)
+  weeklyMealPlanPackage  WeeklyMealPlanPackage? @relation(fields: [weeklyMealPlanPackageId], references: [id], onDelete: SetNull)
+  weeklyMealPlanOffering WeeklyMealPlanOffering? @relation(fields: [weeklyMealPlanOfferingId], references: [id], onDelete: SetNull)
+
+  periodLabel         String
+  packageName         String
+  packageDays         Int
+  packageMealsPerDay  Int
+  packagePrice        Decimal @db.Decimal(10, 2)
+  offeringName        String
+  spiceLevel          String?
+  proteinSubstitution String?
+  requestOnly         Boolean @default(false)
+  requiresApproval    Boolean @default(false)
+  priceDelta          Decimal @db.Decimal(10, 2) @default(0)
+
+  createdAt DateTime @default(now())
 }
 
 model OrderStatusHistory {

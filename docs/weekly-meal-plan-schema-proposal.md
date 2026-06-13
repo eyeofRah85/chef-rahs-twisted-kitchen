@@ -1,9 +1,9 @@
 # Weekly Meal Plan Schema Proposal
 
 Date: June 13, 2026
-Status: Proposal only; no schema migration has been applied.
+Status: First additive schema migration applied on June 13, 2026.
 
-This proposal translates the resolved weekly meal plan business decisions into the smallest additive Prisma schema direction. It intentionally keeps the existing `MenuItem`, cart, checkout, and order flow stable while weekly meal plan support is built alongside it.
+This proposal translates the resolved weekly meal plan business decisions into the smallest additive Prisma schema direction. The first migration, `20260613014948_add_weekly_meal_plan_models`, now adds these models and snapshot fields while keeping the existing `MenuItem`, cart, checkout, and order flow stable.
 
 ## Goals
 
@@ -248,7 +248,7 @@ The `cloneSourceId` field gives basic traceability without adding a full rotatio
 
 ## First Migration Scope
 
-The first migration should only add new schema and optional fields. It should not rewrite existing menu items, historical orders, routes, or checkout behavior.
+The first migration only adds new schema and optional fields. It does not rewrite existing menu items, historical orders, routes, or checkout behavior.
 
 Recommended first migration contents:
 
@@ -262,4 +262,6 @@ Recommended first migration contents:
 - Add `OrderWeeklyMealPlanSelection`.
 - Add item-level allergen acknowledgement fields to `OrderItem`.
 
-After that migration lands cleanly, the first implementation patch can focus on admin weekly period/package/offering CRUD without touching checkout yet.
+Completed on June 13, 2026 in migration `20260613014948_add_weekly_meal_plan_models`.
+
+The next implementation patch can focus on admin weekly period/package/offering CRUD without touching checkout yet.
