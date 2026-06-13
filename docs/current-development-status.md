@@ -180,9 +180,10 @@ Progress update - June 6, 2026:
 - Weekly meal plan modeling discovery:
   - Added `docs/weekly-meal-plan-discovery.md` to document the desired weekly meal plan admin and customer workflows before schema changes.
   - Updated the discovery on June 9, 2026 with client clarification that meal plans are fixed offerings, not truly customizable meals.
+  - Updated the discovery on June 13, 2026 with resolved business decisions for allergens, capacity, cloning/rotation, current-week ordering, fixed package pricing, and request-only proteins.
   - Current meal plans remain `MenuItem` records with `type = MEAL_PLAN`, limited option groups, request-only choices, and order snapshots.
   - Future weekly meal plans likely need a weekly period, package offerings, fixed meal plan offerings, limited spice/protein options, customer allergen preferences, and allergen warning acknowledgement snapshots.
-  - Open business decisions are documented before any schema migration is planned.
+  - A dedicated weekly menu model is now the recommended next design direction, but no schema migration has been applied yet.
 - Gallery and image management:
   - Added `docs/gallery-image-management.md` to document the current gallery and image upload direction.
   - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
@@ -282,7 +283,7 @@ Next work items - June 8, 2026:
    - The customer workflow keeps weekly meal plans inside `/menu` and cart checkout.
    - Updated June 9, 2026: the recommended next model is a fixed-offering flow where customers choose package length, 1- or 2-meal package options, spice level, and allowed protein substitutions only.
    - Updated June 9, 2026: customer account allergen preferences and allergen conflict alerts should be added before checkout completion.
-   - Open business decisions are listed before schema implementation.
+   - Updated June 13, 2026: business decisions are resolved. Use controlled allergen checkboxes, require allergen acknowledgement, show alerts for all food items, store acknowledgement at order and item level, allow multiple meal plans per cart, keep weekly packages fixed price, order only from the current week, cap weekly menus at 10 orders, support cloning/rotation, and require approval for additional proteins such as beef, pork, and lamb.
    - No schema or route changes were made.
 
 7. Gallery and image management next step - completed June 9, 2026
@@ -344,11 +345,16 @@ Next work items - June 8, 2026:
    - Option group creation and option choice editing now validate choice names, non-negative price deltas, and public image URLs server-side.
    - Admin option forms now show validation messages returned from the API.
 
-17. Legacy cleanup later, not now
+17. Weekly meal plan business decisions - completed June 13, 2026
+   - Updated `docs/weekly-meal-plan-discovery.md` with the resolved weekly meal plan business decisions.
+   - Dedicated weekly menu models are now the recommended next direction, with current-week ordering, 10-order weekly capacity, cloning/rotation, fixed package prices, all-food allergen alerts, order/item allergen acknowledgement snapshots, and request-only approval for additional proteins.
+   - No schema migration has been applied yet.
+
+18. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-18. Suggested next Codex prompt
-   - Inspect the current branch and confirm the next product priority: either implement direct object-storage uploads for the selected provider, or resume weekly meal plan modeling after the open business decisions are answered.
+19. Suggested next Codex prompt
+   - Inspect the current branch and draft the smallest Prisma schema proposal for dedicated weekly menu models, without removing the existing `MenuItem` checkout flow yet.
