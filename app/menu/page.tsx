@@ -1,12 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
-import {
-  WeeklyMenuSection,
-  type PublicWeeklyMenu,
-} from "@/components/menu/WeeklyMenuSection";
+import { WeeklyMenuSection } from "@/components/menu/WeeklyMenuSection";
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import type { DecimalLike } from "@/types/display";
+import type { PublicWeeklyMenu } from "@/types/weekly-menu";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +116,9 @@ function toPublicWeeklyMenu(weeklyMenu: {
     orderCutoffLabel: weeklyMenu.orderCutoffAt
       ? formatMenuDateTime(weeklyMenu.orderCutoffAt)
       : null,
+    orderingClosed: weeklyMenu.orderCutoffAt
+      ? weeklyMenu.orderCutoffAt < new Date()
+      : false,
     capacity: weeklyMenu.capacity,
     ordersPlaced: weeklyMenu.ordersPlaced,
     packages: weeklyMenu.packages.map((pkg) => ({

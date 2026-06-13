@@ -13,6 +13,7 @@ import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
+import type { Prisma } from "@prisma/client";
 
 type CreateOrderRequest = {
   items?: CartItem[];
@@ -26,6 +27,12 @@ type CreatedOrderItem = {
   lineTotal: DecimalLike;
   notes: string | null;
 };
+
+type CreatedOrderWithItems = Prisma.OrderGetPayload<{
+  include: {
+    items: true;
+  };
+}>;
 
 type ServerMenuItem = {
   id: string;
@@ -56,6 +63,30 @@ type ValidatedOrderItem = {
   lineTotal: number;
   requiresApproval: boolean;
   notes: string | null;
+  allergens: {
+    id: string;
+    name: string;
+  }[];
+  allergenConflicts: {
+    id: string;
+    name: string;
+  }[];
+  weeklySelection?: {
+    weeklyMenuPeriodId: string;
+    weeklyMealPlanPackageId: string;
+    weeklyMealPlanOfferingId: string;
+    periodLabel: string;
+    packageName: string;
+    packageDays: number;
+    packageMealsPerDay: number;
+    packagePrice: number;
+    offeringName: string;
+    spiceLevel: string | null;
+    proteinSubstitution: string | null;
+    requestOnly: boolean;
+    requiresApproval: boolean;
+    priceDelta: number;
+  };
 };
 
 type ServerRecoveredOrderItem = {
@@ -76,6 +107,16 @@ function normalizeSubmittedChoiceName(choiceName: string) {
   return choiceName.replace(/\s+\(Request Only\)$/i, "").trim();
 }
 
+class OrderSubmissionError extends Error {
+  status: number;
+
+  constructor(message: string, status = 400) {
+    super(message);
+    this.name = "OrderSubmissionError";
+    this.status = status;
+  }
+}
+
 const allowedTipTypes = new Set(["none", "10", "15", "20", "custom"]);
 const allowedPaymentMethods = new Set(["manual", "cash"]);
 
@@ -90,6 +131,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const customerEmail = session.user.email;
     const { items, checkout } = (await request.json()) as CreateOrderRequest;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -282,7 +324,7 @@ export async function POST(request: Request) {
           in: recoveredOrderItemIds,
         },
         order: {
-          customerEmail: session.user.email,
+          customerEmail,
         },
       },
       select: {
@@ -316,6 +358,205 @@ export async function POST(request: Request) {
           { error: "Order item quantities must be whole numbers greater than zero." },
           { status: 400 },
         );
+      }
+
+      if (item.weeklyMealPlanSelection) {
+        const selection = item.weeklyMealPlanSelection;
+        const now = new Date();
+
+        if (
+          !selection.weeklyMenuPeriodId ||
+          !selection.weeklyMealPlanPackageId ||
+          !selection.weeklyMealPlanOfferingId
+        ) {
+          return NextResponse.json(
+            { error: "Weekly meal plan selections are incomplete." },
+            { status: 400 },
+          );
+        }
+
+        const weeklyPeriod = await prisma.weeklyMenuPeriod.findUnique({
+          where: {
+            id: selection.weeklyMenuPeriodId,
+          },
+          include: {
+            packages: {
+              where: {
+                id: selection.weeklyMealPlanPackageId,
+                available: true,
+              },
+            },
+            offerings: {
+              where: {
+                id: selection.weeklyMealPlanOfferingId,
+                available: true,
+              },
+              include: {
+                allergens: {
+                  include: {
+                    allergen: true,
+                  },
+                },
+                options: {
+                  where: {
+                    available: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (!weeklyPeriod || weeklyPeriod.status !== "PUBLISHED") {
+          return NextResponse.json(
+            { error: "This weekly meal plan is no longer available." },
+            { status: 400 },
+          );
+        }
+
+        if (weeklyPeriod.startDate > now || weeklyPeriod.endDate < now) {
+          return NextResponse.json(
+            { error: "Weekly meal plans can only be ordered for the current published week." },
+            { status: 400 },
+          );
+        }
+
+        if (weeklyPeriod.orderCutoffAt && weeklyPeriod.orderCutoffAt < now) {
+          return NextResponse.json(
+            { error: "Ordering for this weekly meal plan has closed." },
+            { status: 400 },
+          );
+        }
+
+        const selectedPackage = weeklyPeriod.packages[0];
+        const selectedOffering = weeklyPeriod.offerings[0];
+
+        if (!selectedPackage || !selectedOffering) {
+          return NextResponse.json(
+            { error: "One or more weekly meal plan selections are no longer available." },
+            { status: 400 },
+          );
+        }
+
+        const spiceOptions = selectedOffering.options.filter(
+          (option) => option.optionType === "SPICE_LEVEL",
+        );
+        const proteinOptions = selectedOffering.options.filter(
+          (option) => option.optionType === "PROTEIN_SUBSTITUTION",
+        );
+        const selectedSpiceOption = selection.spiceOptionId
+          ? spiceOptions.find((option) => option.id === selection.spiceOptionId)
+          : null;
+        const selectedProteinOption = selection.proteinSubstitutionOptionId
+          ? proteinOptions.find(
+              (option) => option.id === selection.proteinSubstitutionOptionId,
+            )
+          : null;
+
+        if (spiceOptions.length > 0 && !selectedSpiceOption) {
+          return NextResponse.json(
+            { error: "Please choose an available spice level for your weekly meal plan." },
+            { status: 400 },
+          );
+        }
+
+        if (selection.spiceOptionId && !selectedSpiceOption) {
+          return NextResponse.json(
+            { error: "The selected spice level is no longer available." },
+            { status: 400 },
+          );
+        }
+
+        if (selection.proteinSubstitutionOptionId && !selectedProteinOption) {
+          return NextResponse.json(
+            { error: "The selected protein substitution is no longer available." },
+            { status: 400 },
+          );
+        }
+
+        const spicePriceDelta = Number(selectedSpiceOption?.priceDelta ?? 0);
+        const proteinPriceDelta = Number(
+          selectedProteinOption?.priceDelta ?? 0,
+        );
+        const priceDelta = spicePriceDelta + proteinPriceDelta;
+        const unitPrice = Number(selectedPackage.price) + priceDelta;
+
+        if (Math.abs(Number(item.price) - unitPrice) > 0.01) {
+          return NextResponse.json(
+            {
+              error:
+                "Your weekly meal plan price has changed. Please refresh your cart and try again.",
+            },
+            { status: 400 },
+          );
+        }
+
+        const requiresApproval = Boolean(
+          selectedSpiceOption?.requiresApproval ||
+            selectedProteinOption?.requiresApproval ||
+            selectedSpiceOption?.requestOnly ||
+            selectedProteinOption?.requestOnly,
+        );
+        const requestOnly = Boolean(
+          selectedSpiceOption?.requestOnly ||
+            selectedProteinOption?.requestOnly,
+        );
+        const optionNotes = [
+          `Weekly Menu: ${weeklyPeriod.label}`,
+          `Package: ${selectedPackage.name}`,
+          `Offering: ${selectedOffering.name}`,
+          selectedSpiceOption
+            ? `Spice Level: ${selectedSpiceOption.name}${
+                spicePriceDelta > 0
+                  ? ` (+$${spicePriceDelta.toFixed(2)})`
+                  : ""
+              }`
+            : null,
+          selectedProteinOption
+            ? `Protein Substitution: ${
+                selectedProteinOption.requestOnly
+                  ? `${selectedProteinOption.name} (Request Only)`
+                  : selectedProteinOption.name
+              }${
+                proteinPriceDelta > 0
+                  ? ` (+$${proteinPriceDelta.toFixed(2)})`
+                  : ""
+              }`
+            : null,
+        ].filter(Boolean);
+
+        validatedItems.push({
+          menuItemId: null,
+          name: `${selectedPackage.name} - ${selectedOffering.name}`,
+          quantity,
+          unitPrice,
+          lineTotal: unitPrice * quantity,
+          requiresApproval,
+          notes: optionNotes.join("\n") || null,
+          allergens: selectedOffering.allergens.map((entry) => ({
+            id: entry.allergen.id,
+            name: entry.allergen.name,
+          })),
+          allergenConflicts: [],
+          weeklySelection: {
+            weeklyMenuPeriodId: weeklyPeriod.id,
+            weeklyMealPlanPackageId: selectedPackage.id,
+            weeklyMealPlanOfferingId: selectedOffering.id,
+            periodLabel: weeklyPeriod.label,
+            packageName: selectedPackage.name,
+            packageDays: selectedPackage.days,
+            packageMealsPerDay: selectedPackage.mealsPerDay,
+            packagePrice: Number(selectedPackage.price),
+            offeringName: selectedOffering.name,
+            spiceLevel: selectedSpiceOption?.name ?? null,
+            proteinSubstitution: selectedProteinOption?.name ?? null,
+            requestOnly,
+            requiresApproval,
+            priceDelta,
+          },
+        });
+
+        continue;
       }
 
       if (item.category === "Reorder") {
@@ -382,6 +623,8 @@ export async function POST(request: Request) {
             ]
               .filter(Boolean)
               .join("\n") || null,
+          allergens: [],
+          allergenConflicts: [],
         });
 
         continue;
@@ -519,54 +762,86 @@ export async function POST(request: Request) {
           ]
             .filter(Boolean)
             .join("\n") || null,
+        allergens: [],
+        allergenConflicts: [],
       });
     }
-const userAllergens = await prisma.userAllergen.findMany({
-  where: {
-    user: {
-      email: session.user.email,
-    },
-  },
-  select: {
-    allergenId: true,
-  },
-});
-
-const userAllergenIds = new Set(
-  userAllergens.map((entry) => entry.allergenId),
-);
-
-const submittedMenuItemIds = validatedItems
-  .map((item) => item.menuItemId)
-  .filter((id): id is string => Boolean(id));
-
-const submittedMenuItemAllergens =
-  submittedMenuItemIds.length > 0
-    ? await prisma.menuItemAllergen.findMany({
-        where: {
-          menuItemId: {
-            in: submittedMenuItemIds,
-          },
+    const userAllergens = await prisma.userAllergen.findMany({
+      where: {
+        user: {
+          email: customerEmail,
         },
-        select: {
-          allergenId: true,
+      },
+      select: {
+        allergenId: true,
+      },
+    });
+
+    const userAllergenIds = new Set(
+      userAllergens.map((entry) => entry.allergenId),
+    );
+
+    const submittedMenuItemIds = validatedItems
+      .map((item) => item.menuItemId)
+      .filter((id): id is string => Boolean(id));
+
+    const submittedMenuItemAllergens =
+      submittedMenuItemIds.length > 0
+        ? await prisma.menuItemAllergen.findMany({
+            where: {
+              menuItemId: {
+                in: submittedMenuItemIds,
+              },
+            },
+            select: {
+              menuItemId: true,
+              allergen: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    const menuAllergensByItemId = new Map<
+      string,
+      { id: string; name: string }[]
+    >();
+
+    for (const entry of submittedMenuItemAllergens) {
+      menuAllergensByItemId.set(entry.menuItemId, [
+        ...(menuAllergensByItemId.get(entry.menuItemId) ?? []),
+        entry.allergen,
+      ]);
+    }
+
+    for (const item of validatedItems) {
+      const menuAllergens = item.menuItemId
+        ? menuAllergensByItemId.get(item.menuItemId) ?? []
+        : [];
+      const itemAllergens = [...item.allergens, ...menuAllergens];
+
+      item.allergens = itemAllergens;
+      item.allergenConflicts = itemAllergens.filter((allergen) =>
+        userAllergenIds.has(allergen.id),
+      );
+    }
+
+    const hasAllergenConflict = validatedItems.some(
+      (item) => item.allergenConflicts.length > 0,
+    );
+
+    if (hasAllergenConflict && !checkout.allergenAcknowledged) {
+      return NextResponse.json(
+        {
+          error:
+            "Please acknowledge the allergen warning before submitting your order.",
         },
-      })
-    : [];
-
-const hasAllergenConflict = submittedMenuItemAllergens.some((entry) =>
-  userAllergenIds.has(entry.allergenId),
-);
-
-if (hasAllergenConflict && !checkout.allergenAcknowledged) {
-  return NextResponse.json(
-    {
-      error:
-        "Please acknowledge the allergen warning before submitting your order.",
-    },
-    { status: 400 },
-  );
-}
+        { status: 400 },
+      );
+    }
     const subtotal = validatedItems.reduce(
       (sum, item) => sum + item.lineTotal,
       0,
@@ -585,92 +860,165 @@ if (hasAllergenConflict && !checkout.allergenAcknowledged) {
     const requiresApproval = validatedItems.some(
       (item) => item.requiresApproval,
     );
+    const allergenAcknowledgedAt =
+      hasAllergenConflict && checkout.allergenAcknowledged ? new Date() : null;
+    const weeklyPeriodIds = Array.from(
+      new Set(
+        validatedItems
+          .map((item) => item.weeklySelection?.weeklyMenuPeriodId)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
 
-    const order = await prisma.order.create({
-      data: {
-        user: {
-          connect: {
-            email: session.user.email,
+    if (weeklyPeriodIds.length > 1) {
+      return NextResponse.json(
+        {
+          error:
+            "Weekly meal plan items must belong to the same current weekly menu.",
+        },
+        { status: 400 },
+      );
+    }
+
+    const order: CreatedOrderWithItems = await prisma.$transaction(async (tx) => {
+      for (const weeklyPeriodId of weeklyPeriodIds) {
+        const updatedCount = await tx.$executeRaw`
+          UPDATE "WeeklyMenuPeriod"
+          SET "ordersPlaced" = "ordersPlaced" + 1
+          WHERE "id" = ${weeklyPeriodId}
+            AND "status" = 'PUBLISHED'
+            AND "ordersPlaced" < "capacity"
+        `;
+
+        if (updatedCount !== 1) {
+          throw new OrderSubmissionError(
+            "This weekly menu has reached capacity or is no longer available.",
+          );
+        }
+      }
+
+      return tx.order.create({
+        data: {
+          user: {
+            connect: {
+              email: customerEmail,
+            },
+          },
+
+          customerName: contact.name || session.user.name || "Customer",
+          customerEmail,
+          customerPhone: contact.phone || null,
+
+          orderType:
+            checkout.orderType === "delivery"
+              ? "DELIVERY"
+              : "PICKUP",
+
+          status: requiresApproval ? "PENDING" : "ACCEPTED",
+          approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
+          approvedAt: requiresApproval ? null : new Date(),
+
+          requestedDateTime: requestedDate,
+
+          allergyNotes: checkout.allergyNotes,
+          substitutionPreference: checkout.substitutionPreference,
+
+          allergenAcknowledged: hasAllergenConflict
+            ? Boolean(checkout.allergenAcknowledged)
+            : false,
+          allergenAcknowledgedAt,
+
+          subtotal,
+          deliveryFee,
+          lateFee,
+          tipAmount,
+          total,
+
+          deliveryName: contact.name || session.user.name || null,
+          deliveryPhone: contact.phone || null,
+          deliveryAddressLine1: contact.addressLine1 || null,
+          deliveryAddressLine2: contact.addressLine2 || null,
+          deliveryCity: contact.city || null,
+          deliveryState: contact.state || null,
+          deliveryPostalCode: contact.postalCode || null,
+          deliveryNotes: contact.deliveryNotes || null,
+
+          payByDate,
+          paymentProvider: checkout.paymentMethod,
+          paymentStatus:
+            checkout.paymentMethod === "cash"
+              ? "OFFLINE_PAYMENT_DUE"
+              : "PAY_BY_DATE",
+
+          items: {
+            create: validatedItems.map((item) => ({
+              menuItemId: item.menuItemId,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              lineTotal: item.lineTotal,
+              notes: item.notes,
+              allergenAcknowledged:
+                item.allergenConflicts.length > 0
+                  ? Boolean(checkout.allergenAcknowledged)
+                  : false,
+              allergenAcknowledgedAt:
+                item.allergenConflicts.length > 0
+                  ? allergenAcknowledgedAt
+                  : null,
+              allergenConflictSnapshot:
+                item.allergenConflicts.length > 0
+                  ? item.allergenConflicts
+                  : undefined,
+              weeklyMealPlanSelection: item.weeklySelection
+                ? {
+                    create: {
+                      weeklyMenuPeriodId:
+                        item.weeklySelection.weeklyMenuPeriodId,
+                      weeklyMealPlanPackageId:
+                        item.weeklySelection.weeklyMealPlanPackageId,
+                      weeklyMealPlanOfferingId:
+                        item.weeklySelection.weeklyMealPlanOfferingId,
+                      periodLabel: item.weeklySelection.periodLabel,
+                      packageName: item.weeklySelection.packageName,
+                      packageDays: item.weeklySelection.packageDays,
+                      packageMealsPerDay:
+                        item.weeklySelection.packageMealsPerDay,
+                      packagePrice: item.weeklySelection.packagePrice,
+                      offeringName: item.weeklySelection.offeringName,
+                      spiceLevel: item.weeklySelection.spiceLevel,
+                      proteinSubstitution:
+                        item.weeklySelection.proteinSubstitution,
+                      requestOnly: item.weeklySelection.requestOnly,
+                      requiresApproval: item.weeklySelection.requiresApproval,
+                      priceDelta: item.weeklySelection.priceDelta,
+                    },
+                  }
+                : undefined,
+            })),
+          },
+
+          statusHistory: {
+            create: {
+              status: requiresApproval ? "PENDING" : "ACCEPTED",
+              note: requiresApproval
+                ? "Order created and waiting for approval."
+                : "Order created and auto-approved.",
+            },
           },
         },
 
-        customerName: contact.name || session.user.name || "Customer",
-        customerEmail: session.user.email,
-        customerPhone: contact.phone || null,
-
-        orderType:
-          checkout.orderType === "delivery"
-            ? "DELIVERY"
-            : "PICKUP",
-
-        status: requiresApproval ? "PENDING" : "ACCEPTED",
-        approvalStatus: requiresApproval ? "PENDING" : "APPROVED",
-        approvedAt: requiresApproval ? null : new Date(),
-
-        requestedDateTime: requestedDate,
-
-        allergyNotes: checkout.allergyNotes,
-        substitutionPreference: checkout.substitutionPreference,
-
-        allergenAcknowledged: hasAllergenConflict
-          ? Boolean(checkout.allergenAcknowledged)
-          : false,
-        allergenAcknowledgedAt:
-          hasAllergenConflict && checkout.allergenAcknowledged ? new Date() : null,
-
-        subtotal,
-        deliveryFee,
-        lateFee,
-        tipAmount,
-        total,
-
-        deliveryName: contact.name || session.user.name || null,
-        deliveryPhone: contact.phone || null,
-        deliveryAddressLine1: contact.addressLine1 || null,
-        deliveryAddressLine2: contact.addressLine2 || null,
-        deliveryCity: contact.city || null,
-        deliveryState: contact.state || null,
-        deliveryPostalCode: contact.postalCode || null,
-        deliveryNotes: contact.deliveryNotes || null,
-
-        payByDate,
-        paymentProvider: checkout.paymentMethod,
-        paymentStatus:
-          checkout.paymentMethod === "cash"
-            ? "OFFLINE_PAYMENT_DUE"
-            : "PAY_BY_DATE",
-
-        items: {
-          create: validatedItems.map((item) => ({
-            menuItemId: item.menuItemId,
-            name: item.name,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            lineTotal: item.lineTotal,
-            notes: item.notes,
-          })),
+        include: {
+          items: true,
         },
-
-        statusHistory: {
-          create: {
-            status: requiresApproval ? "PENDING" : "ACCEPTED",
-            note: requiresApproval
-              ? "Order created and waiting for approval."
-              : "Order created and auto-approved.",
-          },
-        },
-      },
-
-      include: {
-        items: true,
-      },
+      });
     });
 
     try {
       if (checkout.saveContactInfo) {
         await prisma.user.update({
           where: {
-            email: session.user.email,
+            email: customerEmail,
           },
           data: {
             name: contact.name || session.user.name || null,
@@ -689,7 +1037,7 @@ if (hasAllergenConflict && !checkout.allergenAcknowledged) {
     }
 
     await sendAppEmail({
-      to: session.user.email,
+      to: customerEmail,
       subject: "Order Confirmation",
       react: OrderConfirmationEmail({
         customerName: order.customerName,
@@ -727,6 +1075,13 @@ if (hasAllergenConflict && !checkout.allergenAcknowledged) {
 
     return NextResponse.json(order);
   } catch (error) {
+    if (error instanceof OrderSubmissionError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status },
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(

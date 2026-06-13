@@ -1,60 +1,24 @@
 import Image from "next/image";
+import { WeeklyMenuOrderForm } from "@/components/menu/WeeklyMenuOrderForm";
 import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
-
-type WeeklyPackage = {
-  id: string;
-  name: string;
-  days: number;
-  mealsPerDay: number;
-  price: number;
-  notes: string | null;
-};
-
-type WeeklyOption = {
-  id: string;
-  optionType: string;
-  name: string;
-  description: string | null;
-  dietaryInfo: string | null;
-  priceDelta: number;
-  requestOnly: boolean;
-  requiresApproval: boolean;
-};
-
-type WeeklyOffering = {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string | null;
-  dietaryInfo: string | null;
-  allergens: {
-    id: string;
-    name: string;
-  }[];
-  options: WeeklyOption[];
-};
-
-export type PublicWeeklyMenu = {
-  id: string;
-  label: string;
-  dateRange: string;
-  orderCutoffLabel: string | null;
-  capacity: number;
-  ordersPlaced: number;
-  packages: WeeklyPackage[];
-  offerings: WeeklyOffering[];
-};
+import type { PublicWeeklyMenu, PublicWeeklyOption } from "@/types/weekly-menu";
 
 type Props = {
   weeklyMenu: PublicWeeklyMenu;
 };
 
-function groupOptionsByType(options: WeeklyOption[]) {
-  return options.reduce<Record<string, WeeklyOption[]>>((groups, option) => {
-    groups[option.optionType] = [...(groups[option.optionType] ?? []), option];
+function groupOptionsByType(options: PublicWeeklyOption[]) {
+  return options.reduce<Record<string, PublicWeeklyOption[]>>(
+    (groups, option) => {
+      groups[option.optionType] = [
+        ...(groups[option.optionType] ?? []),
+        option,
+      ];
 
-    return groups;
-  }, {});
+      return groups;
+    },
+    {},
+  );
 }
 
 export function WeeklyMenuSection({ weeklyMenu }: Props) {
@@ -124,6 +88,8 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
           </div>
         </div>
       )}
+
+      <WeeklyMenuOrderForm weeklyMenu={weeklyMenu} />
 
       <div>
         <h3 className="mb-3 text-xl font-semibold">
