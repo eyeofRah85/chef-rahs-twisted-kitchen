@@ -187,7 +187,8 @@ Progress update - June 6, 2026:
   - Added the first admin weekly menu management slice for listing, creating, and editing weekly periods and 1-/2-meal packages.
   - Added the admin weekly offering slice for creating/editing/deleting fixed offerings, tagging offering allergens, and managing allowed spice/protein options.
   - Added admin weekly cloning/rotation controls that copy packages, offerings, allergen tags, and allowed options into a new draft weekly period.
-  - The new weekly models are not wired to public `/menu`, cart, checkout, kitchen prep, or emails yet.
+  - Added the first public `/menu` weekly display slice for the current published weekly menu, including packages, fixed offerings, allergen labels, and allowed spice/protein options.
+  - The new weekly models are not wired to cart, checkout, kitchen prep, or emails yet.
 - Gallery and image management:
   - Added `docs/gallery-image-management.md` to document the current gallery and image upload direction.
   - Public gallery data now points at optimized WebP assets in `public/gallery/webp` for demo readiness instead of missing `/gallery/*.jpg` paths.
@@ -394,11 +395,19 @@ Next work items - June 8, 2026:
    - Cloning does not copy orders or order selections.
    - This slice intentionally does not wire public `/menu`, cart, checkout, kitchen prep, or emails yet.
 
-23. Legacy cleanup later, not now
+23. Public weekly meal plan display slice - completed June 13, 2026
+   - Public `/menu` now shows the current published weekly menu when today's date is inside the published weekly period.
+   - The weekly display includes available packages, fixed offerings, allergen labels, dietary info, and available spice/protein options.
+   - Weekly option price deltas and approval-required protein substitutions are visible as read-only public details.
+   - `/menu` is now rendered dynamically so the current-week display can roll over by date.
+   - Existing menu item category filtering now includes the weekly meal plan section when a current published weekly menu exists.
+   - This slice intentionally does not add weekly meal plans to cart, checkout, kitchen prep, or emails yet.
+
+24. Legacy cleanup later, not now
    - Do not rename `/admin/catering`, `/account/catering`, or `CateringRequest` yet.
    - Do not remove `OrderType.CATERING` until all historical data and route assumptions are reviewed.
    - Do not remove `MenuItemType.PLATE` until the client confirms it is no longer needed and existing data is migrated or archived.
    - Prefer user-facing label cleanup over model/route renames until production behavior is stable.
 
-24. Suggested next Codex prompt
-   - Add the first public weekly meal plan display slice on `/menu`: show the current published weekly menu with packages, fixed offerings, allergen labels, and allowed spice/protein options, but do not add weekly items to cart or checkout yet.
+25. Suggested next Codex prompt
+   - Plan and implement the first weekly meal plan cart/checkout wiring slice: let customers select a package, offering, spice level, and allowed protein substitution from the current published weekly menu, preserve allergen warnings, and keep order creation changes small and snapshot-based.
