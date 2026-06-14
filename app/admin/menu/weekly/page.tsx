@@ -971,7 +971,7 @@ export default async function AdminWeeklyMenuPage() {
                                     </summary>
 
                                     <div className="space-y-5 border-t p-4">
-                                      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+                                      <div className="grid gap-5">
                                         <WeeklyMealPlanOfferingForm
                                           periodId={period.id}
                                           offering={offeringFormData}

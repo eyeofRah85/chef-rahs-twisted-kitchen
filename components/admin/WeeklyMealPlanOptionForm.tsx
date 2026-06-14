@@ -85,7 +85,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
       action={handleSubmit}
       className="grid gap-4 rounded-xl border bg-white p-4"
     >
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-medium">
           Option Type
           <select
@@ -120,7 +120,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-medium">
           Price Delta
           <input
@@ -148,7 +148,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <textarea
           name="description"
           rows={3}

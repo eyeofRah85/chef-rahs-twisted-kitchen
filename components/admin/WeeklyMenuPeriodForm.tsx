@@ -93,7 +93,7 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
           />
         </label>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           <label className="grid gap-2 text-sm font-medium">
             Start Date
             <input
@@ -117,7 +117,7 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
           </label>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4">
           <label className="grid gap-2 text-sm font-medium">
             Ordering Cutoff
             <input

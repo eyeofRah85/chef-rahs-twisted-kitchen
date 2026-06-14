@@ -443,8 +443,15 @@ Next work items - June 8, 2026:
    - Fulfillment prep groups active weekly selections by offering, package, spice level, and protein substitution.
    - Fulfillment prep shows active weekly order counts plus request-only, approval-required, and allergen conflict counts.
    - Fulfillment prep lists active weekly orders for the period with links back to the admin order detail/kitchen ticket.
-   - Added `docs/weekly-meal-plan-manual-qa.md` for local browser testing while Codex Browser verification remains blocked.
+   - Added `docs/weekly-meal-plan-manual-qa.md` for local browser testing and repeatable weekly menu checks.
    - No route or data model changes were made.
 
-29. Suggested next Codex prompt
+29. Weekly admin form layout usability pass - completed June 13, 2026
+   - Weekly menu period, clone, package, offering, and option forms now avoid viewport-based multi-column grids inside nested admin cards.
+   - Expanded weekly offering editors now stack the offering edit form, image/delete controls, allergen editor, and option controls so fields do not collide or overflow.
+   - Treat weekly admin data-entry forms as human-readable working surfaces first; prefer stacked controls inside constrained cards over dense multi-column layouts.
+   - `npm run check` passes after the layout update.
+   - Browser verification confirmed the expanded weekly offering editor has no horizontal overflow at the default desktop viewport. A narrower viewport reload was blocked by the local Browser runtime URL policy, so mobile should still be checked manually.
+
+30. Suggested next Codex prompt
    - Run the weekly meal plan manual QA checklist locally and report any issues. If manual QA is clean, review the remaining production readiness items: durable upload storage decision, email configuration, payment instruction copy, and launch environment variables.

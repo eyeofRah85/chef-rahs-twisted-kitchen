@@ -75,7 +75,7 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
       action={handleSubmit}
       className="grid gap-4 rounded-xl border bg-white p-4"
     >
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-medium">
           Package Name
           <input
@@ -101,7 +101,7 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
         </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4">
         <label className="grid gap-2 text-sm font-medium">
           Days
           <select
