@@ -11,7 +11,7 @@ type PageProps = {
 
 const inputClass =
   "mt-2 w-full rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[#9c897d] focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40";
-const labelClass = "block text-sm font-bold text-[#24130f]";
+const labelClass = "block text-sm font-bold text-[#563027]";
 
 export default async function PersonalChefPage({ searchParams }: PageProps) {
   const session = await auth();
@@ -49,16 +49,16 @@ export default async function PersonalChefPage({ searchParams }: PageProps) {
 
   return (
     <main className="brand-page">
-      <section className="relative isolate overflow-hidden bg-[#24130f]">
+      <section className="relative isolate overflow-hidden bg-[#563027]">
         <Image
-          src="/PERSONAL-CHEF.jpg"
+          src="/personal-chef-splash.png"
           alt="Personal chef plated meal"
           fill
-          sizes="100vw"
+          sizes="50vw"
           className="object-cover opacity-55"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/82 to-[#24130f]/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#563027] via-[#563027]/10 to-[#563027]/10" />
 
         <div className="brand-container relative z-10 py-16 text-white">
           <p className="text-sm font-bold uppercase text-[#f4c46f]">

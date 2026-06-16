@@ -36,15 +36,15 @@ export default function HomePage() {
     <main className="brand-page">
       <section className="relative isolate flex min-h-[72vh] items-end overflow-hidden">
         <Image
-          src="/gallery/webp/IMG_1490.webp"
+          src="/homepage-splash-3.png"
           alt="Chef-prepared meal from Chef Rah's Twisted Kitchen"
           fill
           sizes="100vw"
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-[#24130f]/70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#24130f] via-[#24130f]/42 to-transparent" />
+        <div className="absolute inset-0 bg-[#24130f]/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/5 to-transparent" />
 
         <div className="brand-container relative z-10 pb-14 pt-28 text-white">
           <p className="text-sm font-bold uppercase text-[#f4c46f]">

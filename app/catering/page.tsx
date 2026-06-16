@@ -51,14 +51,14 @@ export default async function CateringPage({ searchParams }: PageProps) {
     <main className="brand-page">
       <section className="relative isolate overflow-hidden bg-[#24130f]">
         <Image
-          src="/CATERING.jpg"
+          src="/catering-splash.avif"
           alt="Chef Rah's Twisted Kitchen catering"
           fill
           sizes="100vw"
           className="object-cover opacity-55"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/82 to-[#24130f]/35" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/30 to-[#24130f]/10" />
 
         <div className="brand-container relative z-10 py-16 text-white">
           <p className="text-sm font-bold uppercase text-[#f4c46f]">Catering</p>

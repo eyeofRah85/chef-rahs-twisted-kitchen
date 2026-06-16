@@ -35,7 +35,7 @@ export function SiteHeader() {
           href="/"
           className="group flex items-center justify-center gap-3 text-center font-bold text-[#24130f] transition hover:text-[#9f2f18] lg:justify-start lg:text-left"
         >
-          <span className="relative h-12 w-12 overflow-hidden rounded-full border border-[#ead8c1] bg-white shadow-sm">
+          <span className="relative h-20 w-20 overflow-hidden rounded-full border border-[#ead8c1] bg-white shadow-sm">
             <Image
               src="/business logo/chef-rah-logo-transparent-180w.png"
               alt=""

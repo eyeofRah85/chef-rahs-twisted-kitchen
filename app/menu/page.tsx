@@ -270,14 +270,14 @@ export default async function MenuPage() {
     <main className="brand-page">
       <section className="relative isolate overflow-hidden bg-[#24130f]">
         <Image
-          src="/gallery/webp/IMG_1487.webp"
+          src="/menu-splash.avif"
           alt="Chef-prepared weekly meal plan"
           fill
           sizes="100vw"
           className="object-cover opacity-55"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/82 to-[#24130f]/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/40 to-[#24130f]/30" />
 
         <div className="brand-container relative z-10 py-16 text-white md:py-20">
           <p className="text-sm font-bold uppercase text-[#f4c46f]">
