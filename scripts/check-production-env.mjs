@@ -1,0 +1,206 @@
+import "dotenv/config";
+
+const reportOnly = process.argv.includes("--report");
+const errors = [];
+const warnings = [];
+const passes = [];
+
+function readEnv(name) {
+  return (process.env[name] ?? "").trim();
+}
+
+function addError(message) {
+  errors.push(message);
+}
+
+function addWarning(message) {
+  warnings.push(message);
+}
+
+function addPass(message) {
+  passes.push(message);
+}
+
+function isMissingOrPlaceholder(value) {
+  return (
+    !value ||
+    /replace|example\.com|user:password|your-|changeme|placeholder/i.test(value)
+  );
+}
+
+function requireValue(name, description) {
+  const value = readEnv(name);
+
+  if (isMissingOrPlaceholder(value)) {
+    addError(`${name} is missing or still using a placeholder (${description}).`);
+    return "";
+  }
+
+  addPass(`${name} is set.`);
+  return value;
+}
+
+function hostnameLooksLocal(hostname) {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname.endsWith(".local")
+  );
+}
+
+function requireProductionUrl(name) {
+  const value = requireValue(name, "production public URL");
+
+  if (!value) {
+    return null;
+  }
+
+  let parsed;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    addError(`${name} must be a valid absolute URL.`);
+    return null;
+  }
+
+  if (parsed.protocol !== "https:") {
+    addError(`${name} must use https:// for production.`);
+  }
+
+  if (hostnameLooksLocal(parsed.hostname)) {
+    addError(`${name} must not point at localhost or a local-only hostname.`);
+  }
+
+  return parsed;
+}
+
+const databaseUrl = requireValue("DATABASE_URL", "production PostgreSQL URL");
+
+if (databaseUrl) {
+  if (!databaseUrl.startsWith("postgresql://") && !databaseUrl.startsWith("postgres://")) {
+    addError("DATABASE_URL must use a PostgreSQL connection string.");
+  }
+
+  try {
+    const parsedDatabaseUrl = new URL(databaseUrl);
+
+    if (hostnameLooksLocal(parsedDatabaseUrl.hostname)) {
+      addError("DATABASE_URL must not point at localhost for production.");
+    }
+  } catch {
+    addError("DATABASE_URL must be a valid database URL.");
+  }
+}
+
+const authSecret = requireValue("AUTH_SECRET", "generated Auth.js secret");
+
+if (authSecret && authSecret.length < 32) {
+  addError("AUTH_SECRET should be at least 32 characters long.");
+}
+
+const appUrl = requireProductionUrl("NEXT_PUBLIC_APP_URL");
+const authUrl = requireProductionUrl("AUTH_URL");
+const nextAuthUrl = requireProductionUrl("NEXTAUTH_URL");
+
+if (appUrl && authUrl && appUrl.origin !== authUrl.origin) {
+  addError("AUTH_URL should use the same origin as NEXT_PUBLIC_APP_URL.");
+}
+
+if (appUrl && nextAuthUrl && appUrl.origin !== nextAuthUrl.origin) {
+  addError("NEXTAUTH_URL should use the same origin as NEXT_PUBLIC_APP_URL.");
+}
+
+requireValue("BUSINESS_TIME_ZONE", "business date and weekly menu calculations");
+
+const uploadFlag = readEnv("ALLOW_LOCAL_UPLOADS_IN_PRODUCTION");
+
+if (!uploadFlag) {
+  addWarning(
+    'ALLOW_LOCAL_UPLOADS_IN_PRODUCTION is not set. The app defaults to blocking local production uploads.',
+  );
+} else if (uploadFlag === "true") {
+  addWarning(
+    'ALLOW_LOCAL_UPLOADS_IN_PRODUCTION=true is only safe if the host has durable, shared storage for public/uploads.',
+  );
+} else if (uploadFlag === "false") {
+  addPass("Local production uploads are blocked by default.");
+} else {
+  addError('ALLOW_LOCAL_UPLOADS_IN_PRODUCTION must be "true" or "false".');
+}
+
+requireValue("RESEND_API_KEY", "production email provider key");
+
+const emailFromAddress = requireValue(
+  "EMAIL_FROM_ADDRESS",
+  "verified sender address",
+);
+
+if (emailFromAddress && /example\.com/i.test(emailFromAddress)) {
+  addError("EMAIL_FROM_ADDRESS must use a verified production sender domain.");
+}
+
+if (readEnv("EMAIL_DRY_RUN") !== "false") {
+  addError("EMAIL_DRY_RUN must be false before production email delivery.");
+} else {
+  addPass("EMAIL_DRY_RUN is disabled for live delivery.");
+}
+
+if (readEnv("EMAIL_PREVIEW_FILES") === "true") {
+  addWarning(
+    "EMAIL_PREVIEW_FILES is enabled. Keep preview file output disabled in production unless this is intentional.",
+  );
+}
+
+const stripeValues = [
+  "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+].map((name) => [name, readEnv(name)]);
+const configuredStripeValues = stripeValues.filter(([, value]) => value);
+
+if (configuredStripeValues.length > 0 && configuredStripeValues.length < stripeValues.length) {
+  addWarning(
+    "Stripe is partially configured. Card checkout is disabled in the UI, but finish all Stripe variables before enabling it.",
+  );
+} else if (configuredStripeValues.length === 0) {
+  addWarning("Stripe is not configured, which is acceptable while card payments remain disabled.");
+} else {
+  addPass("Stripe variables are all present.");
+}
+
+if (!readEnv("ADMIN_EMAIL")) {
+  addWarning("ADMIN_EMAIL is not set. Set it when using npm run admin:promote.");
+}
+
+console.log("Production environment check");
+console.log("");
+
+for (const message of passes) {
+  console.log(`PASS ${message}`);
+}
+
+for (const message of warnings) {
+  console.warn(`WARN ${message}`);
+}
+
+for (const message of errors) {
+  console.error(`ERROR ${message}`);
+}
+
+console.log("");
+
+if (errors.length > 0) {
+  console.error(
+    `${errors.length} blocking issue${errors.length === 1 ? "" : "s"} found.`,
+  );
+
+  if (reportOnly) {
+    console.error("Report-only mode enabled; exiting without failure.");
+  } else {
+    process.exitCode = 1;
+  }
+} else {
+  console.log("Production environment settings passed the blocking checks.");
+}

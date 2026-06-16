@@ -11,6 +11,10 @@ import {
   formatOrderType,
   formatPaymentStatus,
 } from "@/lib/format-labels";
+import {
+  getWeeklyMealPlanSelectionDetails,
+  type WeeklyOrderSelectionDisplay,
+} from "@/lib/weekly-order-display";
 import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
@@ -57,6 +61,7 @@ type AdminOrderDetail = {
     unitPrice: DecimalLike;
     lineTotal: DecimalLike;
     notes: string | null;
+    weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
   }[];
   statusHistory: {
     id: string;
@@ -78,7 +83,11 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
   const order = (await prisma.order.findUnique({
     where: { id },
     include: {
-      items: true,
+      items: {
+        include: {
+          weeklyMealPlanSelection: true,
+        },
+      },
       statusHistory: {
         orderBy: {
           createdAt: "desc",
@@ -228,6 +237,27 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               <div className="mt-5 space-y-3">
                 {order.items.map((item) => (
                   <div key={item.id} className="rounded-xl border p-4">
+                    {item.weeklyMealPlanSelection ? (
+                      <div className="mb-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+                        <p className="font-semibold">
+                          Weekly Meal Plan Snapshot
+                        </p>
+
+                        <dl className="mt-2 space-y-1">
+                          {getWeeklyMealPlanSelectionDetails(
+                            item.weeklyMealPlanSelection,
+                          ).map((detail) => (
+                            <div key={detail.label}>
+                              <dt className="inline font-semibold">
+                                {detail.label}:{" "}
+                              </dt>
+                              <dd className="inline">{detail.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                    ) : null}
+
                     <div className="flex justify-between gap-4">
                       <div>
                         <h3 className="font-semibold">{item.name}</h3>
@@ -321,6 +351,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
 
               <div className="mt-6">
                 <UpdateOrderStatusForm
+                  key={order.status}
                   orderId={order.id}
                   currentStatus={order.status}
                 />

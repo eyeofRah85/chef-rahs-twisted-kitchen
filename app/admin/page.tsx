@@ -13,7 +13,12 @@ type AdminRecentOrder = {
   status: string;
   total: DecimalLike;
   createdAt: Date;
-  items: { id: string }[];
+  items: {
+    id: string;
+    weeklyMealPlanSelection: {
+      id: string;
+    } | null;
+  }[];
 };
 
 export default async function AdminPage() {
@@ -70,7 +75,16 @@ export default async function AdminPage() {
       take: 5,
       orderBy: { createdAt: "desc" },
       include: {
-        items: true,
+        items: {
+          select: {
+            id: true,
+            weeklyMealPlanSelection: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
       },
     }) as Promise<AdminRecentOrder[]>,
 
@@ -246,39 +260,52 @@ export default async function AdminPage() {
             </div>
 
             <div className="space-y-4">
-              {recentAdminOrders.map((order) => (
-                <Link
-                  key={order.id}
-                  href={`/admin/orders/${order.id}`}
-                  className="block rounded-xl border p-4 transition hover:bg-neutral-50"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="font-semibold">{order.customerName}</p>
+              {recentAdminOrders.map((order) => {
+                const weeklyItemCount = order.items.filter(
+                  (item) => item.weeklyMealPlanSelection,
+                ).length;
 
-                      <p className="mt-1 text-sm text-neutral-600">
-                        {formatOrderType(order.orderType)} -{" "}
-                        {order.items.length} item
-                        {order.items.length === 1 ? "" : "s"}
-                      </p>
+                return (
+                  <Link
+                    key={order.id}
+                    href={`/admin/orders/${order.id}`}
+                    className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-semibold">{order.customerName}</p>
 
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {order.createdAt.toLocaleString()}
-                      </p>
+                        <p className="mt-1 text-sm text-neutral-600">
+                          {formatOrderType(order.orderType)} -{" "}
+                          {order.items.length} item
+                          {order.items.length === 1 ? "" : "s"}
+                        </p>
+
+                        {weeklyItemCount > 0 && (
+                          <p className="mt-1 text-xs font-medium text-emerald-700">
+                            {weeklyItemCount} weekly meal plan
+                            {weeklyItemCount === 1 ? "" : "s"}
+                          </p>
+                        )}
+
+                        <p className="mt-1 text-xs text-neutral-500">
+                          {order.createdAt.toLocaleString()}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                          {formatOrderStatus(order.status)}
+                        </span>
+
+                        <p className="mt-2 font-bold">
+                          ${Number(order.total).toFixed(2)}
+                        </p>
+                      </div>
                     </div>
-
-                    <div className="text-right">
-                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                        {formatOrderStatus(order.status)}
-                      </span>
-
-                      <p className="mt-2 font-bold">
-                        ${Number(order.total).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
 
               {recentAdminOrders.length === 0 && (
                 <p className="text-neutral-500">No recent orders yet.</p>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { getEmailDeliveryMode } from "@/lib/email";
 import Link from "next/link";
 
 export default async function AdminNotificationsPage() {
@@ -10,8 +11,24 @@ export default async function AdminNotificationsPage() {
     redirect("/");
   }
 
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY);
-  
+  const emailDeliveryMode = getEmailDeliveryMode();
+  const emailStatus =
+    emailDeliveryMode === "live"
+      ? "Live Sending"
+      : emailDeliveryMode === "preview"
+        ? "Preview Files"
+        : emailDeliveryMode === "dry-run"
+          ? "Dry Run"
+          : "Disabled";
+  const emailDescription =
+    emailDeliveryMode === "live"
+      ? "Customer notification emails are sent through the configured email provider."
+      : emailDeliveryMode === "preview"
+        ? "Customer notification emails are not sent; preview files are saved locally for QA."
+        : emailDeliveryMode === "dry-run"
+          ? "Customer notification emails are logged only because EMAIL_DRY_RUN is enabled."
+          : "Customer notification emails are skipped because RESEND_API_KEY is not configured.";
+
   const [pendingOrders, unpaidOrders, serviceRequests] = await Promise.all([
     prisma.order.count({
       where: { status: "PENDING" },
@@ -151,13 +168,11 @@ export default async function AdminNotificationsPage() {
             <p className="text-sm text-neutral-500">Resend Configuration</p>
 
             <p className="mt-2 text-lg font-semibold">
-              {emailConfigured ? "Configured" : "Not Configured"}
+              {emailStatus}
             </p>
 
             <p className="mt-2 text-sm text-neutral-600">
-              {emailConfigured
-                ? "Customer notification emails are enabled."
-                : "Emails are currently skipped because RESEND_API_KEY is not configured."}
+              {emailDescription}
             </p>
           </div>
         </section>

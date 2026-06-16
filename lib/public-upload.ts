@@ -9,6 +9,17 @@ const imageExtensionsByType = new Map([
   ["image/webp", "webp"],
 ]);
 
+function assertLocalPublicUploadsEnabled() {
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.ALLOW_LOCAL_UPLOADS_IN_PRODUCTION !== "true"
+  ) {
+    throw new Error(
+      "Local image uploads are disabled in production until durable upload storage is configured.",
+    );
+  }
+}
+
 export function validatePublicImageUpload(file: File) {
   if (!imageExtensionsByType.has(file.type)) {
     throw new Error("Upload a JPG, PNG, or WebP image.");
@@ -20,6 +31,7 @@ export function validatePublicImageUpload(file: File) {
 }
 
 export async function savePublicImageUpload(file: File, folder: string) {
+  assertLocalPublicUploadsEnabled();
   validatePublicImageUpload(file);
 
   const bytes = await file.arrayBuffer();

@@ -56,16 +56,22 @@ type AdminMenuOptionGroup = {
   choices: AdminMenuChoice[];
 };
 
+type AdminMenuItemAllergen = {
+  allergen: AdminAllergen;
+};
+
 type AdminMenuItem = {
   id: string;
   name: string;
   description: string;
   price: DecimalLike;
+  imageUrl: string | null;
   type: string;
   available: boolean;
   seasonal: boolean;
   requiresApproval: boolean;
   customerInstructionsEnabled: boolean;
+  allergens: AdminMenuItemAllergen[];
   optionGroups: AdminMenuOptionGroup[];
 };
 
@@ -152,6 +158,13 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
         </div>
 
         <div className="mb-6 flex flex-wrap gap-3">
+          <Link
+            href="/admin/menu/weekly"
+            className="inline-flex rounded-xl border bg-white px-4 py-2 text-sm font-medium shadow-sm"
+          >
+            Manage Weekly Menus
+          </Link>
+
           <Link
             href="/admin/menu/archived"
             className="inline-flex rounded-xl border bg-white px-4 py-2 text-sm font-medium shadow-sm"
@@ -324,6 +337,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                                   name: item.name,
                                   description: item.description,
                                   price: Number(item.price),
+                                  imageUrl: item.imageUrl,
                                   type: item.type,
                                   categoryName: category.name,
                                   seasonal: item.seasonal,
@@ -343,8 +357,7 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                               {item.type === "MEAL_PLAN" && (
                               <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
                                 <p className="mb-2 text-xs text-amber-900">
-                                  Adds meal plan length, meals per day, protein, vegetable, starch, and
-                                  substitution choices.
+                                  Adds customer-facing spice level and protein substitution choices for fixed meal plans.
                                 </p>
 
                                 <ApplyMealPlanTemplateButton menuItemId={item.id} />
@@ -484,6 +497,9 @@ export default async function AdminMenuPage({ searchParams }: PageProps) {
                         <MenuItemCustomizationEditor
                           menuItemId={item.id}
                           allergens={allergens}
+                          selectedAllergenIds={item.allergens.map(
+                            (entry) => entry.allergen.id,
+                          )}
                         />
                       </section>
                       </div>

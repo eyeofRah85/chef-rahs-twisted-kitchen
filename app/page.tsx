@@ -35,8 +35,8 @@ export default function HomePage() {
             </div>
             <h2 className="text-2xl font-semibold">Meal Plans</h2>
             <p className="mt-3 text-sm leading-6 text-neutral-600">
-              Choose 5-day or 7-day meal plan packages with lunch and dinner options,
-              meal components, substitutions, and special requests.
+              Choose fixed meal plan offerings with spice level and allowed protein
+              substitution options.
             </p>
           </Link>
 
@@ -67,7 +67,7 @@ export default function HomePage() {
             <div className="relative h-48 w-full overflow-hidden rounded-xl">
               <Image
                 src="/PERSONAL-CHEF.jpg"
-                alt="Prepared person meal"
+                alt="Private chef plated meal"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 className="object-cover"

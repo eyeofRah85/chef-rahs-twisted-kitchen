@@ -8,7 +8,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 
 export function SiteHeader() {
   const items = useCartStore((state) => state.items);
-  
+
   const { data: session } = useSession();
 
   const [mounted, setMounted] = useState(false);
@@ -29,20 +29,23 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-bold tracking-tight">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-4 md:flex-row md:items-center md:justify-between">
+        <Link
+          href="/"
+          className="text-center font-bold tracking-tight md:text-left"
+        >
           Chef Rah&apos;s Twisted Kitchen
         </Link>
 
-        <nav className="flex items-center gap-5 text-sm font-medium">
+        <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm font-medium md:justify-end md:gap-5">
           <Link href="/menu">Meal Plans</Link>
           <Link href="/catering">Catering</Link>
           <Link href="/personal-chef">Personal Chef</Link>
           <Link href="/gallery">Gallery</Link>
-          <Link href="/cart" className="relative">
+          <Link href="/cart" className="inline-flex items-center gap-1">
             Cart
             {count > 0 && (
-              <span className="absolute -right-4 -top-3 flex h-5 w-5 items-center justify-center rounded-full bg-black text-xs text-white">
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs text-white">
                 {count}
               </span>
             )}
@@ -59,7 +62,10 @@ export function SiteHeader() {
           )}
 
           {(role === "ADMIN" || role === "OWNER") && (
-            <Link href="/admin" className="rounded-full border px-4 py-2 text-sm">
+            <Link
+              href="/admin"
+              className="rounded-full border px-4 py-2 text-sm"
+            >
               Admin
             </Link>
           )}

@@ -33,7 +33,12 @@ type AdminOrderRow = {
   orderType: string;
   status: string;
   approvalStatus: string;
-  items: { id: string }[];
+  items: {
+    id: string;
+    weeklyMealPlanSelection: {
+      id: string;
+    } | null;
+  }[];
   total: DecimalLike;
   paymentStatus: string | null;
   payByDate: Date | null;
@@ -77,7 +82,16 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   },
 
   include: {
-    items: true,
+    items: {
+      select: {
+        id: true,
+        weeklyMealPlanSelection: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    },
   },
 })) as AdminOrderRow[];
 
@@ -145,59 +159,72 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
             </thead>
 
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-t">
-                  <td className="p-4">
-                    <div className="font-medium">{order.customerName}</div>
-                    <div className="text-xs text-neutral-500">
-                      {order.customerEmail}
-                    </div>
-                  </td>
+              {orders.map((order) => {
+                const weeklyItemCount = order.items.filter(
+                  (item) => item.weeklyMealPlanSelection,
+                ).length;
 
-                  <td className="p-4">{formatOrderType(order.orderType)}</td>
+                return (
+                  <tr key={order.id} className="border-t">
+                    <td className="p-4">
+                      <div className="font-medium">{order.customerName}</div>
+                      <div className="text-xs text-neutral-500">
+                        {order.customerEmail}
+                      </div>
+                    </td>
 
-                  <td className="p-4">
-                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {formatOrderStatus(order.status)}
-                    </span>
-                  </td>
+                    <td className="p-4">{formatOrderType(order.orderType)}</td>
 
-                  <td className="p-4">
-                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {formatApprovalStatus(order.approvalStatus)}
-                    </span>
-                  </td>
+                    <td className="p-4">
+                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        {formatOrderStatus(order.status)}
+                      </span>
+                    </td>
 
-                  <td className="p-4">{order.items.length}</td>
+                    <td className="p-4">
+                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        {formatApprovalStatus(order.approvalStatus)}
+                      </span>
+                    </td>
 
-                  <td className="p-4 font-medium">
-                    ${Number(order.total).toFixed(2)}
-                  </td>
-                  <td className="p-4">
-                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                      {formatPaymentStatus(order.paymentStatus) ?? "N/A"}
-                    </span>
-                  </td>
+                    <td className="p-4">
+                      <div>{order.items.length}</div>
+                      {weeklyItemCount > 0 && (
+                        <div className="mt-1 text-xs font-medium text-emerald-700">
+                          {weeklyItemCount} weekly
+                        </div>
+                      )}
+                    </td>
 
-                  <td className="p-4 text-neutral-600">
-                    {order.payByDate
-                      ? order.payByDate.toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td className="p-4 text-neutral-600">
-                    {order.createdAt.toLocaleDateString()}
-                  </td>
+                    <td className="p-4 font-medium">
+                      ${Number(order.total).toFixed(2)}
+                    </td>
+                    <td className="p-4">
+                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        {formatPaymentStatus(order.paymentStatus) ?? "N/A"}
+                      </span>
+                    </td>
 
-                  <td className="p-4">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="font-medium text-black underline"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+                    <td className="p-4 text-neutral-600">
+                      {order.payByDate
+                        ? order.payByDate.toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className="p-4 text-neutral-600">
+                      {order.createdAt.toLocaleDateString()}
+                    </td>
+
+                    <td className="p-4">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="font-medium text-black underline"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
 
               {orders.length === 0 && (
                 <tr>

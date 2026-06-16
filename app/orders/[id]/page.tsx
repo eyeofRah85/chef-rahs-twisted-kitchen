@@ -8,6 +8,10 @@ import {
   formatPaymentStatus,
   formatApprovalStatus,
 } from "@/lib/format-labels";
+import {
+  getWeeklyMealPlanSelectionDetails,
+  type WeeklyOrderSelectionDisplay,
+} from "@/lib/weekly-order-display";
 import type { DecimalLike } from "@/types/display";
 
 type OrderPageProps = {
@@ -53,6 +57,7 @@ type OrderDetail = {
     unitPrice: DecimalLike;
     lineTotal: DecimalLike;
     notes: string | null;
+    weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
   }[];
 };
 
@@ -68,7 +73,11 @@ export default async function OrderPage({ params }: OrderPageProps) {
   const order = (await prisma.order.findUnique({
     where: { id },
     include: {
-      items: true,
+      items: {
+        include: {
+          weeklyMealPlanSelection: true,
+        },
+      },
       user: true,      
     },
   })) as OrderDetail | null;
@@ -185,8 +194,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
               </p>
 
               <p className="mt-3 text-sm">
-                Online payment is coming soon. For now, please follow the
-                business&apos;s manual payment instructions.
+                Online payment is coming soon. The business will confirm
+                invoice or cash/offline payment instructions after review.
               </p>
             </section>
           )}
@@ -296,6 +305,27 @@ export default async function OrderPage({ params }: OrderPageProps) {
             <div className="mt-5 space-y-3">
               {order.items.map((item) => (
                 <div key={item.id} className="rounded-xl border p-4">
+                  {item.weeklyMealPlanSelection ? (
+                    <div className="mb-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+                      <p className="font-semibold">
+                        Weekly Meal Plan Snapshot
+                      </p>
+
+                      <dl className="mt-2 space-y-1">
+                        {getWeeklyMealPlanSelectionDetails(
+                          item.weeklyMealPlanSelection,
+                        ).map((detail) => (
+                          <div key={detail.label}>
+                            <dt className="inline font-semibold">
+                              {detail.label}:{" "}
+                            </dt>
+                            <dd className="inline">{detail.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ) : null}
+
                   <div className="flex justify-between gap-4">
                     <div>
                       <h3 className="font-semibold">

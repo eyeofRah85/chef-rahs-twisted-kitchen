@@ -88,72 +88,78 @@ export default async function AdminPaymentsPage() {
           <div className="border-b p-6">
             <h2 className="text-2xl font-semibold">Outstanding Payments</h2>
             <p className="mt-2 text-sm text-neutral-600">
-              Orders that still need manual payment, offline payment, or invoice follow-up.
+              Orders that still need manual payment, offline payment, or
+              invoice follow-up.
             </p>
           </div>
 
-          <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-100">
-              <tr>
-                <th className="p-4">Customer</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Pay By</th>
-                <th className="p-4">Total</th>
-                <th className="p-4">Action</th>
-                <th className="p-4">Order</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {paymentDueOrders.map((order) => (
-                <tr key={order.id} className="border-t">
-                  <td className="p-4">
-                    <div className="font-medium">{order.customerName}</div>
-                    <div className="text-xs text-neutral-500">
-                      {order.customerEmail}
-                    </div>
-                  </td>
-
-                  <td className="p-4">
-                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                      {formatPaymentStatus(order.paymentStatus)}
-                    </span>
-                  </td>
-
-                  <td className="p-4 text-neutral-600">
-                    {order.payByDate
-                      ? order.payByDate.toLocaleDateString()
-                      : "Not set"}
-                  </td>
-
-                  <td className="p-4 font-semibold">
-                    ${Number(order.total).toFixed(2)}
-                  </td>
-
-                  <td className="p-4">
-                    <MarkOrderPaidButton orderId={order.id} />
-                  </td>
-
-                  <td className="p-4">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="font-medium underline"
-                    >
-                      View Order
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-
-              {paymentDueOrders.length === 0 && (
+          <div className="overflow-x-auto">
+            <table className="min-w-[720px] w-full text-left text-sm">
+              <thead className="bg-neutral-100">
                 <tr>
-                  <td className="p-6 text-center text-neutral-500" colSpan={6}>
-                    No outstanding payments.
-                  </td>
+                  <th className="p-4">Customer</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4">Pay By</th>
+                  <th className="p-4">Total</th>
+                  <th className="p-4">Action</th>
+                  <th className="p-4">Order</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {paymentDueOrders.map((order) => (
+                  <tr key={order.id} className="border-t">
+                    <td className="p-4">
+                      <div className="font-medium">{order.customerName}</div>
+                      <div className="text-xs text-neutral-500">
+                        {order.customerEmail}
+                      </div>
+                    </td>
+
+                    <td className="p-4">
+                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                        {formatPaymentStatus(order.paymentStatus)}
+                      </span>
+                    </td>
+
+                    <td className="p-4 text-neutral-600">
+                      {order.payByDate
+                        ? order.payByDate.toLocaleDateString()
+                        : "Not set"}
+                    </td>
+
+                    <td className="p-4 font-semibold">
+                      ${Number(order.total).toFixed(2)}
+                    </td>
+
+                    <td className="p-4">
+                      <MarkOrderPaidButton orderId={order.id} />
+                    </td>
+
+                    <td className="p-4">
+                      <Link
+                        href={`/admin/orders/${order.id}`}
+                        className="font-medium underline"
+                      >
+                        View Order
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+
+                {paymentDueOrders.length === 0 && (
+                  <tr>
+                    <td
+                      className="p-6 text-center text-neutral-500"
+                      colSpan={6}
+                    >
+                      No outstanding payments.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </main>

@@ -7,6 +7,7 @@ import {
   galleryCategoryOptions,
   type GalleryImageCategory,
 } from "@/data/gallery";
+import { isRemoteImageUrl } from "@/lib/image-urls";
 
 type Props = {
   image: {
@@ -89,7 +90,7 @@ export function GalleryImageEditForm({ image }: Props) {
           fill
           sizes="(max-width: 768px) 100vw, 360px"
           className="object-cover"
-          unoptimized={Boolean(preview)}
+          unoptimized={Boolean(preview) || isRemoteImageUrl(image.src)}
         />
       </div>
 
@@ -116,6 +117,14 @@ export function GalleryImageEditForm({ image }: Props) {
           <p className="text-xs text-neutral-500">Selected: {fileName}</p>
         )}
       </div>
+
+      <input
+        name="imageUrl"
+        type="text"
+        defaultValue={image.src}
+        placeholder="Public image URL"
+        className="w-full rounded-xl border px-4 py-3 text-sm"
+      />
 
       <input
         name="title"

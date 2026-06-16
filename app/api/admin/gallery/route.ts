@@ -5,6 +5,7 @@ import {
   isGalleryImageCategory,
   type GalleryImageCategory,
 } from "@/lib/gallery-images";
+import { parsePublicImageUrl } from "@/lib/image-urls";
 import { prisma } from "@/lib/prisma";
 import { savePublicImageUpload } from "@/lib/public-upload";
 
@@ -36,21 +37,25 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const image = formData.get("image") as File | null;
+    const imageUrl = parsePublicImageUrl(formData.get("imageUrl"));
 
-    if (!image || image.size === 0) {
+    if ((!image || image.size === 0) && !imageUrl) {
       return NextResponse.json(
-        { error: "Upload an image for the gallery item." },
+        { error: "Upload an image or enter a public image URL." },
         { status: 400 },
       );
     }
 
     const fields = parseGalleryFields(formData);
-    const src = await savePublicImageUpload(image, "gallery");
+    const src =
+      image && image.size > 0
+        ? await savePublicImageUpload(image, "gallery")
+        : imageUrl;
 
     const created = await prisma.galleryImage.create({
       data: {
         ...fields,
-        src,
+        src: src ?? "",
       },
     });
 

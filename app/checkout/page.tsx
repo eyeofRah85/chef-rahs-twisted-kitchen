@@ -703,8 +703,9 @@ useEffect(() => {
                 </label>
 
                 <p className="text-xs text-neutral-500">
-                  Online card payments will be added later. For now, orders can
-                  be submitted with manual payment tracking.
+                  {details.paymentMethod === "cash"
+                    ? "Cash or offline payment will be confirmed after review. Online card payments remain disabled until Stripe is connected."
+                    : "Manual invoice orders can be submitted now. The business will confirm payment instructions after review."}
                 </p>
 
                 {details.paymentMethod === "manual" && (

@@ -1,8 +1,9 @@
-import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
+import { parsePublicImageUrl } from "@/lib/image-urls";
+import { revalidateMenuPages } from "@/lib/menu-revalidation";
 import { removePublicUpload } from "@/lib/public-upload";
 import { menuItemTypes } from "@/lib/prisma-enums";
 
@@ -28,6 +29,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     const customerInstructionsEnabled =
       formData.get("customerInstructionsEnabled") === "on";
     const menuItemType = parseEnumValue(menuItemTypes, type);
+    const submittedImageUrl = formData.has("imageUrl")
+      ? parsePublicImageUrl(formData.get("imageUrl"))
+      : undefined;
 
     if (!name || !description || price < 0 || !menuItemType) {
       return NextResponse.json(
@@ -35,6 +39,24 @@ export async function PATCH(request: Request, context: RouteContext) {
         { status: 400 },
       );
     }
+
+    const existing = await prisma.menuItem.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        imageUrl: true,
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Menu item not found." },
+        { status: 404 },
+      );
+    }
+
+    const imageUrl =
+      submittedImageUrl === undefined ? existing.imageUrl : submittedImageUrl;
 
     const category = await prisma.menuCategory.upsert({
       where: {
@@ -57,14 +79,28 @@ export async function PATCH(request: Request, context: RouteContext) {
         seasonal,
         requiresApproval,
         customerInstructionsEnabled,
+        imageUrl,
       },
     });
 
-    revalidatePath("/menu");
-    revalidatePath("/admin/menu");
+    if (imageUrl !== existing.imageUrl) {
+      await removePublicUpload(existing.imageUrl, "menu");
+    }
+
+    revalidateMenuPages({ includeArchived: true, includeCategories: true });
 
     return NextResponse.json(updated);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === "Enter a valid public image URL."
+    ) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 400 },
+      );
+    }
+
     console.error(error);
 
     return NextResponse.json(
@@ -99,9 +135,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
     await removePublicUpload(existing.imageUrl, "menu");
 
-    revalidatePath("/menu");
-    revalidatePath("/admin/menu");
-    revalidatePath("/admin/menu/archived");
+    revalidateMenuPages({ includeArchived: true, includeCategories: true });
 
     return NextResponse.json({ success: true });
   } catch (error) {

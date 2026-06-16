@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth-guards";
 import { KitchenOrderCard } from "@/components/admin/KitchenOrderCard";
 import Link from "next/link";
 import type { DecimalLike } from "@/types/display";
+import type { WeeklyOrderSelectionDisplay } from "@/lib/weekly-order-display";
 
 type KitchenOrderRow = {
   id: string;
@@ -18,6 +19,7 @@ type KitchenOrderRow = {
     quantity: number;
     lineTotal: DecimalLike;
     notes: string | null;
+    weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
   }[];
 };
 
@@ -55,6 +57,7 @@ export default async function KitchenPage() {
           quantity: true,
           lineTotal: true,
           notes: true,
+          weeklyMealPlanSelection: true,
         },
       },
     },
@@ -93,6 +96,28 @@ export default async function KitchenPage() {
                 quantity: item.quantity,
                 lineTotal: Number(item.lineTotal),
                 notes: item.notes,
+                weeklyMealPlanSelection: item.weeklyMealPlanSelection
+                  ? {
+                      periodLabel: item.weeklyMealPlanSelection.periodLabel,
+                      packageName: item.weeklyMealPlanSelection.packageName,
+                      packageDays: item.weeklyMealPlanSelection.packageDays,
+                      packageMealsPerDay:
+                        item.weeklyMealPlanSelection.packageMealsPerDay,
+                      packagePrice: Number(
+                        item.weeklyMealPlanSelection.packagePrice,
+                      ),
+                      offeringName: item.weeklyMealPlanSelection.offeringName,
+                      spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
+                      proteinSubstitution:
+                        item.weeklyMealPlanSelection.proteinSubstitution,
+                      requestOnly: item.weeklyMealPlanSelection.requestOnly,
+                      requiresApproval:
+                        item.weeklyMealPlanSelection.requiresApproval,
+                      priceDelta: Number(
+                        item.weeklyMealPlanSelection.priceDelta,
+                      ),
+                    }
+                  : null,
               })),
             }}
         />

@@ -27,19 +27,30 @@ const blankChoice = (): OptionChoiceInput => ({
   priceDelta: "0",
 });
 
+async function readError(response: Response, fallback: string) {
+  const data = (await response.json().catch(() => null)) as {
+    error?: string;
+  } | null;
+
+  return data?.error ?? fallback;
+}
+
 type Props = {
   menuItemId: string;
   allergens: Allergen[];
+  selectedAllergenIds: string[];
 };
 
 export function MenuItemCustomizationEditor({
   menuItemId,
   allergens,
+  selectedAllergenIds,
 }: Props) {
   const router = useRouter();
   
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
+  const [selectedAllergens, setSelectedAllergens] =
+    useState<string[]>(selectedAllergenIds);
   const [groupName, setGroupName] = useState("");
   const [required, setRequired] = useState(false);
   const [multiple, setMultiple] = useState(false);
@@ -63,7 +74,7 @@ export function MenuItemCustomizationEditor({
     });
 
     if (!response.ok) {
-      alert("Failed to save allergens.");
+      alert(await readError(response, "Failed to save allergens."));
       return;
     }
 
@@ -82,6 +93,15 @@ export function MenuItemCustomizationEditor({
         requestOnly: Boolean(choice.requestOnly),
         priceDelta: Number(choice.priceDelta || 0),
       }));
+
+    const hasInvalidPriceDelta = cleanedChoices.some(
+      (choice) => !Number.isFinite(choice.priceDelta) || choice.priceDelta < 0,
+    );
+
+    if (hasInvalidPriceDelta) {
+      alert("Option price deltas must be zero or more.");
+      return;
+    }
 
     if (!groupName.trim() || cleanedChoices.length === 0) {
       alert("Group name and at least one choice are required.");
@@ -102,7 +122,7 @@ export function MenuItemCustomizationEditor({
     });
 
     if (!response.ok) {
-      alert("Failed to save option group.");
+      alert(await readError(response, "Failed to save option group."));
       return;
     }
 
@@ -129,7 +149,9 @@ export function MenuItemCustomizationEditor({
                 checked={selectedAllergens.includes(allergen.id)}
                 onChange={(e) => {
                   if (e.target.checked) {
-                    setSelectedAllergens((prev) => [...prev, allergen.id]);
+                    setSelectedAllergens((prev) =>
+                      prev.includes(allergen.id) ? prev : [...prev, allergen.id],
+                    );
                   } else {
                     setSelectedAllergens((prev) =>
                       prev.filter((id) => id !== allergen.id),

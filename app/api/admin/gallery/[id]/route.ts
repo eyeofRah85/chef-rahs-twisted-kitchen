@@ -5,6 +5,7 @@ import {
   isGalleryImageCategory,
   type GalleryImageCategory,
 } from "@/lib/gallery-images";
+import { parsePublicImageUrl } from "@/lib/image-urls";
 import { prisma } from "@/lib/prisma";
 import {
   removePublicUpload,
@@ -58,10 +59,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     const formData = await request.formData();
     const fields = parseGalleryFields(formData);
     const image = formData.get("image") as File | null;
+    const imageUrl = parsePublicImageUrl(formData.get("imageUrl"));
     const src =
       image && image.size > 0
         ? await savePublicImageUpload(image, "gallery")
-        : existing.src;
+        : imageUrl ?? existing.src;
 
     const updated = await prisma.galleryImage.update({
       where: { id },

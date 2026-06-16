@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
 type RouteContext = {
   params: Promise<{
@@ -17,6 +18,8 @@ export async function DELETE(request: Request, context: RouteContext) {
     await prisma.menuItemOptionGroup.delete({
       where: { id },
     });
+
+    revalidateMenuPages();
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -44,3 +44,18 @@ export type CateringStatusValue = (typeof cateringStatuses)[number];
 
 export const serviceRequestTypes = ["CATERING", "PERSONAL_CHEF"] as const;
 export type ServiceRequestTypeValue = (typeof serviceRequestTypes)[number];
+
+export const weeklyMenuStatuses = [
+  "DRAFT",
+  "PUBLISHED",
+  "CLOSED",
+  "ARCHIVED",
+] as const;
+export type WeeklyMenuStatusValue = (typeof weeklyMenuStatuses)[number];
+
+export const weeklyMealPlanOptionTypes = [
+  "SPICE_LEVEL",
+  "PROTEIN_SUBSTITUTION",
+] as const;
+export type WeeklyMealPlanOptionTypeValue =
+  (typeof weeklyMealPlanOptionTypes)[number];

@@ -140,8 +140,9 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
                       </p>
 
                       <p className="mt-2 text-xs">
-                        Online deposit payments are coming soon. For now, the
-                        business will provide manual payment instructions.
+                        Online deposit payments are coming soon. The business
+                        will provide deposit payment instructions after quote
+                        review.
                       </p>
                     </div>
                   )}

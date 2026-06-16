@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getPublicGalleryImages } from "@/lib/gallery-images";
+import { isRemoteImageUrl } from "@/lib/image-urls";
+
+export const dynamic = "force-dynamic";
 
 export default async function GalleryPage() {
   const galleryImages = await getPublicGalleryImages();
@@ -65,6 +68,7 @@ export default async function GalleryPage() {
                           fill
                           className="object-cover"
                           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          unoptimized={isRemoteImageUrl(image.src)}
                         />
                       </div>
 

@@ -1,13 +1,10 @@
 import { Resend } from "resend";
 import type { ReactNode } from "react";
+import { saveEmailPreview } from "@/lib/email-preview";
 
 export const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
-
-  export function canSendEmail() {
-  return Boolean(process.env.RESEND_API_KEY);
-}
 
 export const emailFromAddress =
   process.env.EMAIL_FROM_ADDRESS ??
@@ -16,18 +13,60 @@ export const emailFromAddress =
 export const appUrl =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+export const emailDryRun = process.env.EMAIL_DRY_RUN === "true";
+export const emailPreviewFiles = process.env.EMAIL_PREVIEW_FILES === "true";
+
+export type EmailDeliveryMode = "preview" | "dry-run" | "live" | "disabled";
+
+export function getEmailDeliveryMode(): EmailDeliveryMode {
+  if (emailDryRun) {
+    return emailPreviewFiles ? "preview" : "dry-run";
+  }
+
+  return resend ? "live" : "disabled";
+}
+
+export function canSendEmail() {
+  return getEmailDeliveryMode() === "live";
+}
+
 type SendAppEmailInput = {
   to: string;
   subject: string;
   react: ReactNode;
+  type?: string;
 };
 
 export async function sendAppEmail({
   to,
   subject,
   react,
+  type,
 }: SendAppEmailInput) {
   try {
+    if (emailDryRun) {
+      console.log("[EMAIL DRY RUN]", {
+        type,
+        to,
+        subject,
+        hasReactTemplate: Boolean(react),
+      });
+
+      if (emailPreviewFiles) {
+        const filePath = await saveEmailPreview({
+          from: emailFromAddress,
+          to,
+          subject,
+          react,
+          type,
+        });
+
+        console.log("[EMAIL PREVIEW SAVED]", filePath);
+      }
+
+      return;
+    }
+
     if (!resend) {
       console.warn("Email skipped: RESEND_API_KEY is not configured.");
       return;

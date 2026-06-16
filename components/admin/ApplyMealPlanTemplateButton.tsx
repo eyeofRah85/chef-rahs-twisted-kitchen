@@ -13,7 +13,7 @@ export function ApplyMealPlanTemplateButton({ menuItemId }: Props) {
 
   async function applyTemplate() {
     const confirmed = confirm(
-      "Apply the default meal plan option groups to this item? Existing groups with the same name will be skipped.",
+      "Apply the fixed meal plan option groups to this item? Existing groups with the same name will be skipped.",
     );
 
     if (!confirmed) return;

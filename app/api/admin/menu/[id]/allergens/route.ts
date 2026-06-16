@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
+import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
 type RouteContext = {
   params: Promise<{
@@ -17,25 +18,84 @@ export async function POST(
 
     const { id } = await context.params;
 
-    const body = await request.json();
+    const body = (await request.json()) as {
+      allergenIds?: unknown;
+    };
 
-    const allergenIds: string[] =
-      body.allergenIds ?? [];
+    const submittedAllergenIds = body.allergenIds ?? [];
 
-    await prisma.menuItemAllergen.deleteMany({
-      where: {
-        menuItemId: id,
-      },
+    if (
+      !Array.isArray(submittedAllergenIds) ||
+      submittedAllergenIds.some((allergenId) => typeof allergenId !== "string")
+    ) {
+      return NextResponse.json(
+        { error: "Allergen IDs must be provided as strings." },
+        { status: 400 },
+      );
+    }
+
+    const trimmedAllergenIds = submittedAllergenIds.map((allergenId) =>
+      allergenId.trim(),
+    );
+
+    if (trimmedAllergenIds.some((allergenId) => !allergenId)) {
+      return NextResponse.json(
+        { error: "Allergen IDs must be non-empty strings." },
+        { status: 400 },
+      );
+    }
+
+    const allergenIds = Array.from(new Set(trimmedAllergenIds));
+
+    const [menuItem, validAllergens] = await Promise.all([
+      prisma.menuItem.findUnique({
+        where: { id },
+        select: { id: true },
+      }),
+      prisma.allergen.findMany({
+        where: {
+          id: {
+            in: allergenIds,
+          },
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+
+    if (!menuItem) {
+      return NextResponse.json(
+        { error: "Menu item not found." },
+        { status: 404 },
+      );
+    }
+
+    if (validAllergens.length !== allergenIds.length) {
+      return NextResponse.json(
+        { error: "One or more allergens were not found." },
+        { status: 400 },
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.menuItemAllergen.deleteMany({
+        where: {
+          menuItemId: id,
+        },
+      });
+
+      if (allergenIds.length > 0) {
+        await tx.menuItemAllergen.createMany({
+          data: allergenIds.map((allergenId) => ({
+            menuItemId: id,
+            allergenId,
+          })),
+        });
+      }
     });
 
-    if (allergenIds.length > 0) {
-      await prisma.menuItemAllergen.createMany({
-        data: allergenIds.map((allergenId) => ({
-          menuItemId: id,
-          allergenId,
-        })),
-      });
-    }
+    revalidateMenuPages();
 
     return NextResponse.json({
       success: true,

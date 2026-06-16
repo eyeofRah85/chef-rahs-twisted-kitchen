@@ -9,6 +9,10 @@ import {
   formatOrderType,
   formatPaymentStatus,
 } from "@/lib/format-labels";
+import {
+  getWeeklyMealPlanSelectionDetails,
+  type WeeklyOrderSelectionDisplay,
+} from "@/lib/weekly-order-display";
 import type { DecimalLike } from "@/types/display";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
@@ -23,6 +27,7 @@ type AccountOrderItem = {
   unitPrice: DecimalLike;
   lineTotal: DecimalLike;
   notes: string | null;
+  weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
 };
 
 type AccountOrder = {
@@ -56,7 +61,11 @@ export default async function AccountOrdersPage() {
           createdAt: "desc",
         },
         include: {
-          items: true,
+          items: {
+            include: {
+              weeklyMealPlanSelection: true,
+            },
+          },
         },
       },
     },
@@ -162,6 +171,7 @@ export default async function AccountOrdersPage() {
                         quantity: item.quantity,
                         unitPrice: Number(item.unitPrice),
                         notes: item.notes,
+                        isWeeklyMealPlan: Boolean(item.weeklyMealPlanSelection),
                     }))}
                     />
                 </div>
@@ -180,6 +190,27 @@ export default async function AccountOrdersPage() {
                         <p className="font-medium">
                           {item.quantity} x {item.name}
                         </p>
+
+                        {item.weeklyMealPlanSelection && (
+                          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-950">
+                            <p className="font-semibold">
+                              Weekly Meal Plan Snapshot
+                            </p>
+
+                            <dl className="mt-2 space-y-1">
+                              {getWeeklyMealPlanSelectionDetails(
+                                item.weeklyMealPlanSelection,
+                              ).map((detail) => (
+                                <div key={detail.label}>
+                                  <dt className="inline font-semibold">
+                                    {detail.label}:{" "}
+                                  </dt>
+                                  <dd className="inline">{detail.value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          </div>
+                        )}
 
                         {item.notes && (
                           <p className="mt-1 whitespace-pre-wrap text-xs text-neutral-600">
