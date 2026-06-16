@@ -471,7 +471,7 @@ export default async function AdminWeeklyMenuPage() {
               const dateRange = `${formatDisplayDate(
                 period.startDate,
               )} - ${formatDisplayDate(period.endDate)}`;
-              const spotsRemaining = Math.max(
+              const orderSlotsRemaining = Math.max(
                 period.capacity - period.ordersPlaced,
                 0,
               );
@@ -555,12 +555,14 @@ export default async function AdminWeeklyMenuPage() {
 
                         <div className="mt-3 flex flex-wrap gap-3 text-sm text-neutral-600">
                           <span>
-                            Capacity used: {period.ordersPlaced}/
+                            Weekly orders: {period.ordersPlaced}/
                             {period.capacity}
                             {" - "}
-                            {spotsRemaining === 0
-                              ? "sold out"
-                              : `${spotsRemaining} left`}
+                            {orderSlotsRemaining === 0
+                              ? "order limit reached"
+                              : `${orderSlotsRemaining} order slot${
+                                  orderSlotsRemaining === 1 ? "" : "s"
+                                } left`}
                           </span>
 
                           <span>
@@ -625,13 +627,15 @@ export default async function AdminWeeklyMenuPage() {
                           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                             <div className="rounded-xl bg-white p-4">
                               <p className="text-xs font-medium uppercase text-neutral-500">
-                                Capacity
+                                Order Capacity
                               </p>
                               <p className="mt-2 text-2xl font-bold">
                                 {period.ordersPlaced}/{period.capacity}
                               </p>
                               <p className="mt-1 text-xs text-neutral-500">
-                                {spotsRemaining} remaining
+                                {orderSlotsRemaining} weekly order slot
+                                {orderSlotsRemaining === 1 ? "" : "s"}{" "}
+                                remaining
                               </p>
                             </div>
 

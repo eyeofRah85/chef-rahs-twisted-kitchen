@@ -129,7 +129,7 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
           </label>
 
           <label className="grid gap-2 text-sm font-medium">
-            Capacity
+            Order Capacity
             <input
               name="capacity"
               type="number"
@@ -139,6 +139,10 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
               className="rounded-xl border px-4 py-3 text-sm font-normal"
               required
             />
+            <span className="text-xs font-normal leading-5 text-neutral-500">
+              Counts submitted customer orders for this weekly menu, not meal
+              plan item quantity.
+            </span>
           </label>
         </div>
 

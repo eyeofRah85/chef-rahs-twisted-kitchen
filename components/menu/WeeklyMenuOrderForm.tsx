@@ -62,13 +62,13 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
     selectedOffering?.allergens.filter((allergen) =>
       selectedAllergenIdSet.has(allergen.id),
     ) ?? [];
-  const spotsRemaining = Math.max(
+  const orderSlotsRemaining = Math.max(
     weeklyMenu.capacity - weeklyMenu.ordersPlaced,
     0,
   );
   const unavailable =
     weeklyMenu.orderingClosed ||
-    spotsRemaining < 1 ||
+    orderSlotsRemaining < 1 ||
     weeklyMenu.packages.length === 0 ||
     weeklyMenu.offerings.length === 0;
   const spiceRequired = spiceOptions.length > 0;
@@ -109,7 +109,9 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       ),
       requiresApproval: Boolean(
         selectedSpiceOption?.requiresApproval ||
-          selectedProteinOption?.requiresApproval,
+          selectedProteinOption?.requiresApproval ||
+          selectedSpiceOption?.requestOnly ||
+          selectedProteinOption?.requestOnly,
       ),
       priceDelta: optionDelta,
     };
@@ -135,8 +137,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
 
       {unavailable && (
         <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-          {spotsRemaining < 1
-            ? "This weekly menu is currently at capacity."
+          {orderSlotsRemaining < 1
+            ? "This weekly menu has reached its weekly order limit."
             : weeklyMenu.orderingClosed
               ? "Ordering for this weekly menu has closed."
               : "This weekly menu is not ready for ordering yet."}

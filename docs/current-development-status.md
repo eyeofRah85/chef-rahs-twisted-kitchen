@@ -515,5 +515,13 @@ Next work items - June 8, 2026:
    - Updated `docs/launch-readiness-checklist.md` with the June 16 review status and remaining production blockers/warnings.
    - Remaining blockers before launch are non-code deployment tasks: set production `https://` app/auth URLs, set `BUSINESS_TIME_ZONE`, disable email dry-run for the live-send test, decide/confirm durable upload storage posture, set `ADMIN_EMAIL` before promotion, and execute the final manual QA checklist in the target environment.
 
-37. Suggested next Codex prompt
+37. Weekly capacity wording clarification - completed June 16, 2026
+   - Confirmed current weekly capacity behavior matches the resolved business rule: capacity counts submitted customer orders per weekly menu, not weekly meal plan item quantity or package count.
+   - Public weekly menu copy now says weekly order slots instead of generic spots.
+   - Admin weekly menu create/clone forms now label the field as Order Capacity and explain that it counts submitted customer orders, not meal plan item quantity.
+   - Admin weekly menu capacity displays now use weekly order/order slot wording.
+   - Weekly meal plan manual QA now explicitly checks that capacity increments once per customer order, even when a cart contains multiple weekly plan items or quantities.
+   - No transaction, route, or data model changes were made.
+
+38. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.

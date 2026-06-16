@@ -195,7 +195,9 @@ export const useCartStore = create<CartState>()(
           category: "Weekly Meal Plan",
           allergens,
           selectedOptions,
-          requiresApproval: Boolean(selection.requiresApproval),
+          requiresApproval: Boolean(
+            selection.requiresApproval || selection.requestOnly,
+          ),
         };
 
         set((state) => ({

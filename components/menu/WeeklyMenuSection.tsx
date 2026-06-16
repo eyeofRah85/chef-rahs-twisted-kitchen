@@ -22,7 +22,7 @@ function groupOptionsByType(options: PublicWeeklyOption[]) {
 }
 
 export function WeeklyMenuSection({ weeklyMenu }: Props) {
-  const spotsRemaining = Math.max(
+  const orderSlotsRemaining = Math.max(
     weeklyMenu.capacity - weeklyMenu.ordersPlaced,
     0,
   );
@@ -42,7 +42,8 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
 
         <div className="flex flex-wrap gap-2 text-sm">
           <span className="rounded-full border bg-white px-4 py-2 font-medium shadow-sm">
-            {spotsRemaining} of {weeklyMenu.capacity} spots available
+            {orderSlotsRemaining} of {weeklyMenu.capacity} weekly order slots
+            available
           </span>
 
           {weeklyMenu.orderCutoffLabel && (

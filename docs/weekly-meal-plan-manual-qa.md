@@ -18,7 +18,7 @@ Use this checklist for local browser testing of the weekly meal plan workflow.
 ## Customer Ordering
 
 1. Open `/menu` as the customer.
-2. Confirm the current published weekly menu appears with the date range, order cutoff, and capacity remaining.
+2. Confirm the current published weekly menu appears with the date range, order cutoff, and weekly order capacity remaining.
 3. Add a weekly plan with a package, offering, spice level, and no protein substitution.
 4. Add a second weekly plan from the same weekly period with a request-only protein substitution.
 5. Confirm both weekly plans appear in the cart with package, offering, spice, protein, approval, and allergen details.
@@ -30,7 +30,7 @@ Use this checklist for local browser testing of the weekly meal plan workflow.
 
 1. In `/admin/menu/weekly`, set a test weekly period capacity to a low number.
 2. Submit a customer order containing one or more weekly plans from that period.
-3. Confirm the weekly period capacity used count increments once for the order.
+3. Confirm the weekly period capacity used count increments once for the customer order, even if the cart contains multiple weekly plan items or quantities.
 4. Try submitting another weekly order after capacity is full.
 5. Confirm checkout rejects the order and the public menu shows the weekly plan as unavailable or at capacity.
 
@@ -40,7 +40,7 @@ Use this checklist for local browser testing of the weekly meal plan workflow.
 2. Expand the weekly period.
 3. Confirm Weekly Fulfillment Prep shows:
    - Active weekly order count.
-   - Capacity used and remaining.
+   - Weekly order capacity used and remaining.
    - Counts by offering.
    - Counts by package.
    - Counts by spice level.
