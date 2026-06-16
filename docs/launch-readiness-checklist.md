@@ -4,6 +4,29 @@ Date: June 15, 2026
 
 Use this checklist before deploying Chef Rah's Twisted Kitchen to a public production environment.
 
+## Current Review Status
+
+Last reviewed: June 16, 2026
+
+Completed locally:
+
+- `npm run check` passes.
+- Prisma reports 16 migrations and the configured local development database schema is up to date.
+- `npm run env:check -- --report` runs without printing secret values.
+
+Current production blockers reported by the environment guard:
+
+- `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` still point at localhost and must be production `https://` URLs.
+- `BUSINESS_TIME_ZONE` is missing from the current local `.env`; production should set it to `America/New_York` unless the business chooses a different operating timezone.
+- `EMAIL_DRY_RUN` is not `false`; live customer emails will not send until production explicitly disables dry-run mode.
+
+Current warnings to resolve or accept before launch:
+
+- `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` is not set. This is acceptable only if production uploads stay blocked and admins use public image URLs.
+- `EMAIL_PREVIEW_FILES` is enabled. Disable preview file output in production unless intentionally debugging email rendering.
+- Stripe is not configured. This is acceptable while online card checkout remains disabled.
+- `ADMIN_EMAIL` is not set. Set it before running `npm run admin:promote`.
+
 ## Required Validation
 
 Run these before launch:

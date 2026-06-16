@@ -508,5 +508,12 @@ Next work items - June 8, 2026:
    - Cleaned one home-page Personal Chef image alt text phrase.
    - Browser verification after the fix confirmed no page-level horizontal overflow on the checked mobile pages and no console errors on the smoke-tested pages.
 
-36. Suggested next Codex prompt
-   - Run one last production-readiness review focused on non-code launch tasks: production env values, durable upload provider decision, first live email test plan, admin account promotion, and final manual QA checklist execution before deployment.
+36. Final production-readiness review - completed June 16, 2026
+   - `npm run check` passes after the final smoke/copy polish commit.
+   - `prisma migrate status` reports 16 migrations and the configured local development database schema is up to date.
+   - `npm run env:check -- --report` runs without exposing secret values and correctly reports the current local `.env` as not production-ready.
+   - Updated `docs/launch-readiness-checklist.md` with the June 16 review status and remaining production blockers/warnings.
+   - Remaining blockers before launch are non-code deployment tasks: set production `https://` app/auth URLs, set `BUSINESS_TIME_ZONE`, disable email dry-run for the live-send test, decide/confirm durable upload storage posture, set `ADMIN_EMAIL` before promotion, and execute the final manual QA checklist in the target environment.
+
+37. Suggested next Codex prompt
+   - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
