@@ -525,3 +525,94 @@ Next work items - June 8, 2026:
 
 38. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
+
+Next work items - June 16, 2026:
+
+## Planned Visual Refresh / Brand Polish Pass
+
+A future branch should perform a customer-facing visual refresh once the current functional checkout/profile/order flow work is stable.
+
+### Goal
+
+Create a modern, responsive, polished customer experience for Chef Rah’s Twisted Kitchen with a cohesive brand identity, strong visual hierarchy, bold typography, clear calls to action, improved spacing, refined cards/sections, and better mobile presentation.
+
+### Priority pages
+
+* Home page
+* Menu / Meal Plans page
+* Cart page
+* Checkout page
+* Customer account order/request pages
+* Shared customer-facing UI components
+
+Admin pages are lower priority unless shared components affect both admin and customer experiences.
+
+### Design direction
+
+* Warm, premium-but-approachable food-service brand
+* Strong hero sections and conversion-focused CTAs
+* Clear customer pathways:
+
+  * View Meal Plans
+  * Start an Order
+  * Request Catering
+  * Request Personal Chef Service
+* Improved typography scale and section spacing
+* Polished cards, badges, alerts, buttons, and empty states
+* Subtle microinteractions using Tailwind hover/focus/transition states
+* Accessible contrast and keyboard-friendly focus states
+
+### Image/performance notes
+
+Use existing local/gallery images where possible. Avoid adding large unoptimized remote images. Prefer Next.js Image for image-heavy sections. If final client-provided hero/brand imagery is not available, use existing assets or tasteful placeholders and document the remaining image needs.
+
+### Constraints
+
+* Do not change database schema for this pass.
+* Do not alter checkout/order business logic.
+* Do not remove validation, approval, allergen, payment, or scheduling behavior.
+* Do not break existing routes.
+* Run npm run check before completion.
+
+### Expected output
+
+The branch should include a summary of changed pages/components, any remaining client image/content needs, and validation results.
+
+
+## Future Admin Dashboard Refresh
+After launch-critical customer-facing work is stable, perform a separate admin dashboard refresh focused on usability, workflow clarity, and operational efficiency.
+
+### Goal
+
+Modernize the admin experience without changing business logic. The admin dashboard should feel clean, organized, fast to scan, and easy to use during real order, catering, menu, gallery, and customer-management workflows.
+
+### Priority admin areas
+
+* Admin dashboard overview
+* Orders list and order detail pages
+* Catering / personal chef request management
+* Menu and weekly meal plan management
+* Gallery/image management
+* Business settings
+* Customer/account lookup areas if present
+
+### Design direction
+
+* Clear dashboard hierarchy with key metrics and status cards
+* Better visual separation between pending, approved, denied, paid, unpaid, and completed records
+* Improved table readability and responsive behavior
+* More consistent admin buttons, badges, filters, forms, and empty states
+* Clear action areas for approve, deny, update payment, archive, and edit workflows
+* Subtle microinteractions for hover/focus/loading states
+* Accessible contrast and keyboard-friendly focus states
+* Keep admin pages practical and workflow-focused rather than overly decorative
+
+### Constraints
+
+* Do not change database schema unless specifically approved.
+* Do not alter order approval, payment tracking, allergen acknowledgement, or request workflows.
+* Do not remove existing admin functionality.
+* Avoid redesigning customer-facing pages in this branch.
+* Run npm run check before completion.
+
+
