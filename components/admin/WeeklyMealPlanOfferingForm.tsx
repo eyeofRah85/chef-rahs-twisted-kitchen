@@ -72,21 +72,21 @@ export function WeeklyMealPlanOfferingForm({ periodId, offering }: Props) {
     <form
       ref={formRef}
       action={handleSubmit}
-      className="grid gap-4 rounded-xl border bg-white p-4"
+      className="admin-row-card grid gap-4"
     >
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Offering Name
           <input
             name="name"
             defaultValue={offering?.name ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="Jerk Chicken Bowl"
             required
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Display Order
           <input
             name="displayOrder"
@@ -94,47 +94,47 @@ export function WeeklyMealPlanOfferingForm({ periodId, offering }: Props) {
             min="0"
             step="1"
             defaultValue={offering?.displayOrder ?? 0}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
       </div>
 
-      <label className="grid gap-2 text-sm font-medium">
+      <label className="admin-label">
         Description
         <textarea
           name="description"
           rows={4}
           defaultValue={offering?.description ?? ""}
-          className="rounded-xl border px-4 py-3 text-sm font-normal"
+          className="admin-input"
           placeholder="Fixed weekly meal description"
           required
         />
       </label>
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Dietary Info
           <input
             name="dietaryInfo"
             defaultValue={offering?.dietaryInfo ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="Gluten-free, dairy-free, etc."
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Image URL
           <input
             name="imageUrl"
             defaultValue={offering?.imageUrl ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="/uploads/menu/example.webp"
           />
         </label>
       </div>
 
-      <label className="flex items-center gap-3 text-sm font-medium">
+      <label className="flex items-center gap-3 text-sm font-bold text-[#3f2a1d]">
         <input
           name="available"
           type="checkbox"
@@ -144,15 +144,8 @@ export function WeeklyMealPlanOfferingForm({ periodId, offering }: Props) {
         Available for this weekly menu
       </label>
 
-      <button
-        disabled={saving}
-        className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-      >
-        {saving
-          ? "Saving..."
-          : isEditing
-            ? "Save Offering"
-            : "Add Offering"}
+      <button disabled={saving} className="admin-button-primary">
+        {saving ? "Saving..." : isEditing ? "Save Offering" : "Add Offering"}
       </button>
     </form>
   );

@@ -83,10 +83,10 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
     <form
       ref={formRef}
       action={handleSubmit}
-      className="grid gap-4 rounded-xl border bg-white p-4"
+      className="admin-row-card grid gap-4"
     >
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Option Type
           <select
             name="optionType"
@@ -98,7 +98,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
                 setApprovalRequired(false);
               }
             }}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
           >
             {weeklyMealPlanOptionTypes.map((type) => (
               <option key={type} value={type}>
@@ -108,12 +108,12 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Option Name
           <input
             name="name"
             defaultValue={option?.name ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="Mild or Chicken"
             required
           />
@@ -121,7 +121,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
       </div>
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Price Delta
           <input
             name="priceDelta"
@@ -129,12 +129,12 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
             min="0"
             step="0.01"
             defaultValue={option ? option.priceDelta.toFixed(2) : "0.00"}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Display Order
           <input
             name="displayOrder"
@@ -142,7 +142,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
             min="0"
             step="1"
             defaultValue={option?.displayOrder ?? 0}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
@@ -153,7 +153,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
           name="description"
           rows={3}
           defaultValue={option?.description ?? ""}
-          className="rounded-xl border px-4 py-3 text-sm"
+          className="admin-input"
           placeholder="Description"
         />
 
@@ -161,12 +161,12 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
           name="dietaryInfo"
           rows={3}
           defaultValue={option?.dietaryInfo ?? ""}
-          className="rounded-xl border px-4 py-3 text-sm"
+          className="admin-input"
           placeholder="Dietary info"
         />
       </div>
 
-      <div className="flex flex-wrap gap-4 text-sm font-medium">
+      <div className="flex flex-wrap gap-4 text-sm font-bold text-[#3f2a1d]">
         <label className="flex items-center gap-2">
           <input
             name="available"
@@ -180,7 +180,7 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
           className={
             isProteinSubstitution
               ? "flex items-center gap-2"
-              : "flex items-center gap-2 text-neutral-400"
+              : "flex items-center gap-2 text-[#9b8a7e]"
           }
         >
           <input
@@ -200,15 +200,8 @@ export function WeeklyMealPlanOptionForm({ offeringId, option }: Props) {
         </>
       )}
 
-      <button
-        disabled={saving}
-        className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-      >
-        {saving
-          ? "Saving..."
-          : isEditing
-            ? "Save Option"
-            : "Add Option"}
+      <button disabled={saving} className="admin-button-primary">
+        {saving ? "Saving..." : isEditing ? "Save Option" : "Add Option"}
       </button>
     </form>
   );

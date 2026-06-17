@@ -49,10 +49,7 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
 
       if (!response.ok) {
         alert(
-          await readError(
-            response,
-            "Failed to save weekly meal plan package.",
-          ),
+          await readError(response, "Failed to save weekly meal plan package."),
         );
         return;
       }
@@ -73,21 +70,21 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
     <form
       ref={formRef}
       action={handleSubmit}
-      className="grid gap-4 rounded-xl border bg-white p-4"
+      className="admin-row-card grid gap-4"
     >
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Package Name
           <input
             name="name"
             defaultValue={pkg?.name ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="5-Day Lunch Package"
             required
           />
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Package Price
           <input
             name="price"
@@ -95,38 +92,38 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
             min="0"
             step="0.01"
             defaultValue={pkg ? pkg.price.toFixed(2) : ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
       </div>
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Days
           <select
             name="days"
             defaultValue={String(pkg?.days ?? 5)}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
           >
             <option value="5">5 days</option>
             <option value="7">7 days</option>
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Meals Per Day
           <select
             name="mealsPerDay"
             defaultValue={String(pkg?.mealsPerDay ?? 1)}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
           >
             <option value="1">1 meal</option>
             <option value="2">2 meals</option>
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Display Order
           <input
             name="displayOrder"
@@ -134,24 +131,24 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
             min="0"
             step="1"
             defaultValue={pkg?.displayOrder ?? 0}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
       </div>
 
-      <label className="grid gap-2 text-sm font-medium">
+      <label className="admin-label">
         Notes
         <textarea
           name="notes"
           rows={3}
           defaultValue={pkg?.notes ?? ""}
-          className="rounded-xl border px-4 py-3 text-sm font-normal"
+          className="admin-input"
           placeholder="Optional package details"
         />
       </label>
 
-      <label className="flex items-center gap-3 text-sm font-medium">
+      <label className="flex items-center gap-3 text-sm font-bold text-[#3f2a1d]">
         <input
           name="available"
           type="checkbox"
@@ -161,15 +158,8 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
         Available for this weekly menu
       </label>
 
-      <button
-        disabled={saving}
-        className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-      >
-        {saving
-          ? "Saving..."
-          : isEditing
-            ? "Save Package"
-            : "Add Package"}
+      <button disabled={saving} className="admin-button-primary">
+        {saving ? "Saving..." : isEditing ? "Save Package" : "Add Package"}
       </button>
     </form>
   );

@@ -545,7 +545,16 @@ Next work items - June 8, 2026:
    - `npm run check` passes after the admin refresh slice.
    - No database schema, routes, approval guards, payment tracking, quote/deposit, allergen acknowledgement, or order/status workflow logic was intentionally changed.
 
-40. Suggested next Codex prompt
+40. Admin dashboard refresh remaining management surfaces - completed June 17, 2026
+   - Extended the scoped admin visual system with shared admin input, label, primary/secondary/danger button, section heading, row-card, and disabled-state styles.
+   - Refreshed `/admin/menu`, `/admin/menu/weekly`, `/admin/gallery`, `/admin/customers`, `/admin/customers/[id]`, `/admin/payments`, `/admin/reports`, `/admin/notifications`, `/admin/settings`, `/admin/menu/categories`, and `/admin/menu/archived`.
+   - Polished dense menu, weekly menu, gallery, category, business settings, package, offering, option, allergen, and customization forms so controls stack cleanly and use consistent focus/hover states.
+   - Aligned recurring admin action controls for archive, delete, restore, availability, meal plan template application, weekly option/offering deletion, gallery deletion, and option choice editing.
+   - Browser smoke-tested the refreshed admin management routes on desktop, plus compact mobile checks for opened `/admin/menu` and `/admin/menu/weekly` detail panels, with no page-level horizontal overflow or browser console errors in the tested tab.
+   - `npm run check` passes after the remaining admin refresh. The existing `components/layout/SiteFooter.tsx` unused `Image` lint warning still appears, but it is not from this admin work.
+   - No database schema, routes, API behavior, approval guards, payment tracking, allergen acknowledgement, order workflow, menu workflow, or weekly capacity logic was intentionally changed.
+
+41. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
 
 Next work items - June 16, 2026:
@@ -604,7 +613,7 @@ The branch should include a summary of changed pages/components, any remaining c
 
 
 ## Admin Dashboard Refresh
-First slice completed June 16, 2026 and recorded above in item 39. Remaining admin polish can continue after review, especially the deeper menu, weekly meal plan, gallery, reports, payments, customers, notifications, and settings surfaces.
+First slice completed June 16, 2026 and recorded above in item 39. Remaining management-surface polish completed June 17, 2026 and recorded above in item 40. The original scope is retained below as a design record.
 
 ### Goal
 

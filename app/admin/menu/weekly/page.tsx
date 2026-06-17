@@ -294,18 +294,20 @@ function buildFulfillmentCountRows(
   }
 
   return Array.from(rowsByLabel.entries())
-    .map(([label, row]): FulfillmentCountRow => ({
-      label,
-      quantity: row.quantity,
-      orderCount: row.orderIds.size,
-    }))
+    .map(
+      ([label, row]): FulfillmentCountRow => ({
+        label,
+        quantity: row.quantity,
+        orderCount: row.orderIds.size,
+      }),
+    )
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
   if (rows.length === 0) {
     return (
-      <p className="rounded-lg bg-white/70 p-3 text-sm text-neutral-500">
+      <p className="rounded-lg bg-white/70 p-3 text-sm text-[#6b5a50]">
         No active weekly selections.
       </p>
     );
@@ -320,12 +322,12 @@ function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
         >
           <div>
             <p className="font-medium text-neutral-900">{row.label}</p>
-            <p className="mt-1 text-xs text-neutral-500">
+            <p className="mt-1 text-xs text-[#6b5a50]">
               {row.orderCount} order{row.orderCount === 1 ? "" : "s"}
             </p>
           </div>
 
-          <p className="font-semibold">{row.quantity}</p>
+          <p className="font-black">{row.quantity}</p>
         </div>
       ))}
     </div>
@@ -440,20 +442,20 @@ export default async function AdminWeeklyMenuPage() {
   const allergenOptions: AdminAllergen[] = allergens;
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-7xl">
+    <main className="admin-page">
+      <div className="admin-container">
         <div className="mb-8">
-          <Link className="text-sm font-medium underline" href="/admin/menu">
+          <Link className="admin-back-link" href="/admin/menu">
             &larr; Back to Menu Manager
           </Link>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin
-          </p>
+          <p className="admin-eyebrow mt-5">Admin</p>
 
-          <h1 className="mt-3 text-4xl font-bold">Weekly Menu Manager</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+            Weekly Menu Manager
+          </h1>
 
-          <p className="mt-3 max-w-3xl text-neutral-700">
+          <p className="mt-3 max-w-3xl text-[#6b5a50]">
             Draft and maintain weekly meal plan periods and fixed-price 1- or
             2-meal packages for the public weekly menu and fulfillment prep.
           </p>
@@ -477,10 +479,12 @@ export default async function AdminWeeklyMenuPage() {
               );
               const fulfillmentSelections =
                 period.orderSelections as WeeklyFulfillmentSelection[];
-              const activeFulfillmentSelections =
-                fulfillmentSelections.filter(isActiveFulfillmentSelection);
+              const activeFulfillmentSelections = fulfillmentSelections.filter(
+                isActiveFulfillmentSelection,
+              );
               const inactiveSelectionCount =
-                fulfillmentSelections.length - activeFulfillmentSelections.length;
+                fulfillmentSelections.length -
+                activeFulfillmentSelections.length;
               const activeFulfillmentQuantity = sumSelectionQuantity(
                 activeFulfillmentSelections,
               );
@@ -534,26 +538,26 @@ export default async function AdminWeeklyMenuPage() {
               return (
                 <details
                   key={period.id}
-                  className="group rounded-2xl border bg-white shadow-sm open:bg-white"
+                  className="admin-card group overflow-hidden"
                 >
-                  <summary className="cursor-pointer list-none rounded-2xl p-5 transition hover:bg-neutral-100">
+                  <summary className="cursor-pointer list-none p-5 transition hover:bg-[#fff8ee]">
                     <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h2 className="text-2xl font-semibold">
+                          <h2 className="text-2xl font-black">
                             {period.label}
                           </h2>
 
-                          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
+                          <span className="admin-badge admin-badge-neutral">
                             {formatWeeklyMenuStatus(period.status)}
                           </span>
                         </div>
 
-                        <p className="mt-2 text-sm text-neutral-600">
+                        <p className="mt-2 text-sm text-[#6b5a50]">
                           {dateRange}
                         </p>
 
-                        <div className="mt-3 flex flex-wrap gap-3 text-sm text-neutral-600">
+                        <div className="mt-3 flex flex-wrap gap-3 text-sm text-[#6b5a50]">
                           <span>
                             Weekly orders: {period.ordersPlaced}/
                             {period.capacity}
@@ -565,40 +569,38 @@ export default async function AdminWeeklyMenuPage() {
                                 } left`}
                           </span>
 
-                          <span>
-                            Packages: {period.packages.length}
-                          </span>
+                          <span>Packages: {period.packages.length}</span>
 
-                          <span>
-                            Offerings: {period.offerings.length}
-                          </span>
+                          <span>Offerings: {period.offerings.length}</span>
                         </div>
                       </div>
 
-                      <div className="text-sm font-medium text-neutral-500 group-open:hidden">
+                      <div className="text-sm font-bold text-[#6b5a50] group-open:hidden">
                         Open details &gt;
                       </div>
 
-                      <div className="hidden text-sm font-medium text-neutral-500 group-open:block">
+                      <div className="hidden text-sm font-bold text-[#6b5a50] group-open:block">
                         Close details ^
                       </div>
                     </div>
                   </summary>
 
                   <div className="border-t p-5">
-                    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_380px]">
+                    <div className="grid gap-6 3xl:grid-cols-[minmax(0,1fr)_380px]">
                       <section className="space-y-5">
                         <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
                           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
                             <div>
-                              <h3 className="text-lg font-semibold">
+                              <h3 className="text-lg font-black">
                                 Weekly Fulfillment Prep
                               </h3>
 
                               <p className="mt-1 text-sm text-emerald-950">
                                 {activeFulfillmentQuantity} weekly meal plan
                                 item
-                                {activeFulfillmentQuantity === 1 ? "" : "s"}{" "}
+                                {activeFulfillmentQuantity === 1
+                                  ? ""
+                                  : "s"}{" "}
                                 across {activeFulfillmentOrderCount} active
                                 order
                                 {activeFulfillmentOrderCount === 1 ? "" : "s"}.
@@ -607,7 +609,7 @@ export default async function AdminWeeklyMenuPage() {
 
                             <Link
                               href="/admin/kitchen"
-                              className="inline-flex rounded-xl border border-emerald-300 bg-white px-4 py-2 text-sm font-medium text-emerald-950"
+                              className="admin-button-secondary border-emerald-300 text-emerald-950"
                             >
                               Open Kitchen Board
                             </Link>
@@ -615,9 +617,7 @@ export default async function AdminWeeklyMenuPage() {
 
                           {period.fulfillmentNotes && (
                             <div className="mt-4 rounded-xl border border-emerald-200 bg-white p-4 text-sm text-emerald-950">
-                              <p className="font-semibold">
-                                Fulfillment Notes
-                              </p>
+                              <p className="font-black">Fulfillment Notes</p>
                               <p className="mt-2 whitespace-pre-wrap">
                                 {period.fulfillmentNotes}
                               </p>
@@ -626,21 +626,20 @@ export default async function AdminWeeklyMenuPage() {
 
                           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                             <div className="rounded-xl bg-white p-4">
-                              <p className="text-xs font-medium uppercase text-neutral-500">
+                              <p className="text-xs font-bold uppercase text-[#6b5a50]">
                                 Order Capacity
                               </p>
                               <p className="mt-2 text-2xl font-bold">
                                 {period.ordersPlaced}/{period.capacity}
                               </p>
-                              <p className="mt-1 text-xs text-neutral-500">
+                              <p className="mt-1 text-xs text-[#6b5a50]">
                                 {orderSlotsRemaining} weekly order slot
-                                {orderSlotsRemaining === 1 ? "" : "s"}{" "}
-                                remaining
+                                {orderSlotsRemaining === 1 ? "" : "s"} remaining
                               </p>
                             </div>
 
                             <div className="rounded-xl bg-white p-4">
-                              <p className="text-xs font-medium uppercase text-neutral-500">
+                              <p className="text-xs font-bold uppercase text-[#6b5a50]">
                                 Active Orders
                               </p>
                               <p className="mt-2 text-2xl font-bold">
@@ -649,7 +648,7 @@ export default async function AdminWeeklyMenuPage() {
                             </div>
 
                             <div className="rounded-xl bg-white p-4">
-                              <p className="text-xs font-medium uppercase text-neutral-500">
+                              <p className="text-xs font-bold uppercase text-[#6b5a50]">
                                 Request Only
                               </p>
                               <p className="mt-2 text-2xl font-bold">
@@ -658,7 +657,7 @@ export default async function AdminWeeklyMenuPage() {
                             </div>
 
                             <div className="rounded-xl bg-white p-4">
-                              <p className="text-xs font-medium uppercase text-neutral-500">
+                              <p className="text-xs font-bold uppercase text-[#6b5a50]">
                                 Approval Required
                               </p>
                               <p className="mt-2 text-2xl font-bold">
@@ -667,7 +666,7 @@ export default async function AdminWeeklyMenuPage() {
                             </div>
 
                             <div className="rounded-xl bg-white p-4">
-                              <p className="text-xs font-medium uppercase text-neutral-500">
+                              <p className="text-xs font-bold uppercase text-[#6b5a50]">
                                 Allergen Flags
                               </p>
                               <p className="mt-2 text-2xl font-bold">
@@ -677,7 +676,7 @@ export default async function AdminWeeklyMenuPage() {
                           </div>
 
                           {inactiveSelectionCount > 0 && (
-                            <p className="mt-3 text-xs text-neutral-600">
+                            <p className="mt-3 text-xs text-[#6b5a50]">
                               {inactiveSelectionCount} selection
                               {inactiveSelectionCount === 1 ? "" : "s"} from
                               denied, cancelled, or refunded orders excluded
@@ -694,28 +693,28 @@ export default async function AdminWeeklyMenuPage() {
 
                           <div className="mt-5 grid gap-4 xl:grid-cols-4">
                             <div>
-                              <h4 className="mb-2 text-sm font-semibold">
+                              <h4 className="mb-2 text-sm font-black">
                                 By Offering
                               </h4>
                               <FulfillmentCountList rows={offeringRows} />
                             </div>
 
                             <div>
-                              <h4 className="mb-2 text-sm font-semibold">
+                              <h4 className="mb-2 text-sm font-black">
                                 By Package
                               </h4>
                               <FulfillmentCountList rows={packageRows} />
                             </div>
 
                             <div>
-                              <h4 className="mb-2 text-sm font-semibold">
+                              <h4 className="mb-2 text-sm font-black">
                                 By Spice Level
                               </h4>
                               <FulfillmentCountList rows={spiceRows} />
                             </div>
 
                             <div>
-                              <h4 className="mb-2 text-sm font-semibold">
+                              <h4 className="mb-2 text-sm font-black">
                                 By Protein
                               </h4>
                               <FulfillmentCountList rows={proteinRows} />
@@ -723,7 +722,7 @@ export default async function AdminWeeklyMenuPage() {
                           </div>
 
                           <div className="mt-5">
-                            <h4 className="mb-2 text-sm font-semibold">
+                            <h4 className="mb-2 text-sm font-black">
                               Active Weekly Orders
                             </h4>
 
@@ -737,21 +736,21 @@ export default async function AdminWeeklyMenuPage() {
                                       <Link
                                         key={selection.id}
                                         href={`/admin/orders/${order.id}`}
-                                        className="block rounded-lg bg-white/80 p-3 text-sm transition hover:bg-white"
+                                        className="block rounded-lg bg-white/80 p-3 text-sm transition hover:bg-white hover:shadow-sm"
                                       >
                                         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
                                           <div>
-                                            <p className="font-medium">
+                                            <p className="font-black">
                                               {order.customerName}
                                             </p>
 
-                                            <p className="mt-1 text-neutral-600">
+                                            <p className="mt-1 text-[#6b5a50]">
                                               {selection.orderItem.quantity} x{" "}
                                               {selection.packageName} -{" "}
                                               {selection.offeringName}
                                             </p>
 
-                                            <p className="mt-1 text-xs text-neutral-500">
+                                            <p className="mt-1 text-xs text-[#6b5a50]">
                                               Spice:{" "}
                                               {selection.spiceLevel ??
                                                 "Not selected"}{" "}
@@ -760,7 +759,7 @@ export default async function AdminWeeklyMenuPage() {
                                                 "No substitution"}
                                             </p>
 
-                                            <p className="mt-1 text-xs text-neutral-500">
+                                            <p className="mt-1 text-xs text-[#6b5a50]">
                                               Requested:{" "}
                                               {formatDisplayDateTime(
                                                 order.requestedDateTime,
@@ -801,7 +800,7 @@ export default async function AdminWeeklyMenuPage() {
                                 )}
                               </div>
                             ) : (
-                              <p className="rounded-lg bg-white/70 p-3 text-sm text-neutral-500">
+                              <p className="rounded-lg bg-white/70 p-3 text-sm text-[#6b5a50]">
                                 No active weekly orders for this period yet.
                               </p>
                             )}
@@ -809,11 +808,11 @@ export default async function AdminWeeklyMenuPage() {
                         </section>
 
                         <div>
-                          <h3 className="text-lg font-semibold">
+                          <h3 className="text-lg font-black">
                             Weekly Packages
                           </h3>
 
-                          <p className="mt-1 text-sm text-neutral-500">
+                          <p className="mt-1 text-sm text-[#6b5a50]">
                             Packages are fixed price and limited to 5- or 7-day
                             options with 1 or 2 meals per day.
                           </p>
@@ -829,13 +828,13 @@ export default async function AdminWeeklyMenuPage() {
                               return (
                                 <details
                                   key={pkg.id}
-                                  className="group rounded-xl border bg-neutral-50"
+                                  className="group rounded-lg border border-[#ead8c1] bg-[#fff8ee]"
                                 >
-                                  <summary className="cursor-pointer list-none p-4 transition hover:bg-neutral-100">
+                                  <summary className="cursor-pointer list-none p-4 transition hover:bg-white">
                                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                                       <div>
                                         <div className="flex flex-wrap items-center gap-2">
-                                          <p className="font-semibold">
+                                          <p className="font-black">
                                             {pkg.name}
                                           </p>
 
@@ -852,20 +851,19 @@ export default async function AdminWeeklyMenuPage() {
                                           </span>
                                         </div>
 
-                                        <p className="mt-1 text-sm text-neutral-600">
+                                        <p className="mt-1 text-sm text-[#6b5a50]">
                                           {pkg.days} days, {pkg.mealsPerDay}{" "}
                                           meal
-                                          {pkg.mealsPerDay === 1 ? "" : "s"}{" "}
-                                          per day - $
-                                          {Number(pkg.price).toFixed(2)}
+                                          {pkg.mealsPerDay === 1 ? "" : "s"} per
+                                          day - ${Number(pkg.price).toFixed(2)}
                                         </p>
                                       </div>
 
-                                      <div className="text-xs font-medium text-neutral-500 group-open:hidden">
+                                      <div className="text-xs font-bold text-[#6b5a50] group-open:hidden">
                                         Edit &gt;
                                       </div>
 
-                                      <div className="hidden text-xs font-medium text-neutral-500 group-open:block">
+                                      <div className="hidden text-xs font-bold text-[#6b5a50] group-open:block">
                                         Close ^
                                       </div>
                                     </div>
@@ -882,18 +880,19 @@ export default async function AdminWeeklyMenuPage() {
                             })}
                           </div>
                         ) : (
-                          <div className="rounded-xl border bg-neutral-50 p-5 text-sm text-neutral-600">
-                            No packages have been added for this weekly menu yet.
+                          <div className="admin-card-muted p-5 text-sm text-[#6b5a50]">
+                            No packages have been added for this weekly menu
+                            yet.
                           </div>
                         )}
 
                         <section className="border-t pt-5">
                           <div>
-                            <h3 className="text-lg font-semibold">
+                            <h3 className="text-lg font-black">
                               Weekly Offerings
                             </h3>
 
-                            <p className="mt-1 text-sm text-neutral-500">
+                            <p className="mt-1 text-sm text-[#6b5a50]">
                               Offerings are the fixed meals customers will see
                               for this weekly menu. Add allergen tags and the
                               allowed spice or protein choices to each offering.
@@ -921,13 +920,13 @@ export default async function AdminWeeklyMenuPage() {
                                 return (
                                   <details
                                     key={offering.id}
-                                    className="group rounded-xl border bg-neutral-50"
+                                    className="group rounded-lg border border-[#ead8c1] bg-[#fff8ee]"
                                   >
-                                    <summary className="cursor-pointer list-none p-4 transition hover:bg-neutral-100">
+                                    <summary className="cursor-pointer list-none p-4 transition hover:bg-white">
                                       <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                                         <div>
                                           <div className="flex flex-wrap items-center gap-2">
-                                            <p className="font-semibold">
+                                            <p className="font-black">
                                               {offering.name}
                                             </p>
 
@@ -944,11 +943,11 @@ export default async function AdminWeeklyMenuPage() {
                                             </span>
                                           </div>
 
-                                          <p className="mt-1 line-clamp-2 text-sm text-neutral-600">
+                                          <p className="mt-1 line-clamp-2 text-sm text-[#6b5a50]">
                                             {offering.description}
                                           </p>
 
-                                          <div className="mt-2 flex flex-wrap gap-3 text-xs text-neutral-500">
+                                          <div className="mt-2 flex flex-wrap gap-3 text-xs text-[#6b5a50]">
                                             <span>
                                               Allergens:{" "}
                                               {selectedAllergenNames.length > 0
@@ -964,11 +963,11 @@ export default async function AdminWeeklyMenuPage() {
                                           </div>
                                         </div>
 
-                                        <div className="text-xs font-medium text-neutral-500 group-open:hidden">
+                                        <div className="text-xs font-bold text-[#6b5a50] group-open:hidden">
                                           Manage &gt;
                                         </div>
 
-                                        <div className="hidden text-xs font-medium text-neutral-500 group-open:block">
+                                        <div className="hidden text-xs font-bold text-[#6b5a50] group-open:block">
                                           Close ^
                                         </div>
                                       </div>
@@ -983,8 +982,8 @@ export default async function AdminWeeklyMenuPage() {
 
                                         <div className="space-y-3">
                                           {offering.imageUrl && (
-                                            <div className="rounded-xl border bg-white p-4 text-sm text-neutral-600">
-                                              <p className="font-medium text-neutral-900">
+                                            <div className="rounded-lg border border-[#ead8c1] bg-white p-4 text-sm text-[#6b5a50]">
+                                              <p className="font-black text-[#24130f]">
                                                 Image URL
                                               </p>
                                               <p className="mt-2 break-all">
@@ -1008,13 +1007,13 @@ export default async function AdminWeeklyMenuPage() {
                                         }
                                       />
 
-                                      <section className="space-y-4 rounded-xl border bg-white p-4">
+                                      <section className="space-y-4 rounded-lg border border-[#ead8c1] bg-white p-4">
                                         <div>
-                                          <h4 className="font-semibold">
+                                          <h4 className="font-black">
                                             Spice and Protein Options
                                           </h4>
 
-                                          <p className="mt-1 text-sm text-neutral-500">
+                                          <p className="mt-1 text-sm text-[#6b5a50]">
                                             Customers can choose spice level and
                                             approved protein substitutions only.
                                           </p>
@@ -1033,36 +1032,36 @@ export default async function AdminWeeklyMenuPage() {
                                               return (
                                                 <details
                                                   key={option.id}
-                                                  className="group rounded-xl border bg-neutral-50"
+                                                  className="group rounded-lg border border-[#ead8c1] bg-[#fff8ee]"
                                                 >
-                                                  <summary className="cursor-pointer list-none p-4 transition hover:bg-neutral-100">
+                                                  <summary className="cursor-pointer list-none p-4 transition hover:bg-white">
                                                     <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
                                                       <div>
                                                         <div className="flex flex-wrap items-center gap-2">
-                                                          <p className="font-semibold">
+                                                          <p className="font-black">
                                                             {option.name}
                                                           </p>
 
-                                                          <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-neutral-700">
+                                                          <span className="admin-badge admin-badge-neutral">
                                                             {formatWeeklyMealPlanOptionType(
                                                               option.optionType,
                                                             )}
                                                           </span>
 
                                                           {option.requiresApproval && (
-                                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                                                            <span className="admin-badge admin-badge-info">
                                                               Approval Required
                                                             </span>
                                                           )}
 
                                                           {!option.available && (
-                                                            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
+                                                            <span className="admin-badge admin-badge-danger">
                                                               Unavailable
                                                             </span>
                                                           )}
                                                         </div>
 
-                                                        <p className="mt-1 text-sm text-neutral-600">
+                                                        <p className="mt-1 text-sm text-[#6b5a50]">
                                                           +$
                                                           {Number(
                                                             option.priceDelta,
@@ -1070,11 +1069,11 @@ export default async function AdminWeeklyMenuPage() {
                                                         </p>
                                                       </div>
 
-                                                      <div className="text-xs font-medium text-neutral-500 group-open:hidden">
+                                                      <div className="text-xs font-bold text-[#6b5a50] group-open:hidden">
                                                         Edit &gt;
                                                       </div>
 
-                                                      <div className="hidden text-xs font-medium text-neutral-500 group-open:block">
+                                                      <div className="hidden text-xs font-bold text-[#6b5a50] group-open:block">
                                                         Close ^
                                                       </div>
                                                     </div>
@@ -1096,7 +1095,7 @@ export default async function AdminWeeklyMenuPage() {
                                             })}
                                           </div>
                                         ) : (
-                                          <div className="rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-600">
+                                          <div className="admin-card-muted p-4 text-sm text-[#6b5a50]">
                                             No spice or protein options have
                                             been added for this offering yet.
                                           </div>
@@ -1108,7 +1107,7 @@ export default async function AdminWeeklyMenuPage() {
                               })}
                             </div>
                           ) : (
-                            <div className="mt-5 rounded-xl border bg-neutral-50 p-5 text-sm text-neutral-600">
+                            <div className="admin-card-muted mt-5 p-5 text-sm text-[#6b5a50]">
                               No offerings have been added for this weekly menu
                               yet.
                             </div>
@@ -1127,10 +1126,10 @@ export default async function AdminWeeklyMenuPage() {
             })}
 
             {periods.length === 0 && (
-              <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-                <p className="font-medium">No weekly menus yet.</p>
+              <div className="admin-card p-8 text-center">
+                <p className="font-bold">No weekly menus yet.</p>
 
-                <p className="mt-2 text-sm text-neutral-500">
+                <p className="mt-2 text-sm text-[#6b5a50]">
                   Create the first weekly menu period, then add 1- and 2-meal
                   packages to it.
                 </p>

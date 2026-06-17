@@ -28,19 +28,19 @@ export default async function MenuCategoriesPage() {
   })) as MenuCategoryRow[];
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
+    <main className="admin-page">
+      <div className="admin-container max-w-5xl">
         <div className="mb-8">
-          <Link className="text-sm font-medium underline" href="/admin/menu">
-            &larr;  Back to Menu Manager
+          <Link className="admin-back-link" href="/admin/menu">
+            &larr; Back to Menu Manager
           </Link>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin Menu
-          </p>
+          <p className="admin-eyebrow mt-5">Admin Menu</p>
 
-          <h1 className="mt-3 text-4xl font-bold">Menu Categories</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+            Menu Categories
+          </h1>
 
-          <p className="mt-3 text-neutral-700">
+          <p className="mt-3 max-w-2xl text-[#6b5a50]">
             Rename categories and control the order they appear on the public
             menu.
           </p>
@@ -48,14 +48,11 @@ export default async function MenuCategoriesPage() {
 
         <div className="space-y-4">
           {categories.map((category) => (
-            <div
-              key={category.id}
-              className="rounded-2xl border bg-white p-6 shadow-sm"
-            >
+            <div key={category.id} className="admin-card p-6">
               <div className="mb-4">
-                <h2 className="text-xl font-semibold">{category.name}</h2>
+                <h2 className="text-xl font-black">{category.name}</h2>
 
-                <p className="mt-1 text-sm text-neutral-600">
+                <p className="mt-1 text-sm text-[#6b5a50]">
                   {category.items.length} item
                   {category.items.length === 1 ? "" : "s"} - Sort order{" "}
                   {category.sortOrder}
@@ -73,8 +70,8 @@ export default async function MenuCategoriesPage() {
           ))}
 
           {categories.length === 0 && (
-            <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-              <p className="font-medium">No categories yet.</p>
+            <div className="admin-card p-8 text-center">
+              <p className="font-bold">No categories yet.</p>
             </div>
           )}
         </div>

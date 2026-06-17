@@ -40,39 +40,36 @@ export function BusinessSettingsForm({ settings }: Props) {
   }
 
   return (
-    <form
-      action={handleSubmit}
-      className="rounded-2xl border bg-white p-6 shadow-sm"
-    >
-      <h2 className="text-2xl font-semibold">Ordering Rules</h2>
+    <form action={handleSubmit} className="admin-card p-6">
+      <h2 className="text-2xl font-black">Ordering Rules</h2>
 
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">Delivery Fee</label>
+          <label className="block text-sm font-bold">Delivery Fee</label>
           <input
             name="deliveryFee"
             type="number"
             min="0"
             step="0.01"
             defaultValue={settings.deliveryFee}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Late Fee</label>
+          <label className="block text-sm font-bold">Late Fee</label>
           <input
             name="lateFee"
             type="number"
             min="0"
             step="0.01"
             defaultValue={settings.lateFee}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">
+          <label className="block text-sm font-bold">
             Service Request Deposit Percent
           </label>
           <input
@@ -81,16 +78,16 @@ export function BusinessSettingsForm({ settings }: Props) {
             min="0"
             max="100"
             defaultValue={settings.cateringDepositPercent}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Cutoff Day</label>
+          <label className="block text-sm font-bold">Cutoff Day</label>
           <select
             name="orderCutoffDay"
             defaultValue={settings.orderCutoffDay}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           >
             <option value="0">Sunday</option>
             <option value="1">Monday</option>
@@ -103,39 +100,39 @@ export function BusinessSettingsForm({ settings }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Cutoff Hour</label>
+          <label className="block text-sm font-bold">Cutoff Hour</label>
           <input
             name="orderCutoffHour"
             type="number"
             min="0"
             max="23"
             defaultValue={settings.orderCutoffHour}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Cutoff Minute</label>
+          <label className="block text-sm font-bold">Cutoff Minute</label>
           <input
             name="orderCutoffMinute"
             type="number"
             min="0"
             max="59"
             defaultValue={settings.orderCutoffMinute}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium">Delivery Area</label>
+          <label className="block text-sm font-bold">Delivery Area</label>
           <input
             name="deliveryArea"
             defaultValue={settings.deliveryArea ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
           />
         </div>
 
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex items-center gap-2 text-sm font-bold">
           <input
             name="noWeekendOrdering"
             type="checkbox"
@@ -145,10 +142,7 @@ export function BusinessSettingsForm({ settings }: Props) {
         </label>
       </div>
 
-      <button
-        disabled={saving}
-        className="mt-8 rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
-      >
+      <button disabled={saving} className="admin-button-primary mt-8">
         {saving ? "Saving..." : "Save Settings"}
       </button>
     </form>

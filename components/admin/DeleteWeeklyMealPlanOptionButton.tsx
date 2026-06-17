@@ -58,7 +58,7 @@ export function DeleteWeeklyMealPlanOptionButton({
       type="button"
       onClick={deleteOption}
       disabled={deleting}
-      className="rounded-xl border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 disabled:bg-neutral-100"
+      className="admin-button-danger text-xs"
     >
       {deleting ? "Deleting..." : "Delete Option"}
     </button>

@@ -55,16 +55,12 @@ export function GalleryImageForm() {
   }
 
   return (
-    <form
-      ref={formRef}
-      action={handleSubmit}
-      className="h-fit rounded-2xl border bg-white p-6 shadow-sm"
-    >
-      <h2 className="text-2xl font-semibold">Add Gallery Image</h2>
+    <form ref={formRef} action={handleSubmit} className="admin-card h-fit p-6">
+      <h2 className="text-2xl font-black">Add Gallery Image</h2>
 
       <div className="mt-5 space-y-4">
         <div className="space-y-3">
-          <label className="block text-sm font-medium">Image</label>
+          <label className="block text-sm font-bold">Image</label>
 
           <input
             id="galleryImageUpload"
@@ -77,13 +73,13 @@ export function GalleryImageForm() {
 
           <label
             htmlFor="galleryImageUpload"
-            className="inline-flex cursor-pointer rounded-xl bg-black px-4 py-3 text-sm font-medium text-white hover:bg-neutral-800"
+            className="admin-button-primary cursor-pointer"
           >
             Select Image
           </label>
 
           {fileName && (
-            <p className="text-sm text-neutral-600">Selected: {fileName}</p>
+            <p className="text-sm text-[#6b5a50]">Selected: {fileName}</p>
           )}
 
           {preview && (
@@ -103,14 +99,14 @@ export function GalleryImageForm() {
             name="imageUrl"
             type="text"
             placeholder="Public image URL"
-            className="w-full rounded-xl border px-4 py-3"
+            className="admin-input"
           />
         </div>
 
         <input
           name="title"
           placeholder="Display title"
-          className="w-full rounded-xl border px-4 py-3"
+          className="admin-input"
           required
         />
 
@@ -118,16 +114,16 @@ export function GalleryImageForm() {
           name="alt"
           placeholder="Alt text"
           rows={3}
-          className="w-full rounded-xl border px-4 py-3"
+          className="admin-input"
           required
         />
 
         <div>
-          <label className="block text-sm font-medium">Category</label>
+          <label className="block text-sm font-bold">Category</label>
 
           <select
             name="category"
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
             defaultValue="Meal Prep"
             required
           >
@@ -140,7 +136,7 @@ export function GalleryImageForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Sort Order</label>
+          <label className="block text-sm font-bold">Sort Order</label>
 
           <input
             name="sortOrder"
@@ -148,20 +144,17 @@ export function GalleryImageForm() {
             min="0"
             step="1"
             defaultValue="0"
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="admin-input mt-2"
             required
           />
         </div>
 
-        <p className="text-xs text-neutral-500">
-          Upload JPG, PNG, or WebP images up to 5 MB, or use a public image
-          URL. WebP is preferred for the public gallery.
+        <p className="text-xs text-[#6b5a50]">
+          Upload JPG, PNG, or WebP images up to 5 MB, or use a public image URL.
+          WebP is preferred for the public gallery.
         </p>
 
-        <button
-          disabled={saving}
-          className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
-        >
+        <button disabled={saving} className="admin-button-primary w-full">
           {saving ? "Saving..." : "Add Image"}
         </button>
       </div>

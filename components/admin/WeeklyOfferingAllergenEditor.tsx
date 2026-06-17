@@ -75,12 +75,15 @@ export function WeeklyOfferingAllergenEditor({
   }
 
   return (
-    <section className="rounded-xl border bg-white p-4">
-      <h4 className="font-semibold">Allergens</h4>
+    <section className="admin-row-card">
+      <h4 className="font-black">Allergens</h4>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {allergens.map((allergen) => (
-          <label key={allergen.id} className="flex items-center gap-2 text-sm">
+          <label
+            key={allergen.id}
+            className="flex items-center gap-2 text-sm font-medium text-[#3f2a1d]"
+          >
             <input
               type="checkbox"
               value={allergen.id}
@@ -98,7 +101,7 @@ export function WeeklyOfferingAllergenEditor({
         type="button"
         onClick={saveAllergens}
         disabled={saving}
-        className="mt-5 rounded-xl bg-black px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-400"
+        className="admin-button-primary mt-5"
       >
         {saving ? "Saving..." : "Save Allergens"}
       </button>
