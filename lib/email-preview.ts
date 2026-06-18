@@ -24,9 +24,17 @@ function escapeHeader(value: string) {
 }
 
 function htmlToText(html: string) {
-  return html
-    .replace(/<style[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[\s\S]*?<\/script>/gi, "")
+  let sanitized = html;
+  let previous: string;
+
+  do {
+    previous = sanitized;
+    sanitized = sanitized
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[\s\S]*?<\/script>/gi, "");
+  } while (sanitized !== previous);
+
+  return sanitized
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
