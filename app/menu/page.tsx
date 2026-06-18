@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
 import { WeeklyMenuSection } from "@/components/menu/WeeklyMenuSection";
+import Image from "next/image";
+import Link from "next/link";
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import {
   formatWeeklyMenuDisplayDate,
@@ -265,26 +267,53 @@ export default async function MenuPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
+    <main className="brand-page">
+      <section className="relative isolate overflow-hidden bg-[#24130f]">
+        <Image
+          src="/menu-splash.avif"
+          alt="Chef-prepared weekly meal plan"
+          fill
+          sizes="100vw"
+          className="object-cover opacity-55"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#24130f] via-[#24130f]/40 to-[#24130f]/30" />
+
+        <div className="brand-container relative z-10 py-16 text-white md:py-20">
+          <p className="text-sm font-bold uppercase text-[#f4c46f]">
             Meal Plans & A La Carte
           </p>
 
-          <h1 className="mt-3 text-5xl font-bold">
-            Weekly meal plans and chef-prepared a la carte options.
+          <h1 className="mt-3 max-w-4xl text-5xl font-script font-black leading-tight md:text-6xl">
+            Weekly meals and chef-prepared favorites.
           </h1>
 
-          <p className="mt-4 max-w-2xl text-neutral-700">
-            Choose fixed meal plan offerings, select spice level and allowed
-            protein substitutions, or explore a la carte options. Pork and beef
-            are available by request only for meal plans, and pricing may vary.
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#fff1df]">
+            Choose fixed weekly meal plan offerings, select spice level and
+            allowed protein substitutions, or add a la carte favorites to your
+            order.
           </p>
-        </div>
 
-        <div className="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
-          <h2 className="text-xl font-semibold">Meal Plan Notes</h2>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link
+              href="#weekly-meal-plans"
+              className="brand-button-primary px-6 py-3 text-sm"
+            >
+              View Meal Plans
+            </Link>
+            <Link
+              href="#a-la-carte"
+              className="brand-button-secondary px-6 py-3 text-sm"
+            >
+              Browse A La Carte
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <div className="brand-container py-12">
+        <div className="brand-card-soft p-5 text-[#6f1f12]">
+          <h2 className="text-xl font-black">Meal Plan Notes</h2>
 
           <p className="mt-2 text-sm leading-6">
             Meal plans are fixed offerings prepared by the business.
@@ -298,14 +327,24 @@ export default async function MenuPage() {
           <MenuCategoryFilter categories={filterCategories} />
         )}
 
-        <div className="space-y-10">
+        <div className="space-y-12">
           {publicWeeklyMenu && (
             <WeeklyMenuSection weeklyMenu={publicWeeklyMenu} />
           )}
 
           {visibleCategories.map((category) => (
             <section key={category.id} id={toCategoryId(category.name)}>
-              <h2 className="mb-4 text-2xl font-semibold">{category.name}</h2>
+              <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+                <div>
+                  <p className="brand-eyebrow">Chef-Prepared</p>
+                  <h2 className="mt-2 text-3xl font-black">{category.name}</h2>
+                </div>
+
+                <p className="text-sm font-medium text-[#6b5a50]">
+                  {category.items.length} offering
+                  {category.items.length === 1 ? "" : "s"}
+                </p>
+              </div>
 
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {category.items.map((item) => {
@@ -358,9 +397,9 @@ export default async function MenuPage() {
           ))}
 
           {visibleCategories.length === 0 && !publicWeeklyMenu && (
-            <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-              <h2 className="text-2xl font-semibold">Menu coming soon</h2>
-              <p className="mt-2 text-neutral-600">
+            <div className="brand-card p-8 text-center">
+              <h2 className="text-2xl font-black">Menu coming soon</h2>
+              <p className="mt-2 text-[#6b5a50]">
                 No meal plan or menu items are available yet.
               </p>
             </div>

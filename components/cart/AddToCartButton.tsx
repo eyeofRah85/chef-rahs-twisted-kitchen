@@ -27,7 +27,7 @@ export function AddToCartButton({ item }: AddToCartButtonProps) {
 
           addItem(item);
         }}
-        className="w-full rounded-xl bg-black px-4 py-2 font-medium text-white disabled:cursor-not-allowed disabled:bg-gray-300"
+        className="brand-button-primary w-full px-4 py-3 text-sm disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-600 disabled:shadow-none"
       >
         {!item.available
           ? "Unavailable"

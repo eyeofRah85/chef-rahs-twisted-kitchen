@@ -39,7 +39,7 @@ export function ArchiveMenuItemButton({ menuItemId }: Props) {
       type="button"
       onClick={archiveItem}
       disabled={saving}
-      className="rounded-xl border border-red-300 bg-red-50 px-4 py-2 text-xs font-medium text-red-700 disabled:bg-neutral-100"
+      className="admin-button-danger text-xs"
     >
       {saving ? "Archiving..." : "Archive Item"}
     </button>

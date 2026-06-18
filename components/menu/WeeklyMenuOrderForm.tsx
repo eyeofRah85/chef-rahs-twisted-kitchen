@@ -19,17 +19,14 @@ function optionsForType(
   optionType: string,
 ) {
   return (
-    offering?.options.filter((option) => option.optionType === optionType) ??
-    []
+    offering?.options.filter((option) => option.optionType === optionType) ?? []
   );
 }
 
 export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   const addWeeklyMealPlan = useCartStore((state) => state.addWeeklyMealPlan);
   const { selectedAllergenIdSet } = useCustomerAllergens();
-  const [packageId, setPackageId] = useState(
-    weeklyMenu.packages[0]?.id ?? "",
-  );
+  const [packageId, setPackageId] = useState(weeklyMenu.packages[0]?.id ?? "");
   const [offeringId, setOfferingId] = useState(
     weeklyMenu.offerings[0]?.id ?? "",
   );
@@ -109,9 +106,9 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       ),
       requiresApproval: Boolean(
         selectedSpiceOption?.requiresApproval ||
-          selectedProteinOption?.requiresApproval ||
-          selectedSpiceOption?.requestOnly ||
-          selectedProteinOption?.requestOnly,
+        selectedProteinOption?.requiresApproval ||
+        selectedSpiceOption?.requestOnly ||
+        selectedProteinOption?.requestOnly,
       ),
       priceDelta: optionDelta,
     };
@@ -121,22 +118,27 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   }
 
   return (
-    <div className="mb-8 rounded-2xl border bg-white p-5 shadow-sm">
+    <div className="mb-8 rounded-lg border border-[#f4c46f]/35 bg-[#fff8ee] p-5 text-[#24130f] shadow-xl sm:p-6">
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
         <div>
-          <h3 className="text-xl font-semibold">Build Your Weekly Plan</h3>
+          <h3 className="text-2xl font-black">Build Your Weekly Plan</h3>
 
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
+          <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
             Choose a package, one fixed meal offering, spice level, and any
             allowed protein substitution.
           </p>
         </div>
 
-        <p className="text-2xl font-bold">${displayTotal.toFixed(2)}</p>
+        <div className="rounded-lg bg-[#24130f] px-4 py-3 text-white">
+          <p className="text-xs font-bold uppercase text-[#f4c46f]">
+            Plan total
+          </p>
+          <p className="text-2xl font-black">${displayTotal.toFixed(2)}</p>
+        </div>
       </div>
 
       {unavailable && (
-        <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="mt-5 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
           {orderSlotsRemaining < 1
             ? "This weekly menu has reached its weekly order limit."
             : weeklyMenu.orderingClosed
@@ -145,8 +147,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         </div>
       )}
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-medium">
+      <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
+        <label className="grid min-w-0 gap-2 text-sm font-bold">
           Package
           <select
             value={packageId}
@@ -154,7 +156,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
               setPackageId(event.target.value);
               setAdded(false);
             }}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
             disabled={unavailable}
           >
             {weeklyMenu.packages.map((pkg) => (
@@ -165,7 +167,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid min-w-0 gap-2 text-sm font-bold">
           Offering
           <select
             value={offeringId}
@@ -175,7 +177,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
               setProteinOptionId("");
               setAdded(false);
             }}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
             disabled={unavailable}
           >
             {weeklyMenu.offerings.map((offering) => (
@@ -187,7 +189,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         </label>
 
         {spiceOptions.length > 0 && (
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="grid min-w-0 gap-2 text-sm font-bold">
             {formatWeeklyMealPlanOptionType("SPICE_LEVEL")}
             <select
               value={selectedSpiceOption?.id ?? ""}
@@ -195,7 +197,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
                 setSpiceOptionId(event.target.value);
                 setAdded(false);
               }}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
               disabled={unavailable}
             >
               {spiceOptions.map((option) => (
@@ -210,7 +212,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           </label>
         )}
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="grid min-w-0 gap-2 text-sm font-bold">
           {formatWeeklyMealPlanOptionType("PROTEIN_SUBSTITUTION")}
           <select
             value={proteinOptionId}
@@ -218,7 +220,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
               setProteinOptionId(event.target.value);
               setAdded(false);
             }}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
             disabled={unavailable}
           >
             <option value="">No substitution</option>
@@ -245,7 +247,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         type="button"
         onClick={addSelection}
         disabled={unavailable || missingRequiredSpice}
-        className="mt-5 w-full rounded-xl bg-black px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:bg-neutral-400"
+        className="brand-button-primary mt-5 w-full px-5 py-3 disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:text-neutral-700 disabled:shadow-none"
       >
         {missingRequiredSpice
           ? "Choose Spice Level"
@@ -255,7 +257,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       </button>
 
       {added && (
-        <p className="mt-3 text-sm font-medium text-green-700">
+        <p className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3 text-sm font-bold text-green-800">
           Weekly meal plan added to your order.
         </p>
       )}

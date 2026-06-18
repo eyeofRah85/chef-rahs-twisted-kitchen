@@ -66,36 +66,34 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
   }
 
   return (
-    <div className="rounded-3xl border bg-white p-6 shadow-sm">
+    <div className="admin-card p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">
-            {formatOrderType(order.orderType)}
-          </p>
+          <p className="admin-eyebrow">{formatOrderType(order.orderType)}</p>
 
-          <h2 className="mt-2 text-2xl font-bold">{order.customerName}</h2>
+          <h2 className="mt-2 text-2xl font-black leading-tight">
+            {order.customerName}
+          </h2>
         </div>
 
-        <div className="rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium">
+        <div className="admin-badge admin-badge-warning">
           {formatOrderStatus(order.status)}
         </div>
       </div>
 
       <div className="mt-6 space-y-4">
         {order.items.map((item) => (
-          <div key={item.id} className="rounded-2xl border p-4">
+          <div key={item.id} className="rounded-lg border border-[#ead8c1] p-4">
             {item.weeklyMealPlanSelection ? (
-              <div className="mb-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-                <p className="font-semibold">Weekly Meal Plan Snapshot</p>
+              <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+                <p className="font-black">Weekly Meal Plan Snapshot</p>
 
                 <dl className="mt-2 space-y-1">
                   {getWeeklyMealPlanSelectionDetails(
                     item.weeklyMealPlanSelection,
                   ).map((detail) => (
                     <div key={detail.label}>
-                      <dt className="inline font-semibold">
-                        {detail.label}:{" "}
-                      </dt>
+                      <dt className="inline font-semibold">{detail.label}: </dt>
                       <dd className="inline">{detail.value}</dd>
                     </div>
                   ))}
@@ -103,20 +101,20 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
               </div>
             ) : null}
 
-            <div className="flex justify-between gap-4">
-              <div>
-                <h3 className="text-xl font-semibold">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-xl font-black leading-tight">
                   {item.quantity} x {item.name}
                 </h3>
 
                 {item.notes && (
-                  <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 whitespace-pre-wrap">
+                  <div className="mt-3 whitespace-pre-wrap rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
                     {item.notes}
                   </div>
                 )}
               </div>
 
-              <div className="text-right font-bold">
+              <div className="shrink-0 font-black sm:text-right">
                 ${Number(item.lineTotal).toFixed(2)}
               </div>
             </div>
@@ -125,8 +123,8 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
       </div>
 
       {order.allergyNotes && (
-        <div className="mt-6 rounded-2xl border-2 border-red-500 bg-red-50 p-4">
-          <p className="text-sm font-bold uppercase text-red-700">
+        <div className="mt-6 rounded-lg border-2 border-red-500 bg-red-50 p-4">
+          <p className="text-sm font-black uppercase text-red-700">
             Allergy Alert
           </p>
 
@@ -134,32 +132,34 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
         </div>
       )}
 
-      <div className="mt-6 flex items-center justify-between">
+      <div className="mt-6 flex flex-col gap-4 border-t border-[#ead8c1] pt-5">
         <div>
           <p className="text-sm text-neutral-500">Requested</p>
 
-          <p className="font-medium">
+          <p className="font-bold">
             {order.requestedDateTime
               ? new Date(order.requestedDateTime).toLocaleString()
               : "ASAP"}
           </p>
         </div>
 
-        <Link
-          href={`/admin/orders/${order.id}`}
-          className="rounded-2xl border px-5 py-3 font-medium"
-        >
-          View / Print Ticket
-        </Link>
-
-        {nextStatuses[order.status] && (
-          <button
-            onClick={advanceStatus}
-            className="rounded-2xl bg-black px-5 py-3 font-medium text-white"
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href={`/admin/orders/${order.id}`}
+            className="brand-button-secondary px-5 py-3 text-sm"
           >
-            Mark {formatOrderStatus(nextStatuses[order.status])}
-          </button>
-        )}
+            View / Print Ticket
+          </Link>
+
+          {nextStatuses[order.status] && (
+            <button
+              onClick={advanceStatus}
+              className="brand-button-primary px-5 py-3 text-sm"
+            >
+              Mark {formatOrderStatus(nextStatuses[order.status])}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

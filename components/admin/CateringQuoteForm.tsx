@@ -80,7 +80,7 @@ export function CateringQuoteForm({
 
   if (lockedReason) {
     return (
-      <div className="rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
+      <div className="rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4 text-sm text-[#6b5a50]">
         {lockedReason}
       </div>
     );
@@ -89,14 +89,14 @@ export function CateringQuoteForm({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium">Estimated Total</label>
+        <label className="block text-sm font-bold">Estimated Total</label>
         <input
           type="number"
           min="0"
           step="0.01"
           value={estimatedTotal}
           onChange={(e) => setEstimatedTotal(e.target.value)}
-          className="mt-2 w-full rounded-xl border px-4 py-3"
+          className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#8a2b18] focus:ring-2 focus:ring-[#d99426]/30"
         />
         <p className="mt-2 text-xs text-neutral-500">
           Use 0.00 only when there is intentionally no charge.
@@ -104,14 +104,14 @@ export function CateringQuoteForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Deposit Amount</label>
+        <label className="block text-sm font-bold">Deposit Amount</label>
         <input
           type="number"
           min="0"
           step="0.01"
           value={depositAmount}
           onChange={(e) => setDepositAmount(e.target.value)}
-          className="mt-2 w-full rounded-xl border px-4 py-3"
+          className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#8a2b18] focus:ring-2 focus:ring-[#d99426]/30"
         />
         <p className="mt-2 text-xs text-neutral-500">
           Leave blank to automatically calculate the deposit from business
@@ -123,7 +123,7 @@ export function CateringQuoteForm({
         type="button"
         onClick={saveQuote}
         disabled={saving}
-        className="w-full rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
+        className="brand-button-primary w-full px-5 py-3 text-sm disabled:bg-neutral-400"
       >
         {saving ? "Saving..." : "Save Quote"}
       </button>

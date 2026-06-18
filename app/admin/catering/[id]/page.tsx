@@ -71,54 +71,67 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
   });
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-5xl">
+    <main className="admin-page">
+      <div className="admin-container max-w-6xl">
         <div className="mb-8">
-          <Link className="text-sm font-medium underline" href="/admin/catering">
+          <Link className="admin-back-link" href="/admin/catering">
             &larr; Back to Service Requests
           </Link>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin
-          </p>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {requestTypeLabel} Request
-          </p>
+          <p className="admin-eyebrow mt-5">Admin</p>
+          <p className="admin-eyebrow mt-1">{requestTypeLabel} Request</p>
 
-          <h1 className="mt-3 text-4xl font-bold">{request.name}</h1>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+            {request.name}
+          </h1>
 
-          <p className="mt-3 text-sm text-neutral-600">{request.id}</p>
+          <p className="mt-3 break-all text-sm text-[#6b5a50]">{request.id}</p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Customer</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Customer</h2>
 
               <div className="mt-4 space-y-2 text-sm">
-                <p><strong>Name:</strong> {request.name}</p>
-                <p><strong>Email:</strong> {request.email}</p>
-                <p><strong>Phone:</strong> {request.phone ?? "Not provided"}</p>
+                <p>
+                  <strong>Name:</strong> {request.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {request.email}
+                </p>
+                <p>
+                  <strong>Phone:</strong> {request.phone ?? "Not provided"}
+                </p>
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Event Details</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Event Details</h2>
 
               <div className="mt-4 space-y-2 text-sm">
-                <p><strong>Event Type:</strong> {request.eventType ?? "Not provided"}</p>
+                <p>
+                  <strong>Event Type:</strong>{" "}
+                  {request.eventType ?? "Not provided"}
+                </p>
                 <p>
                   <strong>Event Date:</strong>{" "}
                   {request.eventDate
                     ? request.eventDate.toLocaleString()
                     : "Not provided"}
                 </p>
-                <p><strong>Guest Count:</strong> {request.guestCount ?? "Not provided"}</p>
-                <p><strong>Location:</strong> {request.location ?? "Not provided"}</p>
+                <p>
+                  <strong>Guest Count:</strong>{" "}
+                  {request.guestCount ?? "Not provided"}
+                </p>
+                <p>
+                  <strong>Location:</strong>{" "}
+                  {request.location ?? "Not provided"}
+                </p>
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Request Notes</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Request Notes</h2>
 
               <div className="mt-4 space-y-5 text-sm">
                 <div>
@@ -131,7 +144,7 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
                 <div>
                   <p className="font-medium">Allergy Notes</p>
                   {request.allergyNotes ? (
-                    <div className="mt-2 rounded-xl border-2 border-red-500 bg-red-50 p-4 text-red-900">
+                    <div className="mt-2 rounded-lg border-2 border-red-500 bg-red-50 p-4 text-red-900">
                       <p className="text-xs font-bold uppercase text-red-700">
                         Allergy Alert
                       </p>
@@ -155,8 +168,8 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
           </section>
 
           <aside className="space-y-6">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Approval</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Approval</h2>
 
               <div className="mt-6">
                 <CateringApprovalForm
@@ -172,10 +185,10 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
               )}
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Status</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Status</h2>
 
-              <p className="mt-3 rounded-full bg-neutral-100 px-3 py-2 text-center text-sm font-medium">
+              <p className="admin-badge admin-badge-neutral mt-3 justify-center px-3 py-2">
                 {formatServiceRequestStatus(request.status)}
               </p>
 
@@ -190,8 +203,8 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Quote / Deposit</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Quote / Deposit</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 <p>
@@ -224,14 +237,14 @@ export default async function AdminCateringDetailsPage({ params }: PageProps) {
                     </div>
                   )}
                   {depositAmount === 0 && !depositPaid ? (
-                    <p className="mt-4 rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
+                    <p className="mt-4 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4 text-sm text-[#6b5a50]">
                       No deposit is due for this service request.
                     </p>
                   ) : null}
                   {depositAmount !== null &&
-                    depositAmount > 0 &&
-                    depositPaid ? (
-                    <p className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-900">
+                  depositAmount > 0 &&
+                  depositPaid ? (
+                    <p className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">
                       Deposit has already been marked paid.
                     </p>
                   ) : null}

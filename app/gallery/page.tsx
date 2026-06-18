@@ -12,33 +12,32 @@ export default async function GalleryPage() {
   );
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
+    <main className="brand-page px-6 py-12">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Gallery
-          </p>
+          <p className="brand-eyebrow">Gallery</p>
 
-          <h1 className="mt-3 text-5xl font-bold">
+          <h1 className="mt-3 max-w-4xl text-5xl font-script font-black leading-tight">
             Meal Prep, Catering, and Personal Chef Services
           </h1>
 
-          <p className="mt-4 max-w-2xl text-neutral-700">
-            Explore meal prep, meal plan options, catering setups, personal chef services,
-            and seasonal creations from Chef Rah&apos;s Twisted Kitchen.
+          <p className="mt-4 max-w-2xl leading-7 text-[#6b5a50]">
+            Explore meal prep, meal plan options, catering setups, personal chef
+            services, and seasonal creations from Chef Rah&apos;s Twisted
+            Kitchen.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/menu"
-              className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white"
+              className="brand-button-primary px-5 py-3 text-sm"
             >
               View Meal Plans
             </Link>
 
             <Link
               href="/catering"
-              className="rounded-xl border px-5 py-3 text-sm font-medium"
+              className="brand-button-secondary px-5 py-3 text-sm"
             >
               Request Catering
             </Link>
@@ -53,28 +52,28 @@ export default async function GalleryPage() {
 
             return (
               <section key={category}>
-                <h2 className="mb-5 text-3xl font-bold">{category}</h2>
+                <h2 className="mb-5 text-3xl font-black">{category}</h2>
 
                 <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {images.map((image) => (
                     <div
                       key={image.src}
-                      className="overflow-hidden rounded-2xl border bg-white shadow-sm"
+                      className="brand-card group overflow-hidden transition hover:-translate-y-1 hover:shadow-2xl"
                     >
                       <div className="relative aspect-[4/3]">
                         <Image
                           src={image.src}
                           alt={image.alt}
                           fill
-                          className="object-cover"
+                          className="object-cover transition duration-300 group-hover:scale-105"
                           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                           unoptimized={isRemoteImageUrl(image.src)}
                         />
                       </div>
 
                       <div className="p-4">
-                        <h3 className="font-semibold">{image.title}</h3>
-                        <p className="mt-1 text-sm text-neutral-500">
+                        <h3 className="font-black">{image.title}</h3>
+                        <p className="mt-1 text-sm font-medium text-[#9f2f18]">
                           {image.category}
                         </p>
                       </div>

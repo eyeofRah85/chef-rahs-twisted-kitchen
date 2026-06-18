@@ -29,25 +29,21 @@ export function AccountProfileModal({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl border bg-white px-5 py-3 text-sm font-medium shadow-sm transition hover:bg-neutral-100"
+        className="brand-button-secondary px-5 py-3 text-sm"
       >
         {label}
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
-          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#24130f]/70 px-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-lg bg-[#fff8ee] p-6 shadow-2xl">
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-                  Account
-                </p>
+                <p className="brand-eyebrow">Account</p>
 
-                <h2 className="mt-2 text-3xl font-bold">
-                  {label}
-                </h2>
+                <h2 className="mt-2 text-3xl font-black">{label}</h2>
 
-                <p className="mt-2 text-sm text-neutral-600">
+                <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
                   Keep your contact, delivery, and service-location information
                   current for orders and service requests.
                 </p>
@@ -56,7 +52,7 @@ export function AccountProfileModal({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full border px-3 py-1 text-sm"
+                className="rounded-full border border-[#d7bea1] bg-white px-3 py-1 text-sm font-bold transition hover:border-[#9f2f18]"
               >
                 Close
               </button>

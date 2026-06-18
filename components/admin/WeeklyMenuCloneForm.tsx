@@ -64,11 +64,11 @@ export function WeeklyMenuCloneForm({ source }: Props) {
   }
 
   return (
-    <form action={handleSubmit} className="rounded-2xl border bg-white p-5 shadow-sm">
+    <form action={handleSubmit} className="admin-card p-5">
       <div className="mb-5">
-        <h2 className="text-xl font-semibold">Clone Weekly Menu</h2>
+        <h2 className="text-xl font-black">Clone Weekly Menu</h2>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-[#6b5a50]">
           Copies {source.packageCount} package
           {source.packageCount === 1 ? "" : "s"} and {source.offeringCount}{" "}
           offering{source.offeringCount === 1 ? "" : "s"} into a new draft.
@@ -76,52 +76,52 @@ export function WeeklyMenuCloneForm({ source }: Props) {
       </div>
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Week Label
           <input
             name="label"
             defaultValue={source.suggestedLabel}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             required
           />
         </label>
 
         <div className="grid gap-4">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Start Date
             <input
               name="startDate"
               type="date"
               defaultValue={source.suggestedStartDate}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             End Date
             <input
               name="endDate"
               type="date"
               defaultValue={source.suggestedEndDate}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
           </label>
         </div>
 
         <div className="grid gap-4">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Ordering Cutoff
             <input
               name="orderCutoffAt"
               type="datetime-local"
               defaultValue={source.suggestedOrderCutoffAt ?? ""}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Order Capacity
             <input
               name="capacity"
@@ -129,30 +129,27 @@ export function WeeklyMenuCloneForm({ source }: Props) {
               min="1"
               step="1"
               defaultValue={source.capacity}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
-            <span className="text-xs font-normal leading-5 text-neutral-500">
+            <span className="text-xs font-normal leading-5 text-[#6b5a50]">
               Counts submitted customer orders for this weekly menu, not meal
               plan item quantity.
             </span>
           </label>
         </div>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Fulfillment Notes
           <textarea
             name="fulfillmentNotes"
             rows={3}
             defaultValue={source.fulfillmentNotes ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
           />
         </label>
 
-        <button
-          disabled={saving}
-          className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-        >
+        <button disabled={saving} className="admin-button-primary">
           {saving ? "Cloning..." : "Clone as Draft"}
         </button>
       </div>

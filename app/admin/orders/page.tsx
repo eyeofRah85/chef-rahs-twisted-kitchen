@@ -9,10 +9,7 @@ import {
   formatPaymentStatus,
 } from "@/lib/format-labels";
 import { parseEnumValue } from "@/lib/enum-values";
-import {
-  approvalStatuses,
-  orderStatuses,
-} from "@/lib/prisma-enums";
+import { approvalStatuses, orderStatuses } from "@/lib/prisma-enums";
 import type { DecimalLike } from "@/types/display";
 
 const orderFilterTypes = ["DELIVERY", "PICKUP"] as const;
@@ -45,6 +42,37 @@ type AdminOrderRow = {
   createdAt: Date;
 };
 
+function orderStatusBadgeClass(status: string) {
+  if (status === "COMPLETED") return "admin-badge admin-badge-success";
+  if (status === "CANCELLED" || status === "REFUNDED") {
+    return "admin-badge admin-badge-danger";
+  }
+  if (status === "READY") return "admin-badge admin-badge-info";
+  if (status === "PREPARING" || status === "ACCEPTED") {
+    return "admin-badge admin-badge-warning";
+  }
+
+  return "admin-badge admin-badge-neutral";
+}
+
+function approvalStatusBadgeClass(status: string) {
+  if (status === "APPROVED") return "admin-badge admin-badge-success";
+  if (status === "DENIED") return "admin-badge admin-badge-danger";
+  return "admin-badge admin-badge-warning";
+}
+
+function paymentStatusBadgeClass(status: string | null) {
+  if (status === "PAID") return "admin-badge admin-badge-success";
+  if (status === "PAY_BY_DATE" || status === "OFFLINE_PAYMENT_DUE") {
+    return "admin-badge admin-badge-warning";
+  }
+  if (status === "FAILED" || status === "REFUNDED") {
+    return "admin-badge admin-badge-danger";
+  }
+
+  return "admin-badge admin-badge-neutral";
+}
+
 export default async function AdminOrdersPage({ searchParams }: PageProps) {
   try {
     await requireAdmin();
@@ -60,10 +88,24 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   const approvalFilter = params.approval;
   const status = parseEnumValue(orderStatuses, statusFilter);
   const orderType = parseEnumValue(orderFilterTypes, typeFilter);
-  const approvalStatus = parseEnumValue(
-    approvalStatuses,
-    approvalFilter,
-  );
+  const approvalStatus = parseEnumValue(approvalStatuses, approvalFilter);
+  const noActiveFilters =
+    !statusFilter && !paymentFilter && !typeFilter && !approvalFilter;
+
+  function filterIsActive(href: string) {
+    const [, query = ""] = href.split("?");
+    const filterParams = new URLSearchParams(query);
+
+    if (!query) return noActiveFilters;
+
+    return Array.from(filterParams.entries()).every(([key, value]) => {
+      if (key === "status") return statusFilter === value;
+      if (key === "payment") return paymentFilter === value;
+      if (key === "type") return typeFilter === value;
+      if (key === "approval") return approvalFilter === value;
+      return false;
+    });
+  }
 
   const where = {
     ...(status ? { status } : {}),
@@ -75,44 +117,56 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
   };
 
   const orders = (await prisma.order.findMany({
-  where,
+    where,
 
-  orderBy: {
-    createdAt: "desc",
-  },
+    orderBy: {
+      createdAt: "desc",
+    },
 
-  include: {
-    items: {
-      select: {
-        id: true,
-        weeklyMealPlanSelection: {
-          select: {
-            id: true,
+    include: {
+      items: {
+        select: {
+          id: true,
+          weeklyMealPlanSelection: {
+            select: {
+              id: true,
+            },
           },
         },
       },
     },
-  },
-})) as AdminOrderRow[];
+  })) as AdminOrderRow[];
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-6xl">
+    <main className="admin-page">
+      <div className="admin-container">
         <div className="mb-8">
-          <Link className="text-sm font-medium underline" href="/admin">
-            &larr;  Back to Dashboard
+          <Link className="admin-back-link" href="/admin">
+            &larr; Back to Dashboard
           </Link>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin
-          </p>
-          <h1 className="mt-3 text-4xl font-bold">Orders</h1>
-          <p className="mt-3 text-neutral-700">
+          <p className="admin-eyebrow mt-5">Admin</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+            Orders
+          </h1>
+          <p className="mt-3 max-w-2xl text-[#6b5a50]">
             View and manage customer orders.
           </p>
         </div>
 
-        <div className="mb-6 rounded-2xl border bg-white p-5 shadow-sm">
-          <p className="mb-4 font-semibold">Filters</p>
+        <div className="admin-card mb-6 p-5">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-black">Filters</p>
+              <p className="mt-1 text-sm text-[#6b5a50]">
+                Narrow the order queue by workflow, payment, fulfillment, or
+                approval state.
+              </p>
+            </div>
+
+            <span className="text-sm font-bold text-[#6b5a50]">
+              {orders.length} result{orders.length === 1 ? "" : "s"}
+            </span>
+          </div>
 
           <div className="flex flex-wrap gap-3">
             {[
@@ -122,39 +176,50 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
               { label: "Preparing", href: "/admin/orders?status=PREPARING" },
               { label: "Ready", href: "/admin/orders?status=READY" },
               { label: "Completed", href: "/admin/orders?status=COMPLETED" },
-              { label: "Payments Due", href: "/admin/orders?payment=PAY_BY_DATE" },
-              { label: "Offline Due", href: "/admin/orders?payment=OFFLINE_PAYMENT_DUE" },
+              {
+                label: "Payments Due",
+                href: "/admin/orders?payment=PAY_BY_DATE",
+              },
+              {
+                label: "Offline Due",
+                href: "/admin/orders?payment=OFFLINE_PAYMENT_DUE",
+              },
               { label: "Delivery", href: "/admin/orders?type=DELIVERY" },
               { label: "Pickup", href: "/admin/orders?type=PICKUP" },
-              { label: "Approval Pending", href: "/admin/orders?approval=PENDING" },
+              {
+                label: "Approval Pending",
+                href: "/admin/orders?approval=PENDING",
+              },
               { label: "Approved", href: "/admin/orders?approval=APPROVED" },
               { label: "Denied", href: "/admin/orders?approval=DENIED" },
-              {label:  "Cancelled", href: "/admin/orders?status=CANCELLED"}
+              { label: "Cancelled", href: "/admin/orders?status=CANCELLED" },
             ].map((filter) => (
               <Link
                 key={filter.href}
                 href={filter.href}
-                className="rounded-full border px-4 py-2 text-sm font-medium transition hover:bg-neutral-100"
+                className={`admin-filter-chip ${
+                  filterIsActive(filter.href) ? "admin-filter-chip-active" : ""
+                }`}
               >
                 {filter.label}
               </Link>
             ))}
           </div>
         </div>
-        <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-neutral-100">
+        <div className="admin-table-shell">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <th className="p-4">Customer</th>
-                <th className="p-4">Type</th>
-                <th className="p-4">Status</th>
-                <th className="p-4">Approval</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Total</th>
-                <th className="p-4">Payment</th>
-                <th className="p-4">Pay By</th>
-                <th className="p-4">Created</th>
-                <th className="p-4"></th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Approval</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Pay By</th>
+                <th>Created</th>
+                <th></th>
               </tr>
             </thead>
 
@@ -165,29 +230,33 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                 ).length;
 
                 return (
-                  <tr key={order.id} className="border-t">
-                    <td className="p-4">
-                      <div className="font-medium">{order.customerName}</div>
-                      <div className="text-xs text-neutral-500">
+                  <tr key={order.id}>
+                    <td>
+                      <div className="font-black">{order.customerName}</div>
+                      <div className="mt-1 text-xs text-[#6b5a50]">
                         {order.customerEmail}
                       </div>
                     </td>
 
-                    <td className="p-4">{formatOrderType(order.orderType)}</td>
+                    <td>{formatOrderType(order.orderType)}</td>
 
-                    <td className="p-4">
-                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                    <td>
+                      <span className={orderStatusBadgeClass(order.status)}>
                         {formatOrderStatus(order.status)}
                       </span>
                     </td>
 
-                    <td className="p-4">
-                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                    <td>
+                      <span
+                        className={approvalStatusBadgeClass(
+                          order.approvalStatus,
+                        )}
+                      >
                         {formatApprovalStatus(order.approvalStatus)}
                       </span>
                     </td>
 
-                    <td className="p-4">
+                    <td>
                       <div>{order.items.length}</div>
                       {weeklyItemCount > 0 && (
                         <div className="mt-1 text-xs font-medium text-emerald-700">
@@ -196,28 +265,30 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                       )}
                     </td>
 
-                    <td className="p-4 font-medium">
+                    <td className="font-bold">
                       ${Number(order.total).toFixed(2)}
                     </td>
-                    <td className="p-4">
-                      <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                    <td>
+                      <span
+                        className={paymentStatusBadgeClass(order.paymentStatus)}
+                      >
                         {formatPaymentStatus(order.paymentStatus) ?? "N/A"}
                       </span>
                     </td>
 
-                    <td className="p-4 text-neutral-600">
+                    <td className="text-[#6b5a50]">
                       {order.payByDate
                         ? order.payByDate.toLocaleDateString()
                         : "-"}
                     </td>
-                    <td className="p-4 text-neutral-600">
+                    <td className="text-[#6b5a50]">
                       {order.createdAt.toLocaleDateString()}
                     </td>
 
-                    <td className="p-4">
+                    <td>
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="font-medium text-black underline"
+                        className="admin-action-link"
                       >
                         View
                       </Link>
@@ -228,7 +299,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
 
               {orders.length === 0 && (
                 <tr>
-                  <td className="p-6 text-center text-neutral-500" colSpan={10}>
+                  <td className="text-center text-[#6b5a50]" colSpan={10}>
                     No orders match the selected filters.
                   </td>
                 </tr>

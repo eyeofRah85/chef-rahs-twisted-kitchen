@@ -55,7 +55,7 @@ export function EditOptionChoiceForm({ choice }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-2 rounded-xl border px-3 py-1 text-xs font-medium"
+        className="admin-button-secondary mt-2 text-xs"
       >
         Edit Choice
       </button>
@@ -63,11 +63,11 @@ export function EditOptionChoiceForm({ choice }: Props) {
   }
 
   return (
-    <form action={handleSubmit} className="mt-3 space-y-3 rounded-xl border p-4">
+    <form action={handleSubmit} className="admin-card-muted mt-3 space-y-3 p-4">
       <input
         name="name"
         defaultValue={choice.name}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       />
 
@@ -76,21 +76,21 @@ export function EditOptionChoiceForm({ choice }: Props) {
         defaultValue={choice.description ?? ""}
         rows={3}
         placeholder="Description"
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
       <input
         name="dietaryInfo"
         defaultValue={choice.dietaryInfo ?? ""}
         placeholder="Dietary info, e.g. Lean protein, request only"
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
       <input
         name="imageUrl"
         defaultValue={choice.imageUrl ?? ""}
         placeholder="Image URL, e.g. /gallery/chicken.jpg"
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
       <input
@@ -99,10 +99,10 @@ export function EditOptionChoiceForm({ choice }: Props) {
         min="0"
         step="0.01"
         defaultValue={choice.priceDelta}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-center gap-2 text-sm font-bold text-[#3f2a1d]">
         <input
           name="requestOnly"
           type="checkbox"
@@ -111,18 +111,15 @@ export function EditOptionChoiceForm({ choice }: Props) {
         Request only / pricing may vary
       </label>
 
-      <div className="flex gap-3">
-        <button
-          disabled={saving}
-          className="rounded-xl bg-black px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-400"
-        >
+      <div className="flex flex-wrap gap-3">
+        <button disabled={saving} className="admin-button-primary">
           {saving ? "Saving..." : "Save"}
         </button>
 
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="rounded-xl border px-4 py-2 text-sm font-medium"
+          className="admin-button-secondary"
         >
           Cancel
         </button>

@@ -57,11 +57,11 @@ export function UpdateOrderStatusForm({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium">New Status</label>
+        <label className="block text-sm font-bold">New Status</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="mt-2 w-full rounded-xl border px-4 py-3"
+          className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#8a2b18] focus:ring-2 focus:ring-[#d99426]/30"
         >
           {statuses.map((statusOption) => (
             <option key={statusOption} value={statusOption}>
@@ -72,12 +72,12 @@ export function UpdateOrderStatusForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium">Status Note</label>
+        <label className="block text-sm font-bold">Status Note</label>
         <textarea
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          className="mt-2 w-full rounded-xl border px-4 py-3"
+          className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#8a2b18] focus:ring-2 focus:ring-[#d99426]/30"
           placeholder="Optional note for this status update."
         />
       </div>
@@ -86,7 +86,7 @@ export function UpdateOrderStatusForm({
         type="button"
         onClick={updateStatus}
         disabled={saving}
-        className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
+        className="brand-button-primary w-full px-5 py-3 text-sm disabled:bg-neutral-400"
       >
         {saving ? "Saving..." : "Update Status"}
       </button>

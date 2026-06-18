@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { MenuItem } from "@/types/menu";
 import type { SelectedCartOption } from "@/store/cart-store";
 import { useCartStore } from "@/store/cart-store";
@@ -26,13 +27,9 @@ export function MenuItemModal({ item, open, onClose }: Props) {
       selectedAllergenIdSet.has(allergen.id),
     ) ?? [];
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  function toggleChoice(
-    groupId: string,
-    choiceId: string,
-    multiple: boolean,
-  ) {
+  function toggleChoice(groupId: string, choiceId: string, multiple: boolean) {
     setSelected((prev) => {
       const current = prev[groupId] ?? [];
 
@@ -127,38 +124,37 @@ export function MenuItemModal({ item, open, onClose }: Props) {
         }));
     }) ?? [];
 
-  return (
-    
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4">
-      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#24130f]/70 px-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-[#fff8ee] p-5 shadow-2xl sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Customize
-            </p>
+            <p className="brand-eyebrow">Customize</p>
 
-          <h2 className="mt-2 text-3xl font-bold">{item.name}</h2>
+            <h2 className="mt-2 text-3xl font-black leading-tight">
+              {item.name}
+            </h2>
 
-          <p className="mt-2 text-neutral-600">{item.description}</p>
+            <p className="mt-2 leading-7 text-[#6b5a50]">{item.description}</p>
 
-          {item.type === "MEAL_PLAN" && (
-            <div className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-              Meal plans are fixed offerings. Choose spice level and allowed protein
-              substitutions only. Pork and beef are available by request only and pricing
-              may vary.
-            </div>
-          )}
+            {item.type === "MEAL_PLAN" && (
+              <div className="mt-5 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
+                Meal plans are fixed offerings. Choose spice level and allowed
+                protein substitutions only. Pork and beef are available by
+                request only and pricing may vary.
+              </div>
+            )}
           </div>
           <button
             onClick={onClose}
-            className="rounded-full border px-3 py-1 text-sm"
+            className="rounded-full border border-[#d7bea1] bg-white px-3 py-1 text-sm font-bold text-[#24130f] transition hover:border-[#9f2f18]"
           >
             Close
           </button>
         </div>
 
         {item.allergens?.length ? (
-          <div className="mt-5 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="mt-5 rounded-lg border border-[#ead8c1] bg-white p-4 text-sm text-[#6b5a50]">
             <strong>Allergens:</strong>{" "}
             {item.allergens.map((a) => a.name).join(", ")}
           </div>
@@ -170,122 +166,126 @@ export function MenuItemModal({ item, open, onClose }: Props) {
           </div>
         )}
 
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="mt-5 grid gap-3 md:grid-cols-2">
           {item.optionGroups?.map((group) => {
             const missingRequired =
               showRequiredErrors &&
               group.required &&
               !(selected[group.id]?.length > 0);
 
-              return (
-                <section
-                  key={group.id}
-                  className={`rounded-2xl border p-5 ${
-                    missingRequired
-                      ? "border-red-400 bg-red-50"
-                      : group.required && selected[group.id]?.length > 0
-                        ? "border-green-300 bg-green-50"
-                        : ""
-                      }`}
-                    >
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 className="text-lg font-semibold">{group.name}</h3>
+            return (
+              <section
+                key={group.id}
+                className={`rounded-lg border p-5 ${
+                  missingRequired
+                    ? "border-red-400 bg-red-50"
+                    : group.required && selected[group.id]?.length > 0
+                      ? "border-green-300 bg-green-50"
+                      : "border-[#ead8c1] bg-white"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-lg font-black">{group.name}</h3>
 
-        {group.required && (
-          <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-            Required
-          </span>
-        )}
-      </div>
+                  {group.required && (
+                    <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-bold text-red-700">
+                      Required
+                    </span>
+                  )}
+                </div>
 
-      <p className="mt-1 text-sm text-neutral-500">
-        {group.multiple ? "Choose one or more" : "Choose one"}
-      </p>
+                <p className="mt-1 text-sm text-neutral-500">
+                  {group.multiple ? "Choose one or more" : "Choose one"}
+                </p>
 
-      {missingRequired && (
-        <p className="mt-3 rounded-xl bg-red-100 p-3 text-sm text-red-800">
-          Please make a selection for this required option.
-        </p>
-      )}
+                {missingRequired && (
+                  <p className="mt-3 rounded-lg bg-red-100 p-3 text-sm text-red-800">
+                    Please make a selection for this required option.
+                  </p>
+                )}
 
-      <div className="mt-4 space-y-2">
-        {group.choices.map((choice) => {
-                  const checked = selected[group.id]?.includes(choice.id) ?? false;
+                <div className="mt-4 space-y-2">
+                  {group.choices.map((choice) => {
+                    const checked =
+                      selected[group.id]?.includes(choice.id) ?? false;
 
-                  return (
-                    <label
-                      key={choice.id}
-                      className={`flex cursor-pointer gap-4 rounded-xl border p-4 transition ${
-                        checked ? "border-black bg-neutral-50" : "hover:bg-neutral-50"
-                      }`}
-                    >
-                      <input
-                        type={group.multiple ? "checkbox" : "radio"}
-                        name={group.id}
-                        checked={checked}
-                        onChange={() =>
-                          toggleChoice(group.id, choice.id, group.multiple)
-                        }
-                        className="mt-1"
-                      />
+                    return (
+                      <label
+                        key={choice.id}
+                        className={`flex cursor-pointer gap-4 rounded-lg border p-4 transition ${
+                          checked
+                            ? "border-[#9f2f18] bg-[#fff3cf]"
+                            : "border-[#ead8c1] hover:bg-[#fff8ee]"
+                        }`}
+                      >
+                        <input
+                          type={group.multiple ? "checkbox" : "radio"}
+                          name={group.id}
+                          checked={checked}
+                          onChange={() =>
+                            toggleChoice(group.id, choice.id, group.multiple)
+                          }
+                          className="mt-1"
+                        />
 
-                      {choice.imageUrl && (
-                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-                          <Image
-                            src={choice.imageUrl}
-                            alt={choice.name}
-                            fill
-                            sizes="80px"
-                            className="object-cover"
-                            unoptimized
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex-1">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold">{choice.name}</p>
-
-                          <div className="flex items-center gap-2">
-                            {choice.requestOnly && (
-                              <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                                Request Only
-                              </span>
-                            )}
-
-                            {choice.priceDelta > 0 && (
-                              <span className="text-sm font-medium">
-                                +${choice.priceDelta.toFixed(2)}
-                              </span>
-                            )}
+                        {choice.imageUrl && (
+                          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                            <Image
+                              src={choice.imageUrl}
+                              alt={choice.name}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                              unoptimized
+                            />
                           </div>
+                        )}
+
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="font-bold">{choice.name}</p>
+
+                            <div className="flex items-center gap-2">
+                              {choice.requestOnly && (
+                                <span className="rounded-full bg-[#fff0bd] px-2 py-1 text-xs font-bold text-[#8a5a00]">
+                                  Request Only
+                                </span>
+                              )}
+
+                              {choice.priceDelta > 0 && (
+                                <span className="text-sm font-medium">
+                                  +${choice.priceDelta.toFixed(2)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {choice.description && (
+                            <p className="mt-2 text-sm text-neutral-600">
+                              {choice.description}
+                            </p>
+                          )}
+
+                          {choice.dietaryInfo && (
+                            <p className="mt-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
+                              {choice.dietaryInfo}
+                            </p>
+                          )}
+
+                          {choice.requestOnly && (
+                            <p className="mt-2 text-xs font-medium text-[#9f2f18]">
+                              This option may require chef approval and pricing
+                              may vary.
+                            </p>
+                          )}
                         </div>
-
-                        {choice.description && (
-                          <p className="mt-2 text-sm text-neutral-600">
-                            {choice.description}
-                          </p>
-                        )}
-
-                        {choice.dietaryInfo && (
-                          <p className="mt-2 text-xs font-medium uppercase tracking-wide text-neutral-500">
-                            {choice.dietaryInfo}
-                          </p>
-                        )}
-
-                        {choice.requestOnly && (
-                          <p className="mt-2 text-xs text-amber-700">
-                            This option may require chef approval and pricing may vary.
-                          </p>
-                        )}
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </section>
-          );
-        })}
+                      </label>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
 
           {!item.optionGroups?.length && (
             <p className="text-sm text-neutral-600">
@@ -295,65 +295,63 @@ export function MenuItemModal({ item, open, onClose }: Props) {
         </div>
 
         {item.customerInstructionsEnabled && (
-          <section className="mt-6 rounded-2xl border p-5">
-            <label className="block font-semibold">
-              Special Instructions
-            </label>
+          <section className="mt-6 rounded-lg border border-[#ead8c1] bg-white p-5">
+            <label className="block font-bold">Special Instructions</label>
 
-              <textarea
-                rows={4}
-                value={customerInstructions}
-                onChange={(e) => setCustomerInstructions(e.target.value)}
-                className="mt-3 w-full rounded-xl border px-4 py-3 text-sm"
-                placeholder="Share relevant preferences or notes for this item."
-              />
+            <textarea
+              rows={4}
+              value={customerInstructions}
+              onChange={(e) => setCustomerInstructions(e.target.value)}
+              className="mt-3 w-full rounded-lg border border-[#d7bea1] px-4 py-3 text-sm outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+              placeholder="Share relevant preferences or notes for this item."
+            />
           </section>
         )}
-          {selectedSummary.length > 0 && (
-            <section className="mt-6 rounded-2xl border bg-neutral-50 p-5">
-              <h3 className="font-semibold">Your Selections</h3>
+        {selectedSummary.length > 0 && (
+          <section className="mt-6 rounded-lg border border-[#ead8c1] bg-white p-5">
+            <h3 className="font-black">Your Selections</h3>
 
-              <div className="mt-3 space-y-2 text-sm">
-                {selectedSummary.map((selection, index) => (
-                  <div
-                    key={`${selection.groupName}-${selection.choiceName}-${index}`}
-                    className="flex flex-wrap justify-between gap-2 rounded-xl bg-white p-3"
-                  >
-                    <div>
-                      <span className="font-medium">{selection.groupName}:</span>{" "}
-                      {selection.choiceName}
-
-                      {selection.requestOnly && (
-                        <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-                          Request Only
-                        </span>
-                      )}
-                    </div>
-
-                    {selection.priceDelta > 0 && (
-                      <span className="font-medium">
-                        +${selection.priceDelta.toFixed(2)}
+            <div className="mt-3 space-y-2 text-sm">
+              {selectedSummary.map((selection, index) => (
+                <div
+                  key={`${selection.groupName}-${selection.choiceName}-${index}`}
+                  className="flex flex-wrap justify-between gap-2 rounded-lg bg-[#fff8ee] p-3"
+                >
+                  <div>
+                    <span className="font-medium">{selection.groupName}:</span>{" "}
+                    {selection.choiceName}
+                    {selection.requestOnly && (
+                      <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                        Request Only
                       </span>
                     )}
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-        <div className="mt-8 flex items-center justify-between border-t pt-5">
+
+                  {selection.priceDelta > 0 && (
+                    <span className="font-medium">
+                      +${selection.priceDelta.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        <div className="mt-8 flex flex-col gap-4 border-t border-[#ead8c1] pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-neutral-500">Item total</p>
-            <p className="text-2xl font-bold">${displayTotal.toFixed(2)}</p>
+            <p className="text-sm font-bold text-[#9f2f18]">Item total</p>
+            <p className="text-3xl font-black">${displayTotal.toFixed(2)}</p>
           </div>
 
           <button
             onClick={handleAddToCart}
-            className="rounded-xl bg-black px-6 py-3 font-medium text-white"
+            className="brand-button-primary px-6 py-3"
           >
             Add to Order
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

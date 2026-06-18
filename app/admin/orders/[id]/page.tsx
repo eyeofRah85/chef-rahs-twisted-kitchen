@@ -105,28 +105,28 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12 print:bg-white print:px-0 print:py-0">
-      <div className="mx-auto max-w-5xl">
-         <Link className="text-sm font-medium underline" href="/admin/kitchen">
-              &uarr;  Back to Kitchen tickets
-            </Link>
+    <main className="admin-page print:bg-white print:px-0 print:py-0">
+      <div className="admin-container max-w-6xl print:max-w-none print:p-0">
+        <Link className="admin-back-link print:hidden" href="/admin/kitchen">
+          &uarr; Back to Kitchen tickets
+        </Link>
         <div className="mb-8">
-           <Link className="text-sm font-medium underline" href="/admin/orders">
-              &larr;  Back to Orders
-            </Link>           
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin Order
-          </p>
-          <h1 className="mt-3 text-4xl font-bold">Order Details</h1>
-          <p className="mt-3 text-sm text-neutral-600">{order.id}</p>
+          <Link className="admin-back-link print:hidden" href="/admin/orders">
+            &larr; Back to Orders
+          </Link>
+          <p className="admin-eyebrow mt-5">Admin Order</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+            Order Details
+          </h1>
+          <p className="mt-3 break-all text-sm text-[#6b5a50]">{order.id}</p>
         </div>
         <div className="mt-4 print:hidden">
           <PrintButton label="Print Kitchen Ticket" />
         </div>
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Customer</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Customer</h2>
               <div className="mt-4 space-y-2 text-sm">
                 <p>
                   <strong>Name:</strong> {order.customerName}
@@ -135,10 +135,12 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                   <strong>Email:</strong> {order.customerEmail}
                 </p>
                 <p>
-                  <strong>Phone:</strong> {order.customerPhone ?? "Not provided"}
+                  <strong>Phone:</strong>{" "}
+                  {order.customerPhone ?? "Not provided"}
                 </p>
                 <p>
-                  <strong>Order Type:</strong> {formatOrderType(order.orderType)}
+                  <strong>Order Type:</strong>{" "}
+                  {formatOrderType(order.orderType)}
                 </p>
                 <p>
                   <strong>Requested:</strong>{" "}
@@ -148,100 +150,100 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                 </p>
               </div>
             </div>
-              <section className="rounded-2xl border bg-white p-6 shadow-sm">
+            <section className="admin-card p-6">
+              <h2 className="text-2xl font-black">Delivery / Contact Info</h2>
 
-                <h2 className="text-2xl font-semibold">Delivery / Contact Info</h2>
+              <div className="mt-5 space-y-2 text-sm text-neutral-700">
+                <p>
+                  <strong>Name:</strong>{" "}
+                  {order.deliveryName ?? order.customerName ?? "Not provided"}
+                </p>
 
-                <div className="mt-5 space-y-2 text-sm text-neutral-700">
-                  <p>
-                    <strong>Name:</strong>{" "}
-                    {order.deliveryName ?? order.customerName ?? "Not provided"}
+                <p>
+                  <strong>Phone:</strong>{" "}
+                  {order.deliveryPhone ?? "Not provided"}
+                </p>
+
+                <p>
+                  <strong>Address:</strong>{" "}
+                  {order.deliveryAddressLine1
+                    ? `${order.deliveryAddressLine1}${
+                        order.deliveryAddressLine2
+                          ? `, ${order.deliveryAddressLine2}`
+                          : ""
+                      }`
+                    : "Not provided"}
+                </p>
+
+                <p>
+                  <strong>City/State/ZIP:</strong>{" "}
+                  {[
+                    order.deliveryCity,
+                    order.deliveryState,
+                    order.deliveryPostalCode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") || "Not provided"}
+                </p>
+
+                <p>
+                  <strong>Delivery Notes:</strong>{" "}
+                  {order.deliveryNotes ?? "None"}
+                </p>
+              </div>
+              {order.approvalStatus === "PENDING" && (
+                <div className="mt-6 rounded-lg border border-blue-300 bg-blue-50 p-5 text-blue-950">
+                  <h2 className="text-xl font-black">Approval Needed</h2>
+
+                  <p className="mt-2 text-sm leading-6">
+                    This order includes one or more items or selections that
+                    require review before it can move into preparation.
                   </p>
-
-                  <p>
-                    <strong>Phone:</strong>{" "}
-                    {order.deliveryPhone ?? "Not provided"}
-                  </p>
-
-                  <p>
-                    <strong>Address:</strong>{" "}
-                    {order.deliveryAddressLine1
-                      ? `${order.deliveryAddressLine1}${
-                          order.deliveryAddressLine2
-                            ? `, ${order.deliveryAddressLine2}`
-                            : ""
-                        }`
-                      : "Not provided"}
-                  </p>
-
-                  <p>
-                    <strong>City/State/ZIP:</strong>{" "}
-                    {[
-                      order.deliveryCity,
-                      order.deliveryState,
-                      order.deliveryPostalCode,
-                    ]
-                      .filter(Boolean)
-                      .join(", ") || "Not provided"}
-                  </p>
-
-                  <p>
-                    <strong>Delivery Notes:</strong>{" "}
-                    {order.deliveryNotes ?? "None"}
-                  </p>
-
-                 
                 </div>
-                 {order.approvalStatus === "PENDING" && (
-                    <div className="mt-6 rounded-2xl border border-blue-300 bg-blue-50 p-5 text-blue-950">
-                      <h2 className="text-xl font-semibold">Approval Needed</h2>
+              )}
 
-                      <p className="mt-2 text-sm leading-6">
-                        This order includes one or more items or selections that require review
-                        before it can move into preparation.
-                      </p>
-                    </div>
+              {order.approvalStatus === "APPROVED" && (
+                <div className="mt-6 rounded-lg border border-green-300 bg-green-50 p-5 text-green-950">
+                  <h2 className="text-xl font-black">Approved</h2>
+
+                  <p className="mt-2 text-sm leading-6">
+                    This order has been approved and can continue through the
+                    kitchen workflow.
+                  </p>
+                </div>
+              )}
+
+              {order.approvalStatus === "DENIED" && (
+                <div className="mt-6 rounded-lg border border-red-300 bg-red-50 p-5 text-red-950">
+                  <h2 className="text-xl font-black">Denied</h2>
+
+                  <p className="mt-2 text-sm leading-6">
+                    This order was denied and should not move forward unless the
+                    customer submits a revised order.
+                  </p>
+
+                  {order.approvalNote && (
+                    <p className="mt-3 text-sm">
+                      <span className="font-semibold">Note:</span>{" "}
+                      {order.approvalNote}
+                    </p>
                   )}
+                </div>
+              )}
+            </section>
 
-                  {order.approvalStatus === "APPROVED" && (
-                    <div className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5 text-green-950">
-                      <h2 className="text-xl font-semibold">Approved</h2>
-
-                      <p className="mt-2 text-sm leading-6">
-                        This order has been approved and can continue through the kitchen workflow.
-                      </p>
-                    </div>
-                  )}
-
-                  {order.approvalStatus === "DENIED" && (
-                    <div className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950">
-                      <h2 className="text-xl font-semibold">Denied</h2>
-
-                      <p className="mt-2 text-sm leading-6">
-                        This order was denied and should not move forward unless the customer
-                        submits a revised order.
-                      </p>
-
-                      {order.approvalNote && (
-                        <p className="mt-3 text-sm">
-                          <span className="font-semibold">Note:</span> {order.approvalNote}
-                        </p>
-                      )}
-                    </div>
-                  )}
-              </section>
-
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Items</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Items</h2>
 
               <div className="mt-5 space-y-3">
                 {order.items.map((item) => (
-                  <div key={item.id} className="rounded-xl border p-4">
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-[#ead8c1] p-4"
+                  >
                     {item.weeklyMealPlanSelection ? (
-                      <div className="mb-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-                        <p className="font-semibold">
-                          Weekly Meal Plan Snapshot
-                        </p>
+                      <div className="mb-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
+                        <p className="font-black">Weekly Meal Plan Snapshot</p>
 
                         <dl className="mt-2 space-y-1">
                           {getWeeklyMealPlanSelectionDetails(
@@ -258,22 +260,24 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                       </div>
                     ) : null}
 
-                    <div className="flex justify-between gap-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                       <div>
-                        <h3 className="font-semibold">{item.name}</h3>
+                        <h3 className="font-black">{item.name}</h3>
                         <p className="text-sm text-neutral-600">
                           Qty: {item.quantity} x $
                           {Number(item.unitPrice).toFixed(2)}
                         </p>
                         {item.notes && (
-                          <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 whitespace-pre-wrap">
-                            <p className="mb-1 font-semibold">Selections / Add-ons</p>
+                          <div className="mt-3 whitespace-pre-wrap rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
+                            <p className="mb-1 font-black">
+                              Selections / Add-ons
+                            </p>
                             {item.notes}
                           </div>
                         )}
                       </div>
 
-                      <p className="font-medium">
+                      <p className="font-black">
                         ${Number(item.lineTotal).toFixed(2)}
                       </p>
                     </div>
@@ -282,12 +286,14 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               </div>
             </div>
             {order.allergenAcknowledged && (
-              <section className="rounded-2xl border border-red-300 bg-red-50 p-5 text-sm text-red-900">
-                <h2 className="text-xl font-semibold">Allergen Warning Acknowledged</h2>
+              <section className="rounded-lg border border-red-300 bg-red-50 p-5 text-sm text-red-900">
+                <h2 className="text-xl font-black">
+                  Allergen Warning Acknowledged
+                </h2>
 
                 <p className="mt-2 leading-6">
-                  The customer acknowledged that this order may contain allergen tags
-                  matching their account preferences before submitting.
+                  The customer acknowledged that this order may contain allergen
+                  tags matching their account preferences before submitting.
                 </p>
 
                 {order.allergenAcknowledgedAt && (
@@ -298,15 +304,15 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                 )}
               </section>
             )}
-                        <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Notes</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Notes</h2>
 
               <div className="mt-4 space-y-4 text-sm">
                 <div>
                   <p className="font-medium">Allergy Notes</p>
 
                   {order.allergyNotes ? (
-                    <div className="mt-2 rounded-xl border-2 border-red-500 bg-red-50 p-4 text-red-900">
+                    <div className="mt-2 rounded-lg border-2 border-red-500 bg-red-50 p-4 text-red-900">
                       <p className="text-xs font-bold uppercase text-red-700">
                         Allergy Alert
                       </p>
@@ -328,24 +334,22 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
           </section>
 
           <aside className="space-y-6 print:hidden">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">         
-              <div className="mt-6">
-                  <OrderApprovalForm
-                    orderId={order.id}
-                    currentApprovalStatus={order.approvalStatus}
-                  />
-                </div>
+            <section className="space-y-4">
+              <OrderApprovalForm
+                orderId={order.id}
+                currentApprovalStatus={order.approvalStatus}
+              />
 
-                {order.approvalNote && (
-                  <p className="mt-4 text-sm text-neutral-600">
-                    <strong>Note:</strong> {order.approvalNote}
-                  </p>
-                  )}
-              </div>
-              
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Status</h2>
-              <p className="mt-3 rounded-full bg-neutral-100 px-3 py-2 text-center text-sm font-medium">
+              {order.approvalNote && (
+                <p className="admin-card p-4 text-sm text-[#6b5a50]">
+                  <strong>Note:</strong> {order.approvalNote}
+                </p>
+              )}
+            </section>
+
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Status</h2>
+              <p className="admin-badge admin-badge-neutral mt-3 justify-center px-3 py-2">
                 {formatOrderStatus(order.status)}
               </p>
 
@@ -358,8 +362,8 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Totals</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Totals</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -391,8 +395,8 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Payment</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Payment</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 <p>
@@ -414,9 +418,7 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
 
                 <p>
                   <strong>Paid At:</strong>{" "}
-                  {order.paidAt
-                    ? order.paidAt.toLocaleString()
-                    : "Not paid"}
+                  {order.paidAt ? order.paidAt.toLocaleString() : "Not paid"}
                 </p>
                 {paymentDue && (
                   <div className="mt-5">
@@ -426,8 +428,8 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">History</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">History</h2>
 
               <div className="mt-5 space-y-3">
                 {order.statusHistory.map((history) => (

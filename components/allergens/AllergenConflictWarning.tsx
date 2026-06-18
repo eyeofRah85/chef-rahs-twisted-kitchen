@@ -17,11 +17,11 @@ export function AllergenConflictWarning({ conflicts, compact = false }: Props) {
     <div
       className={
         compact
-          ? "rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900"
-          : "rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900"
+          ? "rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-950 shadow-sm"
+          : "rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-950 shadow-sm"
       }
     >
-      <p className="font-semibold">Allergen warning</p>
+      <p className="font-black">Allergen warning</p>
 
       <p className="mt-1 leading-6">
         This item includes allergen tags that match your account preferences:{" "}

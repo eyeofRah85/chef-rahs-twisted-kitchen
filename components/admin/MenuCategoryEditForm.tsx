@@ -34,11 +34,14 @@ export function MenuCategoryEditForm({ category }: Props) {
   }
 
   return (
-    <form action={handleSubmit} className="grid gap-3 md:grid-cols-[1fr_140px_auto]">
+    <form
+      action={handleSubmit}
+      className="grid gap-3 md:grid-cols-[1fr_140px_auto]"
+    >
       <input
         name="name"
         defaultValue={category.name}
-        className="rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       />
 
@@ -46,13 +49,10 @@ export function MenuCategoryEditForm({ category }: Props) {
         name="sortOrder"
         type="number"
         defaultValue={category.sortOrder}
-        className="rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
-      <button
-        disabled={saving}
-        className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-      >
+      <button disabled={saving} className="admin-button-primary">
         {saving ? "Saving..." : "Save"}
       </button>
     </form>

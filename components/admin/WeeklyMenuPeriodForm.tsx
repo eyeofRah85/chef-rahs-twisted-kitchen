@@ -66,69 +66,65 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
   }
 
   return (
-    <form
-      ref={formRef}
-      action={handleSubmit}
-      className="rounded-2xl border bg-white p-5 shadow-sm"
-    >
+    <form ref={formRef} action={handleSubmit} className="admin-card p-5">
       <div className="mb-5">
-        <h2 className="text-xl font-semibold">
+        <h2 className="text-xl font-black">
           {isEditing ? "Edit Weekly Menu" : "Create Weekly Menu"}
         </h2>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-[#6b5a50]">
           Weekly menus can be drafted before they are published to customers.
         </p>
       </div>
 
       <div className="grid gap-4">
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Week Label
           <input
             name="label"
             defaultValue={period?.label ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="June 17-23 Meal Prep"
             required
           />
         </label>
 
         <div className="grid gap-4">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Start Date
             <input
               name="startDate"
               type="date"
               defaultValue={period?.startDate ?? ""}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             End Date
             <input
               name="endDate"
               type="date"
               defaultValue={period?.endDate ?? ""}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
           </label>
         </div>
 
         <div className="grid gap-4">
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Ordering Cutoff
             <input
               name="orderCutoffAt"
               type="datetime-local"
               defaultValue={period?.orderCutoffAt ?? ""}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
             />
           </label>
 
-          <label className="grid gap-2 text-sm font-medium">
+          <label className="admin-label">
             Order Capacity
             <input
               name="capacity"
@@ -136,22 +132,22 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
               min="1"
               step="1"
               defaultValue={period?.capacity ?? 10}
-              className="rounded-xl border px-4 py-3 text-sm font-normal"
+              className="admin-input"
               required
             />
-            <span className="text-xs font-normal leading-5 text-neutral-500">
+            <span className="text-xs font-normal leading-5 text-[#6b5a50]">
               Counts submitted customer orders for this weekly menu, not meal
               plan item quantity.
             </span>
           </label>
         </div>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Status
           <select
             name="status"
             defaultValue={period?.status ?? "DRAFT"}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
           >
             {weeklyMenuStatuses.map((status) => (
               <option key={status} value={status}>
@@ -161,22 +157,23 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
           </select>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium">
+        <label className="admin-label">
           Fulfillment Notes
           <textarea
             name="fulfillmentNotes"
             rows={4}
             defaultValue={period?.fulfillmentNotes ?? ""}
-            className="rounded-xl border px-4 py-3 text-sm font-normal"
+            className="admin-input"
             placeholder="Pickup or delivery notes for this weekly menu"
           />
         </label>
 
-        <button
-          disabled={saving}
-          className="rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
-        >
-          {saving ? "Saving..." : isEditing ? "Save Weekly Menu" : "Create Weekly Menu"}
+        <button disabled={saving} className="admin-button-primary">
+          {saving
+            ? "Saving..."
+            : isEditing
+              ? "Save Weekly Menu"
+              : "Create Weekly Menu"}
         </button>
       </div>
     </form>

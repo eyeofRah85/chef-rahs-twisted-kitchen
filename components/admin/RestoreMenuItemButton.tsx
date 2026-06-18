@@ -33,7 +33,7 @@ export function RestoreMenuItemButton({ menuItemId }: Props) {
       type="button"
       onClick={restoreItem}
       disabled={saving}
-      className="rounded-xl bg-black px-4 py-2 text-xs font-medium text-white disabled:bg-neutral-400"
+      className="admin-button-primary text-xs"
     >
       {saving ? "Restoring..." : "Restore"}
     </button>

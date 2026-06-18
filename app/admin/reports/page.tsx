@@ -111,44 +111,41 @@ export default async function AdminReportsPage() {
         requestType: "PERSONAL_CHEF",
       },
     }),
-
   };
 
   const [
-  totalRevenueResult,
-  weeklyOrders,
-  monthlyOrders,
-  pendingPayments,
-  serviceRequests,
-  cateringRequests,
-  personalChefRequests,
-  completedOrders,
-  cancelledOrders,
-  topItems,
-  pendingOrderApprovals,
-  pendingCateringApprovals,
-] = await Promise.all([
-  metricQueries.totalRevenueResult,
-  metricQueries.weeklyOrders,
-  metricQueries.monthlyOrders,
-  metricQueries.pendingPayments,
-  metricQueries.serviceRequests,
-  metricQueries.cateringRequests,
-  metricQueries.personalChefRequests,
-  metricQueries.completedOrders,
-  metricQueries.cancelledOrders,
-  metricQueries.topItems,
-  metricQueries.pendingOrderApprovals,
-  metricQueries.pendingCateringApprovals,
-]);
+    totalRevenueResult,
+    weeklyOrders,
+    monthlyOrders,
+    pendingPayments,
+    serviceRequests,
+    cateringRequests,
+    personalChefRequests,
+    completedOrders,
+    cancelledOrders,
+    topItems,
+    pendingOrderApprovals,
+    pendingCateringApprovals,
+  ] = await Promise.all([
+    metricQueries.totalRevenueResult,
+    metricQueries.weeklyOrders,
+    metricQueries.monthlyOrders,
+    metricQueries.pendingPayments,
+    metricQueries.serviceRequests,
+    metricQueries.cateringRequests,
+    metricQueries.personalChefRequests,
+    metricQueries.completedOrders,
+    metricQueries.cancelledOrders,
+    metricQueries.topItems,
+    metricQueries.pendingOrderApprovals,
+    metricQueries.pendingCateringApprovals,
+  ]);
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
   const topOrderedItems = topItems as TopOrderedItem[];
 
   const averageOrderValue =
-    monthlyOrders > 0
-      ? totalRevenue / monthlyOrders
-      : 0;
+    monthlyOrders > 0 ? totalRevenue / monthlyOrders : 0;
 
   const cards = [
     {
@@ -194,37 +191,30 @@ export default async function AdminReportsPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-7xl">
+    <main className="admin-page">
+      <div className="admin-container">
         <div className="mb-8">
-          <Link className="text-sm font-medium underline" href="/admin">
-            &larr;  Back to Dashboard
+          <Link className="admin-back-link" href="/admin">
+            &larr; Back to Dashboard
           </Link>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Reporting & Analytics
-          </p>
+          <p className="admin-eyebrow mt-5">Reporting & Analytics</p>
 
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
             Business Insights
           </h1>
 
-          <p className="mt-3 max-w-2xl text-neutral-700">
-            Monitor revenue, customer activity, kitchen operations,
-            service requests, and payment tracking.
+          <p className="mt-3 max-w-2xl text-[#6b5a50]">
+            Monitor revenue, customer activity, kitchen operations, service
+            requests, and payment tracking.
           </p>
         </div>
 
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
-            <div
-              key={card.label}
-              className="rounded-2xl border bg-white p-6 shadow-sm"
-            >
-              <p className="text-sm font-medium text-neutral-500">
-                {card.label}
-              </p>
+            <div key={card.label} className="admin-card p-6">
+              <p className="text-sm font-bold text-[#6b5a50]">{card.label}</p>
 
-              <p className="mt-3 text-4xl font-bold">
+              <p className="mt-3 text-4xl font-black tracking-tight">
                 {card.value}
               </p>
             </div>
@@ -233,65 +223,55 @@ export default async function AdminReportsPage() {
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_420px]">
           <section className="space-y-8">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">
-                Order Status Breakdown
-              </h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Order Status Breakdown</h2>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl bg-neutral-100 p-5">
-                  <p className="text-sm text-neutral-500">
+                <div className="admin-card-muted p-5">
+                  <p className="text-sm font-bold text-[#6b5a50]">
                     Completed Orders
                   </p>
 
-                  <p className="mt-3 text-3xl font-bold">
-                    {completedOrders}
-                  </p>
+                  <p className="mt-3 text-3xl font-black">{completedOrders}</p>
                 </div>
 
-                <div className="rounded-xl bg-neutral-100 p-5">
-                  <p className="text-sm text-neutral-500">
+                <div className="admin-card-muted p-5">
+                  <p className="text-sm font-bold text-[#6b5a50]">
                     Cancelled Orders
                   </p>
 
-                  <p className="mt-3 text-3xl font-bold">
-                    {cancelledOrders}
-                  </p>
+                  <p className="mt-3 text-3xl font-black">{cancelledOrders}</p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">
-                Most Ordered Items
-              </h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Most Ordered Items</h2>
 
               <div className="mt-6 space-y-3">
                 {topOrderedItems.map((item, index) => (
                   <div
                     key={item.name}
-                    className="flex items-center justify-between rounded-xl border p-4"
+                    className="admin-row-card flex items-center justify-between gap-4"
                   >
                     <div>
-                      <p className="font-semibold">
+                      <p className="font-black">
                         #{index + 1} {item.name}
                       </p>
                     </div>
 
                     <div className="text-right">
-                      <p className="text-2xl font-bold">
+                      <p className="text-2xl font-black">
                         {item._sum.quantity ?? 0}
                       </p>
 
-                      <p className="text-xs text-neutral-500">
-                        ordered
-                      </p>
+                      <p className="text-xs text-[#6b5a50]">ordered</p>
                     </div>
                   </div>
                 ))}
 
                 {topOrderedItems.length === 0 && (
-                  <p className="text-neutral-500">
+                  <p className="admin-card-muted p-4 text-[#6b5a50]">
                     No order data yet.
                   </p>
                 )}
@@ -300,74 +280,72 @@ export default async function AdminReportsPage() {
           </section>
 
           <aside className="space-y-8">
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">
-                Operational Alerts
-              </h2>
+            <section className="admin-card p-6">
+              <h2 className="text-2xl font-black">Operational Alerts</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 {pendingPayments > 0 ? (
-                  <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900">
+                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 font-medium text-amber-950">
                     {pendingPayments} payment
                     {pendingPayments === 1 ? "" : "s"} still pending.
                   </div>
                 ) : (
-                  <div className="rounded-xl bg-neutral-100 p-4 text-neutral-600">
+                  <div className="rounded-lg bg-[#f1ede7] p-4 text-[#6b5a50]">
                     No pending payments.
                   </div>
                 )}
 
                 {serviceRequests > 0 && (
-                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
+                  <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950">
                     {serviceRequests} service request
                     {serviceRequests === 1 ? "" : "s"} submitted.
                   </div>
                 )}
-                
+
                 {personalChefRequests > 0 && (
-                  <div className="rounded-xl border border-purple-300 bg-purple-50 p-4 text-purple-900">
+                  <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950">
                     {personalChefRequests} personal chef request
                     {personalChefRequests === 1 ? "" : "s"} submitted.
                   </div>
                 )}
                 {pendingOrderApprovals > 0 && (
-                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
+                  <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950">
                     {pendingOrderApprovals} order
-                    {pendingOrderApprovals === 1 ? "" : "s"} waiting for approval.
+                    {pendingOrderApprovals === 1 ? "" : "s"} waiting for
+                    approval.
                   </div>
                 )}
 
                 {pendingCateringApprovals > 0 && (
-                  <div className="rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900">
+                  <div className="rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950">
                     {pendingCateringApprovals} service request
-                    {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
+                    {pendingCateringApprovals === 1 ? "" : "s"} waiting for
+                    approval.
                   </div>
                 )}
               </div>
             </section>
 
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">
-                Revenue Snapshot
-              </h2>
+            <section className="admin-card p-6">
+              <h2 className="text-2xl font-black">Revenue Snapshot</h2>
 
               <div className="mt-5 space-y-4">
-                <div className="rounded-xl bg-neutral-100 p-5">
-                  <p className="text-sm text-neutral-500">
+                <div className="admin-card-muted p-5">
+                  <p className="text-sm font-bold text-[#6b5a50]">
                     Gross Revenue
                   </p>
 
-                  <p className="mt-3 text-3xl font-bold">
+                  <p className="mt-3 text-3xl font-black">
                     ${totalRevenue.toFixed(2)}
                   </p>
                 </div>
 
-                <div className="rounded-xl bg-neutral-100 p-5">
-                  <p className="text-sm text-neutral-500">
+                <div className="admin-card-muted p-5">
+                  <p className="text-sm font-bold text-[#6b5a50]">
                     Average Order
                   </p>
 
-                  <p className="mt-3 text-3xl font-bold">
+                  <p className="mt-3 text-3xl font-black">
                     ${averageOrderValue.toFixed(2)}
                   </p>
                 </div>

@@ -90,7 +90,9 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
     customer.cateringRequests as CustomerServiceRequest[];
 
   const totalSpent = orders
-    .filter((order) => order.status !== "CANCELLED" && order.status !== "REFUNDED")
+    .filter(
+      (order) => order.status !== "CANCELLED" && order.status !== "REFUNDED",
+    )
     .reduce((sum, order) => sum + Number(order.total), 0);
 
   const activeOrders = orders.filter((order) =>
@@ -104,53 +106,48 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-6xl">
+    <main className="admin-page">
+      <div className="admin-container">
         <div className="mb-8">
-          <Link
-            href="/admin/customers"
-            className="text-sm font-medium underline"
-          >
+          <Link href="/admin/customers" className="admin-back-link">
             &larr; Back to Customers
           </Link>
 
-          <p className="mt-6 text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Customer Profile
-          </p>
+          <p className="admin-eyebrow mt-5">Customer Profile</p>
 
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
             {customer.name ?? "Customer"}
           </h1>
 
-          <p className="mt-3 text-neutral-700">{customer.email}</p>
+          <p className="mt-3 text-[#6b5a50]">{customer.email}</p>
         </div>
 
         <section className="grid gap-5 md:grid-cols-4">
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Total Orders</p>
-            <p className="mt-3 text-4xl font-bold">{orders.length}</p>
+          <div className="admin-card p-6">
+            <p className="text-sm font-bold text-[#6b5a50]">Total Orders</p>
+            <p className="mt-3 text-4xl font-black">{orders.length}</p>
           </div>
 
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Active Orders</p>
-            <p className="mt-3 text-4xl font-bold">{activeOrders.length}</p>
+          <div className="admin-card p-6">
+            <p className="text-sm font-bold text-[#6b5a50]">Active Orders</p>
+            <p className="mt-3 text-4xl font-black">{activeOrders.length}</p>
           </div>
 
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Payments Due</p>
-            <p className="mt-3 text-4xl font-bold">{unpaidOrders.length}</p>
+          <div className="admin-card p-6">
+            <p className="text-sm font-bold text-[#6b5a50]">Payments Due</p>
+            <p className="mt-3 text-4xl font-black">{unpaidOrders.length}</p>
           </div>
 
-          <div className="rounded-2xl border bg-white p-6 shadow-sm">
-            <p className="text-sm text-neutral-500">Total Spent</p>
-            <p className="mt-3 text-4xl font-bold">${totalSpent.toFixed(2)}</p>
+          <div className="admin-card p-6">
+            <p className="text-sm font-bold text-[#6b5a50]">Total Spent</p>
+            <p className="mt-3 text-4xl font-black">${totalSpent.toFixed(2)}</p>
           </div>
         </section>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_360px]">
           <section className="space-y-8">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Orders</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Orders</h2>
 
               <div className="mt-5 space-y-4">
                 {orders.map((order) => {
@@ -162,15 +159,15 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                     <Link
                       key={order.id}
                       href={`/admin/orders/${order.id}`}
-                      className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                      className="admin-row-card block"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold">
+                          <p className="font-black">
                             {formatOrderType(order.orderType)} Order
                           </p>
 
-                          <p className="mt-1 text-sm text-neutral-600">
+                          <p className="mt-1 text-sm text-[#6b5a50]">
                             {order.items.length} item
                             {order.items.length === 1 ? "" : "s"} -{" "}
                             {order.createdAt.toLocaleDateString()}
@@ -183,7 +180,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                             </p>
                           )}
 
-                          <p className="mt-1 text-xs text-neutral-500">
+                          <p className="mt-1 text-xs text-[#6b5a50]">
                             Requested:{" "}
                             {order.requestedDateTime
                               ? order.requestedDateTime.toLocaleString()
@@ -192,13 +189,14 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
 
                           {order.paymentStatus && (
                             <p className="mt-2 text-xs font-medium text-amber-700">
-                              Payment: {formatPaymentStatus(order.paymentStatus)}
+                              Payment:{" "}
+                              {formatPaymentStatus(order.paymentStatus)}
                             </p>
                           )}
                         </div>
 
                         <div className="text-right">
-                          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                          <span className="admin-badge admin-badge-neutral">
                             {formatOrderStatus(order.status)}
                           </span>
 
@@ -212,13 +210,15 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                 })}
 
                 {orders.length === 0 && (
-                  <p className="text-neutral-500">No orders yet.</p>
+                  <p className="admin-card-muted p-4 text-[#6b5a50]">
+                    No orders yet.
+                  </p>
                 )}
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Service Requests</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Service Requests</h2>
 
               <div className="mt-5 space-y-4">
                 {cateringRequests.map((request) => {
@@ -230,23 +230,23 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                     <Link
                       key={request.id}
                       href={`/admin/catering/${request.id}`}
-                      className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                      className="admin-row-card block"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold">
+                          <p className="font-black">
                             {request.eventType ?? `${requestTypeLabel} Request`}
                           </p>
 
-                          <p className="mt-1 text-sm text-neutral-600">
+                          <p className="mt-1 text-sm text-[#6b5a50]">
                             Type: {requestTypeLabel}
                           </p>
 
-                          <p className="mt-1 text-sm text-neutral-600">
+                          <p className="mt-1 text-sm text-[#6b5a50]">
                             Guests: {request.guestCount ?? "Not provided"}
                           </p>
 
-                          <p className="mt-1 text-xs text-neutral-500">
+                          <p className="mt-1 text-xs text-[#6b5a50]">
                             Event:{" "}
                             {request.eventDate
                               ? request.eventDate.toLocaleString()
@@ -254,7 +254,7 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                           </p>
                         </div>
 
-                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        <span className="admin-badge admin-badge-neutral">
                           {formatServiceRequestStatus(request.status)}
                         </span>
                       </div>
@@ -263,15 +263,17 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                 })}
 
                 {cateringRequests.length === 0 && (
-                  <p className="text-neutral-500">No service requests yet.</p>
+                  <p className="admin-card-muted p-4 text-[#6b5a50]">
+                    No service requests yet.
+                  </p>
                 )}
               </div>
             </div>
           </section>
 
           <aside className="space-y-6">
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Customer Info</h2>
+            <div className="admin-card p-6">
+              <h2 className="text-2xl font-black">Customer Info</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 <p>
@@ -294,8 +296,8 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
             </div>
 
             {unpaidOrders.length > 0 && (
-              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-amber-950 shadow-sm">
-                <h2 className="text-2xl font-semibold">Payment Alert</h2>
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-6 text-amber-950 shadow-sm">
+                <h2 className="text-2xl font-black">Payment Alert</h2>
 
                 <p className="mt-3 text-sm">
                   This customer has {unpaidOrders.length} order

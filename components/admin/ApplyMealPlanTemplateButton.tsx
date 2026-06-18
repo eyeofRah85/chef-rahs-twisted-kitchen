@@ -42,7 +42,7 @@ export function ApplyMealPlanTemplateButton({ menuItemId }: Props) {
       type="button"
       onClick={applyTemplate}
       disabled={saving}
-      className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-xs font-medium text-amber-800 disabled:bg-neutral-100"
+      className="admin-button-secondary text-xs"
     >
       {saving ? "Applying..." : "Apply Meal Plan Template"}
     </button>

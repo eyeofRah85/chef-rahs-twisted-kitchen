@@ -74,7 +74,7 @@ export function GalleryImageEditForm({ image }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl border px-4 py-2 text-xs font-medium"
+        className="admin-button-secondary px-4 py-2 text-xs"
       >
         Edit
       </button>
@@ -82,7 +82,10 @@ export function GalleryImageEditForm({ image }: Props) {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-3 rounded-xl border p-4">
+    <form
+      action={handleSubmit}
+      className="space-y-3 rounded-lg border border-[#ead8c1] p-4"
+    >
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border">
         <Image
           src={preview ?? image.src}
@@ -95,7 +98,7 @@ export function GalleryImageEditForm({ image }: Props) {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Replace Image</label>
+        <label className="block text-sm font-bold">Replace Image</label>
 
         <input
           id={`galleryImageUpload-${image.id}`}
@@ -108,13 +111,13 @@ export function GalleryImageEditForm({ image }: Props) {
 
         <label
           htmlFor={`galleryImageUpload-${image.id}`}
-          className="inline-flex cursor-pointer rounded-xl border px-4 py-2 text-xs font-medium hover:bg-neutral-50"
+          className="admin-button-secondary cursor-pointer px-4 py-2 text-xs"
         >
           Select New Image
         </label>
 
         {fileName && (
-          <p className="text-xs text-neutral-500">Selected: {fileName}</p>
+          <p className="text-xs text-[#6b5a50]">Selected: {fileName}</p>
         )}
       </div>
 
@@ -123,13 +126,13 @@ export function GalleryImageEditForm({ image }: Props) {
         type="text"
         defaultValue={image.src}
         placeholder="Public image URL"
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
       />
 
       <input
         name="title"
         defaultValue={image.title}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       />
 
@@ -137,14 +140,14 @@ export function GalleryImageEditForm({ image }: Props) {
         name="alt"
         defaultValue={image.alt}
         rows={3}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       />
 
       <select
         name="category"
         defaultValue={image.category}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       >
         {galleryCategoryOptions.map((category) => (
@@ -160,15 +163,12 @@ export function GalleryImageEditForm({ image }: Props) {
         min="0"
         step="1"
         defaultValue={image.sortOrder}
-        className="w-full rounded-xl border px-4 py-3 text-sm"
+        className="admin-input"
         required
       />
 
       <div className="flex flex-wrap gap-3">
-        <button
-          disabled={saving}
-          className="rounded-xl bg-black px-4 py-2 text-sm font-medium text-white disabled:bg-neutral-400"
-        >
+        <button disabled={saving} className="admin-button-primary px-4 py-2">
           {saving ? "Saving..." : "Save"}
         </button>
 
@@ -179,7 +179,7 @@ export function GalleryImageEditForm({ image }: Props) {
             setPreview(null);
             setFileName("");
           }}
-          className="rounded-xl border px-4 py-2 text-sm font-medium"
+          className="admin-button-secondary px-4 py-2"
         >
           Cancel
         </button>

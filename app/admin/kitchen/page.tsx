@@ -64,72 +64,84 @@ export default async function KitchenPage() {
   })) as KitchenOrderRow[];
 
   return (
-    <main className="min-h-screen bg-neutral-100 p-6">
-      <div className="mb-8">
-        <Link className="text-sm font-medium underline" href="/admin">
-          &larr;  Back to Dashboard
-        </Link>
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-          Kitchen View
-        </p>
+    <main className="admin-page">
+      <div className="admin-container">
+        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Link className="admin-back-link" href="/admin">
+              &larr; Back to Dashboard
+            </Link>
+            <p className="admin-eyebrow mt-5">Kitchen View</p>
 
-        <h1 className="mt-3 text-5xl font-bold">
-          Approved Kitchen Orders
-        </h1>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {activeOrders.map((order) => (
-        <KitchenOrderCard
-            key={order.id}
-            order={{
-              id: order.id,
-              orderType: order.orderType,
-              status: order.status,
-              customerName: order.customerName,
-              requestedDateTime:
-                order.requestedDateTime?.toISOString() ?? null,
-              allergyNotes: order.allergyNotes,
-              items: order.items.map((item) => ({
-                id: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                lineTotal: Number(item.lineTotal),
-                notes: item.notes,
-                weeklyMealPlanSelection: item.weeklyMealPlanSelection
-                  ? {
-                      periodLabel: item.weeklyMealPlanSelection.periodLabel,
-                      packageName: item.weeklyMealPlanSelection.packageName,
-                      packageDays: item.weeklyMealPlanSelection.packageDays,
-                      packageMealsPerDay:
-                        item.weeklyMealPlanSelection.packageMealsPerDay,
-                      packagePrice: Number(
-                        item.weeklyMealPlanSelection.packagePrice,
-                      ),
-                      offeringName: item.weeklyMealPlanSelection.offeringName,
-                      spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
-                      proteinSubstitution:
-                        item.weeklyMealPlanSelection.proteinSubstitution,
-                      requestOnly: item.weeklyMealPlanSelection.requestOnly,
-                      requiresApproval:
-                        item.weeklyMealPlanSelection.requiresApproval,
-                      priceDelta: Number(
-                        item.weeklyMealPlanSelection.priceDelta,
-                      ),
-                    }
-                  : null,
-              })),
-            }}
-        />
-        ))}
-
-        {activeOrders.length === 0 && (
-          <div className="rounded-2xl border bg-white p-10 shadow-sm">
-            <p className="text-lg font-medium">
-              No active orders.
+            <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+              Approved Kitchen Orders
+            </h1>
+            <p className="mt-3 max-w-2xl text-[#6b5a50]">
+              Prep-ready orders that have been approved and are moving through
+              the kitchen workflow.
             </p>
           </div>
-        )}
+
+          <span className="admin-badge admin-badge-info">
+            {activeOrders.length} active
+          </span>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+          {activeOrders.map((order) => (
+            <KitchenOrderCard
+              key={order.id}
+              order={{
+                id: order.id,
+                orderType: order.orderType,
+                status: order.status,
+                customerName: order.customerName,
+                requestedDateTime:
+                  order.requestedDateTime?.toISOString() ?? null,
+                allergyNotes: order.allergyNotes,
+                items: order.items.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  quantity: item.quantity,
+                  lineTotal: Number(item.lineTotal),
+                  notes: item.notes,
+                  weeklyMealPlanSelection: item.weeklyMealPlanSelection
+                    ? {
+                        periodLabel: item.weeklyMealPlanSelection.periodLabel,
+                        packageName: item.weeklyMealPlanSelection.packageName,
+                        packageDays: item.weeklyMealPlanSelection.packageDays,
+                        packageMealsPerDay:
+                          item.weeklyMealPlanSelection.packageMealsPerDay,
+                        packagePrice: Number(
+                          item.weeklyMealPlanSelection.packagePrice,
+                        ),
+                        offeringName: item.weeklyMealPlanSelection.offeringName,
+                        spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
+                        proteinSubstitution:
+                          item.weeklyMealPlanSelection.proteinSubstitution,
+                        requestOnly: item.weeklyMealPlanSelection.requestOnly,
+                        requiresApproval:
+                          item.weeklyMealPlanSelection.requiresApproval,
+                        priceDelta: Number(
+                          item.weeklyMealPlanSelection.priceDelta,
+                        ),
+                      }
+                    : null,
+                })),
+              }}
+            />
+          ))}
+
+          {activeOrders.length === 0 && (
+            <div className="admin-card p-10">
+              <p className="text-lg font-black">No active orders.</p>
+              <p className="mt-2 text-sm text-[#6b5a50]">
+                Approved orders will appear here once they move into accepted,
+                preparing, or ready status.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

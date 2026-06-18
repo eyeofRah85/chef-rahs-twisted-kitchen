@@ -33,17 +33,14 @@ export function CartSummary() {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-        <h2 className="text-2xl font-semibold">Your order is empty</h2>
-        <p className="mt-2 text-neutral-600">
+      <div className="brand-card p-10 text-center">
+        <h2 className="text-3xl font-black">Your order is empty</h2>
+        <p className="mt-3 text-[#6b5a50]">
           Add menu items to begin your order.
         </p>
 
-        <Link
-          href="/menu"
-          className="mt-6 inline-flex rounded-xl bg-black px-6 py-3 font-medium text-white"
-        >
-          View Menu
+        <Link href="/menu" className="brand-button-primary mt-6 px-6 py-3">
+          View Meal Plans
         </Link>
       </div>
     );
@@ -64,15 +61,19 @@ export function CartSummary() {
           return (
             <div
               key={item.cartId}
-              className="rounded-2xl border bg-white p-5 shadow-sm"
+              className="brand-card p-5 transition hover:shadow-2xl"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold">{item.name}</h2>
-                  <p className="mt-1 text-sm text-neutral-500">
+                  <h2 className="text-2xl font-black leading-tight">
+                    {item.name}
+                  </h2>
+                  <p className="mt-1 text-sm font-semibold text-[#9f2f18]">
                     {item.category}
                   </p>
-                  <p className="mt-2 font-medium">${item.price.toFixed(2)}</p>
+                  <p className="mt-3 font-bold text-[#24130f]">
+                    ${item.price.toFixed(2)} each
+                  </p>
 
                   {itemAllergenConflicts.length > 0 && (
                     <div className="mt-3">
@@ -84,18 +85,24 @@ export function CartSummary() {
                   )}
 
                   {item.selectedOptions?.length ? (
-                    <ul className="mt-3 space-y-1 text-sm text-neutral-600">
+                    <ul className="mt-3 space-y-2 text-sm text-[#6b5a50]">
                       {item.selectedOptions.map((option, index) => (
                         <li
                           key={`${option.groupName}-${option.choiceName}-${index}`}
+                          className="flex flex-wrap gap-2"
                         >
-                          {option.groupName}: {option.choiceName}
-                          {option.priceDelta > 0
-                            ? ` (+$${option.priceDelta.toFixed(2)})`
-                            : ""}
+                          <span>
+                            <span className="font-bold">
+                              {option.groupName}:
+                            </span>{" "}
+                            {option.choiceName}
+                            {option.priceDelta > 0
+                              ? ` (+$${option.priceDelta.toFixed(2)})`
+                              : ""}
+                          </span>
 
                           {option.requestOnly && (
-                            <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                            <span className="rounded-full bg-[#fff0bd] px-2 py-0.5 text-xs font-bold text-[#8a5a00]">
                               Request Only
                             </span>
                           )}
@@ -105,15 +112,15 @@ export function CartSummary() {
                   ) : null}
 
                   {item.requiresApproval && (
-                    <div className="mt-3 rounded-xl border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
+                    <div className="mt-3 rounded-lg border border-blue-300 bg-blue-50 p-3 text-sm text-blue-900">
                       This item requires chef approval before the order is
                       confirmed.
                     </div>
                   )}
 
                   {item.customerInstructions && (
-                    <div className="mt-3 rounded-xl bg-neutral-100 p-3 text-sm text-neutral-700">
-                      <p className="font-semibold">Special Instructions</p>
+                    <div className="mt-3 rounded-lg bg-[#fff8ee] p-3 text-sm text-[#6b5a50]">
+                      <p className="font-bold">Special Instructions</p>
                       <p className="mt-1 whitespace-pre-wrap">
                         {item.customerInstructions}
                       </p>
@@ -123,65 +130,83 @@ export function CartSummary() {
 
                 <button
                   onClick={() => removeItem(item.cartId)}
-                  className="text-sm text-red-600"
+                  className="self-start rounded-lg border border-red-200 px-3 py-2 text-sm font-bold text-red-700 transition hover:bg-red-50"
                 >
                   Remove
                 </button>
               </div>
 
-              <div className="mt-4 flex items-center gap-3">
-                <button
-                  onClick={() => decreaseQuantity(item.cartId)}
-                  className="h-9 w-9 rounded-full border"
-                >
-                  -
-                </button>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-[#ead8c1] pt-4">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => decreaseQuantity(item.cartId)}
+                    aria-label={`Decrease quantity for ${item.name}`}
+                    className="h-10 w-10 rounded-full border border-[#d7bea1] bg-white text-lg font-bold transition hover:border-[#9f2f18]"
+                  >
+                    -
+                  </button>
 
-                <span className="w-8 text-center font-semibold">
-                  {item.quantity}
-                </span>
+                  <span className="w-8 text-center font-black">
+                    {item.quantity}
+                  </span>
 
-                <button
-                  onClick={() => increaseQuantity(item.cartId)}
-                  className="h-9 w-9 rounded-full border"
-                >
-                  +
-                </button>
+                  <button
+                    onClick={() => increaseQuantity(item.cartId)}
+                    aria-label={`Increase quantity for ${item.name}`}
+                    className="h-10 w-10 rounded-full border border-[#d7bea1] bg-white text-lg font-bold transition hover:border-[#9f2f18]"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <p className="text-lg font-black">
+                  ${(item.price * item.quantity).toFixed(2)}
+                </p>
               </div>
             </div>
           );
         })}
 
-        <button onClick={clearCart} className="text-sm text-red-600">
+        <button
+          onClick={clearCart}
+          className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-700 transition hover:bg-red-50"
+        >
           Clear order
         </button>
       </section>
 
-      <aside className="h-fit rounded-2xl border bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-semibold">Order Summary</h2>
+      <aside className="brand-card h-fit p-6 lg:sticky lg:top-28">
+        <p className="brand-eyebrow">Review</p>
+        <h2 className="mt-2 text-3xl font-black">Order Summary</h2>
 
-        <div className="mt-5 space-y-3 text-sm">
+        <div className="mt-5 space-y-3 text-sm text-[#6b5a50]">
           <div className="flex justify-between">
             <span>Items</span>
-            <span>{itemCount()}</span>
+            <span className="font-bold text-[#24130f]">{itemCount()}</span>
           </div>
 
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span>${subtotal().toFixed(2)}</span>
+            <span className="font-bold text-[#24130f]">
+              ${subtotal().toFixed(2)}
+            </span>
           </div>
 
           <div className="flex justify-between">
             <span>Delivery Fee</span>
-            <span>${deliveryFee.toFixed(2)}</span>
+            <span className="font-bold text-[#24130f]">
+              ${deliveryFee.toFixed(2)}
+            </span>
           </div>
 
           <div className="flex justify-between">
             <span>Late Fee</span>
-            <span>${lateFee.toFixed(2)}</span>
+            <span className="font-bold text-[#24130f]">
+              ${lateFee.toFixed(2)}
+            </span>
           </div>
 
-          <div className="border-t pt-3 text-base font-bold">
+          <div className="border-t border-[#ead8c1] pt-3 text-base font-black text-[#24130f]">
             <div className="flex justify-between">
               <span>Total</span>
               <span>${total.toFixed(2)}</span>
@@ -190,14 +215,14 @@ export function CartSummary() {
         </div>
 
         {uniqueCartAllergenConflicts.length > 0 && (
-          <div className="mt-5 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+          <div className="mt-5 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-950">
             Please review the allergen warning before continuing to checkout.
           </div>
         )}
 
         <Link
           href="/checkout"
-          className="mt-6 block rounded-xl bg-black px-5 py-3 text-center font-medium text-white"
+          className="brand-button-primary mt-6 w-full px-5 py-3 text-center"
         >
           Continue to Checkout
         </Link>

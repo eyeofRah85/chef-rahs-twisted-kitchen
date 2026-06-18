@@ -523,14 +523,47 @@ Next work items - June 8, 2026:
    - Weekly meal plan manual QA now explicitly checks that capacity increments once per customer order, even when a cart contains multiple weekly plan items or quantities.
    - No transaction, route, or data model changes were made.
 
-38. Suggested next Codex prompt
+38. Customer-facing visual refresh / brand polish pass - completed June 16, 2026
+   - Added a warm customer-facing brand system with shared page, container, card, button, eyebrow, focus, and selection styling.
+   - Refreshed the public home, menu, cart, checkout, catering request, personal chef request, gallery, login, register, customer account, customer orders, and customer service request detail/list pages.
+   - Refreshed shared customer-facing components including the site header/footer, menu cards, category filters, weekly menu section, weekly order builder, cart summary, add-to-cart controls, allergen warnings, account profile/allergen forms, profile modal, and reorder button.
+   - Used existing local logo/gallery imagery for the visual pass; final client-approved hero/service imagery and final social URLs are still needed before launch polish is considered complete.
+   - Fixed the `/menu` customization modal so it renders through a document body portal instead of being clipped by the menu card layout.
+   - Fixed mobile `/menu` horizontal overflow caused by long weekly meal plan select labels in the weekly order builder.
+   - Browser smoke-tested `/`, `/menu`, `/cart`, `/checkout`, `/catering`, `/personal-chef`, `/gallery`, `/login`, and `/register` on desktop and a compact mobile viewport with no page-level horizontal overflow or browser console errors.
+   - `npm run check` passes after the visual refresh and modal/mobile fixes.
+   - No database schema, route, checkout/order business logic, payment, scheduling, allergen, approval, or validation behavior was intentionally changed.
+
+39. Admin dashboard refresh first slice - completed June 16, 2026
+   - Added a scoped admin visual system with admin page, container, card, filter chip, table, badge, action link, and back link styles.
+   - Refreshed `/admin` with stronger dashboard hierarchy, operational metric cards, quick actions, alert cards, business rule summaries, recent orders, and quick links.
+   - Refreshed `/admin/orders` with active filter chips, clearer status/approval/payment badges, result counts, and a horizontally contained admin table for smaller screens.
+   - Refreshed `/admin/catering` with separate request-type and workflow filter groups, active filter states, clearer service request badges, result counts, and a responsive table container.
+   - Refreshed `/admin/kitchen` and kitchen order cards for better prep scanability, weekly snapshot readability, allergy alerts, and stacked action controls on narrow screens.
+   - Lightly refreshed admin order and service request detail pages plus related approval, status, quote, and paid-action controls without changing workflow behavior.
+   - Browser smoke-tested `/admin`, `/admin/orders`, `/admin/catering`, `/admin/kitchen`, one admin order detail page, and one service request detail page on desktop and compact mobile viewports with no page-level horizontal overflow or browser console errors.
+   - `npm run check` passes after the admin refresh slice.
+   - No database schema, routes, approval guards, payment tracking, quote/deposit, allergen acknowledgement, or order/status workflow logic was intentionally changed.
+
+40. Admin dashboard refresh remaining management surfaces - completed June 17, 2026
+   - Extended the scoped admin visual system with shared admin input, label, primary/secondary/danger button, section heading, row-card, and disabled-state styles.
+   - Refreshed `/admin/menu`, `/admin/menu/weekly`, `/admin/gallery`, `/admin/customers`, `/admin/customers/[id]`, `/admin/payments`, `/admin/reports`, `/admin/notifications`, `/admin/settings`, `/admin/menu/categories`, and `/admin/menu/archived`.
+   - Polished dense menu, weekly menu, gallery, category, business settings, package, offering, option, allergen, and customization forms so controls stack cleanly and use consistent focus/hover states.
+   - Aligned recurring admin action controls for archive, delete, restore, availability, meal plan template application, weekly option/offering deletion, gallery deletion, and option choice editing.
+   - Browser smoke-tested the refreshed admin management routes on desktop, plus compact mobile checks for opened `/admin/menu` and `/admin/menu/weekly` detail panels, with no page-level horizontal overflow or browser console errors in the tested tab.
+   - `npm run check` passes after the remaining admin refresh. The existing `components/layout/SiteFooter.tsx` unused `Image` lint warning still appears, but it is not from this admin work.
+   - No database schema, routes, API behavior, approval guards, payment tracking, allergen acknowledgement, order workflow, menu workflow, or weekly capacity logic was intentionally changed.
+
+41. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
 
 Next work items - June 16, 2026:
 
-## Planned Visual Refresh / Brand Polish Pass
+## Completed Visual Refresh / Brand Polish Pass
 
-A future branch should perform a customer-facing visual refresh once the current functional checkout/profile/order flow work is stable.
+Completed June 16, 2026 and recorded above in item 38. The original scope is retained below as a design record.
+
+A customer-facing visual refresh should happen once the current functional checkout/profile/order flow work is stable.
 
 ### Goal
 
@@ -579,8 +612,8 @@ Use existing local/gallery images where possible. Avoid adding large unoptimized
 The branch should include a summary of changed pages/components, any remaining client image/content needs, and validation results.
 
 
-## Future Admin Dashboard Refresh
-After launch-critical customer-facing work is stable, perform a separate admin dashboard refresh focused on usability, workflow clarity, and operational efficiency.
+## Admin Dashboard Refresh
+First slice completed June 16, 2026 and recorded above in item 39. Remaining management-surface polish completed June 17, 2026 and recorded above in item 40. The original scope is retained below as a design record.
 
 ### Goal
 

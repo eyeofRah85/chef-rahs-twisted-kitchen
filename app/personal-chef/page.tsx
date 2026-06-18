@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getServiceRequestErrorMessage } from "@/lib/service-request-form-errors";
@@ -7,6 +8,10 @@ type PageProps = {
     error?: string;
   }>;
 };
+
+const inputClass =
+  "mt-2 w-full rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm outline-none transition placeholder:text-[#9c897d] focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40";
+const labelClass = "block text-sm font-bold text-[#563027]";
 
 export default async function PersonalChefPage({ searchParams }: PageProps) {
   const session = await auth();
@@ -32,157 +37,194 @@ export default async function PersonalChefPage({ searchParams }: PageProps) {
       })
     : null;
 
+  const defaultLocation = user?.addressLine1
+    ? `${user.addressLine1}${user.addressLine2 ? `, ${user.addressLine2}` : ""}, ${[
+        user.city,
+        user.state,
+        user.postalCode,
+      ]
+        .filter(Boolean)
+        .join(", ")}`
+    : "";
+
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-3xl rounded-2xl border bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-          Personal Chef
-        </p>
+    <main className="brand-page">
+      <section className="relative isolate overflow-hidden bg-[#563027]">
+        <Image
+          src="/personal-chef-splash.png"
+          alt="Personal chef plated meal"
+          fill
+          sizes="50vw"
+          className="object-cover opacity-55"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#563027] via-[#563027]/10 to-[#563027]/10" />
 
-        <h1 className="mt-3 text-4xl font-bold">
-          Personal Chef Request
-        </h1>
+        <div className="brand-container relative z-10 py-16 text-white">
+          <p className="text-sm font-bold uppercase text-[#f4c46f]">
+            Personal Chef
+          </p>
+          <h1 className="mt-3 max-w-3xl text-5xl font-script font-black leading-tight">
+            Plan a private chef experience.
+          </h1>
+          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#fff1df]">
+            Request private meals, events, meal prep, or custom dining support.
+            Chef Rah&apos;s Twisted Kitchen will follow up with availability,
+            pricing, and next steps.
+          </p>
+        </div>
+      </section>
 
-        <p className="mt-4 text-neutral-700">
-          Request personal chef services for private meals, events, meal prep,
-          or custom dining experiences. Chef Rah&apos;s Twisted Kitchen will
-          review your request and follow up with availability, pricing, and next
-          steps.
-        </p>
-
-        {errorMessage ? (
-          <div
-            role="alert"
-            className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900"
-          >
-            {errorMessage}
-          </div>
-        ) : null}
-
+      <section className="brand-container py-12">
         <form
           action="/api/personal-chef"
           method="POST"
-          className="mt-8 space-y-5"
+          className="brand-card mx-auto max-w-3xl p-6 sm:p-8"
         >
-          <input
-            name="name"
-            defaultValue={user?.name ?? session?.user?.name ?? ""}
-            placeholder="Name"
-            className="w-full rounded-xl border px-4 py-3"
-            required
-          />
-
-          <input
-            name="email"
-            type="email"
-            defaultValue={user?.email ?? session?.user?.email ?? ""}
-            placeholder="Email"
-            className="w-full rounded-xl border px-4 py-3"
-            required
-          />
-
-          <input
-            name="phone"
-            placeholder="Phone"
-            defaultValue={user?.phone ?? ""}
-            className="w-full rounded-xl border px-4 py-3"
-          />
-
-          <div className="space-y-2">
-            <input
-              name="eventDate"
-              type="datetime-local"
-              aria-describedby="personal-chef-event-date-help"
-              className="w-full rounded-xl border px-4 py-3"
-            />
-            <p
-              id="personal-chef-event-date-help"
-              className="text-sm text-neutral-600"
-            >
-              Choose the preferred service date and time if you already know
-              it.
-            </p>
+          <div>
+            <p className="brand-eyebrow">Tell Us What You Need</p>
+            <h2 className="mt-2 text-3xl font-black">Personal Chef Request</h2>
           </div>
 
-          <div className="space-y-2">
-            <input
-              name="guestCount"
-              type="number"
-              min="1"
-              aria-describedby="personal-chef-guest-count-help"
-              placeholder="Number of guests / people served"
-              className="w-full rounded-xl border px-4 py-3"
-            />
-            <p
-              id="personal-chef-guest-count-help"
-              className="text-sm text-neutral-600"
+          {errorMessage ? (
+            <div
+              role="alert"
+              className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-900"
             >
-              Enter a whole number. Estimates are fine for planning the quote.
-            </p>
+              {errorMessage}
+            </div>
+          ) : null}
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2">
+            <label className={labelClass}>
+              Name
+              <input
+                name="name"
+                defaultValue={user?.name ?? session?.user?.name ?? ""}
+                placeholder="Name"
+                className={inputClass}
+                required
+              />
+            </label>
+
+            <label className={labelClass}>
+              Email
+              <input
+                name="email"
+                type="email"
+                defaultValue={user?.email ?? session?.user?.email ?? ""}
+                placeholder="Email"
+                className={inputClass}
+                required
+              />
+            </label>
+
+            <label className={labelClass}>
+              Phone
+              <input
+                name="phone"
+                placeholder="Phone"
+                defaultValue={user?.phone ?? ""}
+                className={inputClass}
+              />
+            </label>
+
+            <label className={labelClass}>
+              Preferred Service Date
+              <input
+                name="eventDate"
+                type="datetime-local"
+                aria-describedby="personal-chef-event-date-help"
+                className={inputClass}
+              />
+              <span
+                id="personal-chef-event-date-help"
+                className="mt-2 block text-xs font-medium text-[#6b5a50]"
+              >
+                Choose the preferred service date and time if you already know
+                it.
+              </span>
+            </label>
+
+            <label className={labelClass}>
+              Number of Guests / People Served
+              <input
+                name="guestCount"
+                type="number"
+                min="1"
+                aria-describedby="personal-chef-guest-count-help"
+                placeholder="Number of guests / people served"
+                className={inputClass}
+              />
+              <span
+                id="personal-chef-guest-count-help"
+                className="mt-2 block text-xs font-medium text-[#6b5a50]"
+              >
+                Estimates are fine for planning the quote.
+              </span>
+            </label>
+
+            <label className={`${labelClass} md:col-span-2`}>
+              Service Location
+              <input
+                name="location"
+                aria-describedby="personal-chef-location-help"
+                placeholder="Home, venue, kitchen, or service address"
+                defaultValue={defaultLocation}
+                className={inputClass}
+              />
+              <span
+                id="personal-chef-location-help"
+                className="mt-2 block text-xs font-medium text-[#6b5a50]"
+              >
+                Add the home, venue, kitchen, or service address.
+              </span>
+            </label>
+
+            <label className={`${labelClass} md:col-span-2`}>
+              Requested Menu or Service Style
+              <textarea
+                name="requestedMenu"
+                rows={4}
+                aria-describedby="personal-chef-requested-menu-help"
+                placeholder="What type of meal, menu, or service are you looking for?"
+                className={inputClass}
+              />
+              <span
+                id="personal-chef-requested-menu-help"
+                className="mt-2 block text-xs font-medium text-[#6b5a50]"
+              >
+                Share the meal, service style, kitchen access, or dining
+                experience you want.
+              </span>
+            </label>
+
+            <label className={`${labelClass} md:col-span-2`}>
+              Allergies or Dietary Restrictions
+              <textarea
+                name="allergyNotes"
+                rows={3}
+                placeholder="Allergies or dietary restrictions"
+                className={inputClass}
+              />
+            </label>
+
+            <label className={`${labelClass} md:col-span-2`}>
+              Special Requests
+              <textarea
+                name="specialRequests"
+                rows={4}
+                placeholder="Timing, setup needs, kitchen access, preferences, etc."
+                className={inputClass}
+              />
+            </label>
           </div>
 
-          <div className="space-y-2">
-            <input
-              name="location"
-              aria-describedby="personal-chef-location-help"
-              placeholder="Service location"
-              defaultValue={
-                user?.addressLine1
-                  ? `${user.addressLine1}${user.addressLine2 ? `, ${user.addressLine2}` : ""}, ${[
-                      user.city,
-                      user.state,
-                      user.postalCode,
-                    ]
-                      .filter(Boolean)
-                      .join(", ")}`
-                  : ""
-              }
-              className="w-full rounded-xl border px-4 py-3"
-            />
-            <p
-              id="personal-chef-location-help"
-              className="text-sm text-neutral-600"
-            >
-              Add the home, venue, kitchen, or service address.
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <textarea
-              name="requestedMenu"
-              rows={4}
-              aria-describedby="personal-chef-requested-menu-help"
-              placeholder="What type of meal, menu, or service are you looking for?"
-              className="w-full rounded-xl border px-4 py-3"
-            />
-            <p
-              id="personal-chef-requested-menu-help"
-              className="text-sm text-neutral-600"
-            >
-              Share the meal, service style, kitchen access, or dining
-              experience you want.
-            </p>
-          </div>
-
-          <textarea
-            name="allergyNotes"
-            rows={3}
-            placeholder="Allergies or dietary restrictions"
-            className="w-full rounded-xl border px-4 py-3"
-          />
-
-          <textarea
-            name="specialRequests"
-            rows={4}
-            placeholder="Special requests, timing, setup needs, kitchen access, preferences, etc."
-            className="w-full rounded-xl border px-4 py-3"
-          />
-
-          <button className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white">
+          <button className="brand-button-primary mt-8 w-full px-5 py-3">
             Submit Personal Chef Request
           </button>
         </form>
-      </div>
+      </section>
     </main>
   );
 }

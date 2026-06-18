@@ -29,37 +29,44 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-md rounded-2xl border bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold">Sign In</h1>
+    <main className="brand-page px-6 py-12">
+      <div className="brand-card mx-auto max-w-md p-8">
+        <p className="brand-eyebrow">Welcome Back</p>
+        <h1 className="mt-2 text-3xl font-black">Sign In</h1>
 
         <form action={handleSubmit} className="mt-8 space-y-5">
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            className="w-full rounded-xl border px-4 py-3"
-            required
-          />
+          <label className="block text-sm font-bold">
+            Email
+            <input
+              name="email"
+              type="email"
+              placeholder="Email"
+              className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+              required
+            />
+          </label>
 
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            className="w-full rounded-xl border px-4 py-3"
-            required
-          />
+          <label className="block text-sm font-bold">
+            Password
+            <input
+              name="password"
+              type="password"
+              placeholder="Password"
+              className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+              required
+            />
+          </label>
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button className="w-full rounded-xl bg-black px-5 py-3 font-medium text-white">
+          <button className="brand-button-primary w-full px-5 py-3">
             Sign In
           </button>
         </form>
 
-        <p className="mt-5 text-sm text-neutral-600">
+        <p className="mt-5 text-sm text-[#6b5a50]">
           Need an account?{" "}
-          <Link href="/register" className="font-medium text-black">
+          <Link href="/register" className="font-bold text-[#9f2f18]">
             Create one
           </Link>
         </p>

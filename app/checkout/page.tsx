@@ -16,10 +16,10 @@ import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 
 const sectionClass =
-  "rounded-lg border border-neutral-200 bg-white p-6 shadow-sm";
+  "rounded-lg border border-[#ead8c1] bg-white/95 p-5 shadow-[0_18px_45px_rgba(76,36,18,0.08)] sm:p-6";
 const inputClass =
-  "w-full rounded-lg border border-neutral-300 px-4 py-3 text-sm outline-none focus:border-amber-700 focus:ring-2 focus:ring-amber-100";
-const labelClass = "block text-sm font-medium text-neutral-900";
+  "w-full rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm text-[#24130f] outline-none transition placeholder:text-[#9c897d] focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40";
+const labelClass = "block text-sm font-bold text-[#24130f]";
 
 const orderTypeOptions: {
   value: CheckoutDetails["orderType"];
@@ -61,8 +61,7 @@ export default function CheckoutPage() {
   );
 
   const requiresAllergenAcknowledgement =
-    uniqueCheckoutAllergenConflicts.length > 0 &&
-    !details.allergenAcknowledged;
+    uniqueCheckoutAllergenConflicts.length > 0 && !details.allergenAcknowledged;
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -104,21 +103,24 @@ export default function CheckoutPage() {
         resetContactDetails();
       }
     });
-    
+
     return () => {
       cancelled = true;
     };
   }, [resetContactDetails, updateContactDetails]);
 
-useEffect(() => {
-      if (uniqueCheckoutAllergenConflicts.length === 0 && details.allergenAcknowledged) {
-        updateField("allergenAcknowledged", false);
-      }
-    }, [
-      details.allergenAcknowledged,
-      uniqueCheckoutAllergenConflicts.length,
-      updateField,
-    ]);
+  useEffect(() => {
+    if (
+      uniqueCheckoutAllergenConflicts.length === 0 &&
+      details.allergenAcknowledged
+    ) {
+      updateField("allergenAcknowledged", false);
+    }
+  }, [
+    details.allergenAcknowledged,
+    uniqueCheckoutAllergenConflicts.length,
+    updateField,
+  ]);
 
   if (!mounted) {
     return null;
@@ -126,30 +128,28 @@ useEffect(() => {
   const hasCartItems = items.length > 0;
   if (!hasCartItems) {
     return (
-      <main className="min-h-screen bg-neutral-50 px-4 py-10 text-neutral-950 sm:px-6">
+      <main className="brand-page px-4 py-10 text-[#24130f] sm:px-6">
         <div className="mx-auto max-w-3xl">
           <div className={sectionClass}>
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-              Checkout
-            </p>
+            <p className="brand-eyebrow">Checkout</p>
 
-            <h1 className="mt-3 text-4xl font-bold">Your Cart Is Empty</h1>
+            <h1 className="mt-3 text-4xl font-black">Your Cart Is Empty</h1>
 
-            <p className="mt-4 text-neutral-700">
+            <p className="mt-4 text-[#6b5a50]">
               Add meal plans or a la carte items before starting checkout.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/menu"
-                className="rounded-lg bg-black px-5 py-3 text-sm font-medium text-white"
+                className="brand-button-primary px-5 py-3 text-sm"
               >
-                Browse Menu
+                View Meal Plans
               </Link>
 
               <Link
                 href="/cart"
-                className="rounded-lg border border-neutral-300 px-5 py-3 text-sm font-medium"
+                className="brand-button-secondary px-5 py-3 text-sm"
               >
                 View Cart
               </Link>
@@ -184,7 +184,6 @@ useEffect(() => {
   const total = subtotal + deliveryFee + lateFee + tipAmount;
   const requiresApproval = items.some((item) => item.requiresApproval);
 
-
   const cutoffDayNames = [
     "Sunday",
     "Monday",
@@ -203,9 +202,7 @@ useEffect(() => {
         : settings.orderCutoffHour;
 
   const cutoffAmPm = settings.orderCutoffHour >= 12 ? "PM" : "AM";
-  const cutoffMinute = settings.orderCutoffMinute
-    .toString()
-    .padStart(2, "0");
+  const cutoffMinute = settings.orderCutoffMinute.toString().padStart(2, "0");
   const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12}:${cutoffMinute} ${cutoffAmPm}`;
 
   async function submitOrder() {
@@ -223,7 +220,9 @@ useEffect(() => {
         uniqueCheckoutAllergenConflicts.length > 0 &&
         !details.allergenAcknowledged
       ) {
-        alert("Please acknowledge the allergen warning before submitting your order.");
+        alert(
+          "Please acknowledge the allergen warning before submitting your order.",
+        );
         return;
       }
 
@@ -311,18 +310,22 @@ useEffect(() => {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 py-10 text-neutral-950 sm:px-6">
+    <main className="brand-page px-4 py-10 text-[#24130f] sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Checkout
-          </p>
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div>
+            <p className="brand-eyebrow">Checkout</p>
 
-          <h1 className="mt-3 text-4xl font-bold">Checkout Details</h1>
+            <h1 className="mt-3 text-5xl font-black">Checkout Details</h1>
+            <p className="mt-3 max-w-2xl leading-7 text-[#6b5a50]">
+              Confirm your method, contact details, schedule, preferences, and
+              payment instructions before submitting.
+            </p>
+          </div>
         </div>
 
         <form
-          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]"
+          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]"
           onSubmit={(event) => {
             event.preventDefault();
             void submitOrder();
@@ -330,9 +333,9 @@ useEffect(() => {
         >
           <div className="space-y-5">
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">Order Method</h2>
+              <h2 className="text-2xl font-black">Order Method</h2>
 
-              <div className="mt-5 grid grid-cols-2 rounded-lg border border-neutral-200 bg-neutral-50 p-1">
+              <div className="mt-5 grid grid-cols-2 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-1">
                 {orderTypeOptions.map((option) => {
                   const selected = details.orderType === option.value;
 
@@ -344,8 +347,8 @@ useEffect(() => {
                       onClick={() => updateField("orderType", option.value)}
                       className={
                         selected
-                          ? "rounded-md bg-black px-4 py-3 text-sm font-medium text-white"
-                          : "rounded-md px-4 py-3 text-sm font-medium text-neutral-700"
+                          ? "rounded-md bg-[#24130f] px-4 py-3 text-sm font-bold text-white shadow-sm"
+                          : "rounded-md px-4 py-3 text-sm font-bold text-[#6b5a50] transition hover:bg-white"
                       }
                     >
                       {option.label}
@@ -357,22 +360,23 @@ useEffect(() => {
 
             <section className={sectionClass}>
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold">Order Items</h2>
+                <h2 className="text-2xl font-black">Order Items</h2>
 
                 <button
                   type="button"
                   onClick={() => router.push("/cart")}
-                  className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium"
+                  className="brand-button-secondary px-4 py-2 text-sm"
                 >
                   Edit Cart
                 </button>
               </div>
 
-              <div className="mt-5 divide-y divide-neutral-200">            
-                
+              <div className="mt-5 divide-y divide-[#ead8c1]">
                 {uniqueCheckoutAllergenConflicts.length > 0 && (
                   <div className="mb-5">
-                    <AllergenConflictWarning conflicts={uniqueCheckoutAllergenConflicts} />
+                    <AllergenConflictWarning
+                      conflicts={uniqueCheckoutAllergenConflicts}
+                    />
                   </div>
                 )}
 
@@ -380,9 +384,9 @@ useEffect(() => {
                   <div key={item.cartId} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-lg font-black">{item.name}</p>
 
-                        <p className="mt-1 text-sm text-neutral-600">
+                        <p className="mt-1 text-sm text-[#6b5a50]">
                           Quantity: {item.quantity}
                         </p>
 
@@ -391,8 +395,9 @@ useEffect(() => {
                         ).length > 0 && (
                           <div className="mt-3">
                             <AllergenConflictWarning
-                              conflicts={(item.allergens ?? []).filter((allergen) =>
-                                selectedAllergenIdSet.has(allergen.id),
+                              conflicts={(item.allergens ?? []).filter(
+                                (allergen) =>
+                                  selectedAllergenIdSet.has(allergen.id),
                               )}
                               compact
                             />
@@ -401,14 +406,14 @@ useEffect(() => {
 
                         {item.selectedOptions &&
                           item.selectedOptions.length > 0 && (
-                            <ul className="mt-3 space-y-1 text-sm text-neutral-600">
+                            <ul className="mt-3 space-y-1 text-sm text-[#6b5a50]">
                               {item.selectedOptions.map((option, index) => (
                                 <li
                                   key={`${option.groupName}-${option.choiceName}-${index}`}
                                   className="flex flex-wrap items-center gap-2"
                                 >
                                   <span>
-                                    <span className="font-medium">
+                                    <span className="font-bold">
                                       {option.groupName}:
                                     </span>{" "}
                                     {option.choiceName}
@@ -418,7 +423,7 @@ useEffect(() => {
                                   </span>
 
                                   {option.requestOnly && (
-                                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                                    <span className="rounded-full bg-[#fff0bd] px-2 py-0.5 text-xs font-bold text-[#8a5a00]">
                                       Request Only
                                     </span>
                                   )}
@@ -435,14 +440,14 @@ useEffect(() => {
                         )}
 
                         {item.customerInstructions && (
-                          <p className="mt-3 text-sm text-neutral-600">
-                            <span className="font-medium">Instructions:</span>{" "}
+                          <p className="mt-3 text-sm text-[#6b5a50]">
+                            <span className="font-bold">Instructions:</span>{" "}
                             {item.customerInstructions}
                           </p>
                         )}
                       </div>
 
-                      <p className="font-semibold">
+                      <p className="font-black">
                         ${(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
@@ -458,13 +463,13 @@ useEffect(() => {
             </section>
 
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">
+              <h2 className="text-2xl font-black">
                 {details.orderType === "delivery"
                   ? "Contact / Delivery Info"
                   : "Contact Info"}
               </h2>
 
-              <p className="mt-3 text-sm text-neutral-600">
+              <p className="mt-3 text-sm leading-6 text-[#6b5a50]">
                 Prefilled from your account profile when available. Check the
                 box below to save changes back to your profile after ordering.
               </p>
@@ -474,7 +479,9 @@ useEffect(() => {
                   Name
                   <input
                     value={details.name}
-                    onChange={(event) => updateField("name", event.target.value)}
+                    onChange={(event) =>
+                      updateField("name", event.target.value)
+                    }
                     className={`${inputClass} mt-2`}
                   />
                 </label>
@@ -561,28 +568,28 @@ useEffect(() => {
                   </>
                 )}
 
-                <label className="flex items-center gap-3 text-sm md:col-span-2">
+                <label className="flex items-center gap-3 text-sm font-medium text-[#3b241b] md:col-span-2">
                   <input
                     type="checkbox"
                     checked={Boolean(details.saveContactInfo)}
                     onChange={(event) =>
                       updateField("saveContactInfo", event.target.checked)
                     }
-                    className="h-4 w-4"
+                    className="h-4 w-4 accent-[#9f2f18]"
                   />
                   Save this contact and delivery information to my account
                 </label>
               </div>
 
               {details.orderType === "delivery" && settings.deliveryArea && (
-                <p className="mt-4 text-xs text-neutral-500">
+                <p className="mt-4 text-xs font-medium text-[#6b5a50]">
                   Delivery area: {settings.deliveryArea}.
                 </p>
               )}
             </section>
 
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">Schedule</h2>
+              <h2 className="text-2xl font-black">Schedule</h2>
 
               <label className={`${labelClass} mt-5`}>
                 Requested Date / Time
@@ -596,7 +603,7 @@ useEffect(() => {
                 />
               </label>
 
-              <p className="mt-3 text-xs text-neutral-500">
+              <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
                 Orders placed after {cutoffText} may include a $
                 {settings.lateFee.toFixed(2)} late-order fee.
                 {settings.noWeekendOrdering
@@ -605,7 +612,7 @@ useEffect(() => {
               </p>
 
               {lateFee > 0 && (
-                <div className="mt-4 rounded-lg border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+                <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
                   Orders placed after {cutoffText} include a $
                   {settings.lateFee.toFixed(2)} late-order fee.
                 </div>
@@ -613,7 +620,7 @@ useEffect(() => {
             </section>
 
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">Preferences</h2>
+              <h2 className="text-2xl font-black">Preferences</h2>
 
               <div className="mt-5 space-y-5">
                 <label className={labelClass}>
@@ -643,7 +650,7 @@ useEffect(() => {
             </section>
 
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">Payment</h2>
+              <h2 className="text-2xl font-black">Payment</h2>
 
               <div className="mt-5 space-y-5">
                 <label className={labelClass}>
@@ -675,7 +682,10 @@ useEffect(() => {
                       step="0.01"
                       value={details.customTipAmount}
                       onChange={(event) =>
-                        updateField("customTipAmount", Number(event.target.value))
+                        updateField(
+                          "customTipAmount",
+                          Number(event.target.value),
+                        )
                       }
                       className={`${inputClass} mt-2`}
                     />
@@ -702,7 +712,7 @@ useEffect(() => {
                   </select>
                 </label>
 
-                <p className="text-xs text-neutral-500">
+                <p className="rounded-lg bg-[#fff8ee] p-3 text-xs leading-5 text-[#6b5a50]">
                   {details.paymentMethod === "cash"
                     ? "Cash or offline payment will be confirmed after review. Online card payments remain disabled until Stripe is connected."
                     : "Manual invoice orders can be submitted now. The business will confirm payment instructions after review."}
@@ -732,32 +742,41 @@ useEffect(() => {
             </section>
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-6 lg:self-start">
+          <aside className="space-y-5 lg:sticky lg:top-28 lg:self-start">
             <section className={sectionClass}>
-              <h2 className="text-xl font-semibold">Review</h2>
+              <p className="brand-eyebrow">Final Step</p>
+              <h2 className="mt-2 text-3xl font-black">Review</h2>
 
-              <div className="mt-5 space-y-3 text-sm">
+              <div className="mt-5 space-y-3 text-sm text-[#6b5a50]">
                 <div className="flex justify-between gap-4">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-[#24130f]">
+                    ${subtotal.toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span>Delivery Fee</span>
-                  <span>${deliveryFee.toFixed(2)}</span>
+                  <span className="font-bold text-[#24130f]">
+                    ${deliveryFee.toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span>Late Fee</span>
-                  <span>${lateFee.toFixed(2)}</span>
+                  <span className="font-bold text-[#24130f]">
+                    ${lateFee.toFixed(2)}
+                  </span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span>Tip</span>
-                  <span>${tipAmount.toFixed(2)}</span>
+                  <span className="font-bold text-[#24130f]">
+                    ${tipAmount.toFixed(2)}
+                  </span>
                 </div>
 
-                <div className="border-t border-neutral-200 pt-3 text-base font-bold">
+                <div className="border-t border-[#ead8c1] pt-3 text-lg font-black text-[#24130f]">
                   <div className="flex justify-between gap-4">
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>
@@ -773,8 +792,8 @@ useEffect(() => {
               )}
 
               {details.orderType === "delivery" && (
-                <div className="mt-5 border-t border-neutral-200 pt-5 text-sm text-neutral-700">
-                  <p className="font-semibold">Delivery To</p>
+                <div className="mt-5 border-t border-[#ead8c1] pt-5 text-sm text-[#6b5a50]">
+                  <p className="font-black text-[#24130f]">Delivery To</p>
 
                   <p className="mt-2">{details.name || "Name not provided"}</p>
 
@@ -790,7 +809,7 @@ useEffect(() => {
                   </p>
 
                   {details.deliveryNotes && (
-                    <p className="mt-2 text-neutral-500">
+                    <p className="mt-2 text-[#6b5a50]">
                       Notes: {details.deliveryNotes}
                     </p>
                   )}
@@ -798,27 +817,33 @@ useEffect(() => {
               )}
 
               {uniqueCheckoutAllergenConflicts.length > 0 && (
-                <div className="mt-5 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-900">
-                  <p className="font-semibold">Allergen acknowledgement required</p>
-
-                  <p className="mt-2 leading-6">
-                    This order contains allergen tags that match your account preferences.
-                    Please review the warning before submitting.
+                <div className="mt-5 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-950">
+                  <p className="font-black">
+                    Allergen acknowledgement required
                   </p>
 
-                  <label className="mt-4 flex items-start gap-3 text-sm font-medium">
+                  <p className="mt-2 leading-6">
+                    This order contains allergen tags that match your account
+                    preferences. Please review the warning before submitting.
+                  </p>
+
+                  <label className="mt-4 flex items-start gap-3 text-sm font-bold">
                     <input
                       type="checkbox"
                       checked={Boolean(details.allergenAcknowledged)}
                       onChange={(event) =>
-                        updateField("allergenAcknowledged", event.target.checked)
+                        updateField(
+                          "allergenAcknowledged",
+                          event.target.checked,
+                        )
                       }
-                      className="mt-1 h-4 w-4"
+                      className="mt-1 h-4 w-4 accent-red-700"
                     />
 
                     <span>
-                      I understand this order contains allergen tags that match my account
-                      preferences, and I have reviewed the warning before submitting.
+                      I understand this order contains allergen tags that match
+                      my account preferences, and I have reviewed the warning
+                      before submitting.
                     </span>
                   </label>
                 </div>
@@ -827,11 +852,9 @@ useEffect(() => {
               <button
                 type="submit"
                 disabled={
-                  submitting ||
-                  !hasCartItems ||
-                  requiresAllergenAcknowledgement
+                  submitting || !hasCartItems || requiresAllergenAcknowledgement
                 }
-                className="mt-6 w-full rounded-lg bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
+                className="brand-button-primary mt-6 w-full px-5 py-3 disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:text-neutral-700 disabled:shadow-none"
               >
                 {submitting
                   ? "Submitting..."

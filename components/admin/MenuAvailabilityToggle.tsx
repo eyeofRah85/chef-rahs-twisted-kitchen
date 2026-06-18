@@ -40,13 +40,9 @@ export function MenuAvailabilityToggle({ menuItemId, available }: Props) {
       type="button"
       onClick={toggleAvailability}
       disabled={saving}
-      className="mt-3 rounded-xl border px-4 py-2 text-xs font-medium disabled:bg-neutral-100"
+      className="admin-button-secondary text-xs"
     >
-      {saving
-        ? "Saving..."
-        : available
-          ? "Mark Unavailable"
-          : "Mark Available"}
+      {saving ? "Saving..." : available ? "Mark Unavailable" : "Mark Available"}
     </button>
   );
 }

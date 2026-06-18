@@ -37,15 +37,15 @@ export function ReorderButton({ items }: ReorderButtonProps) {
         }}
         className={
           hasReorderableItems
-            ? "inline-flex rounded-xl border px-5 py-2 text-sm font-medium"
-            : "inline-flex cursor-not-allowed rounded-xl border bg-neutral-100 px-5 py-2 text-sm font-medium text-neutral-500"
+            ? "brand-button-secondary px-5 py-2 text-sm"
+            : "inline-flex cursor-not-allowed rounded-lg border border-[#ead8c1] bg-neutral-100 px-5 py-2 text-sm font-bold text-neutral-500"
         }
       >
         {skippedWeeklyItemCount > 0 ? "Reorder Available Items" : "Reorder"}
       </button>
 
       {skippedWeeklyItemCount > 0 && (
-        <p className="mt-2 max-w-xs text-xs text-neutral-500">
+        <p className="mt-2 max-w-xs text-xs text-[#6b5a50]">
           Weekly meal plans must be ordered from the current weekly menu.
         </p>
       )}

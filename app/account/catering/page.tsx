@@ -48,75 +48,68 @@ export default async function AccountCateringPage() {
   }
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
+    <main className="brand-page px-6 py-12">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Account
-          </p>
+          <p className="brand-eyebrow">Account</p>
 
-          <h1 className="mt-3 text-4xl font-bold">
-            Service Requests
-          </h1>
+          <h1 className="mt-3 text-5xl font-black">Service Requests</h1>
 
-          <p className="mt-3 text-neutral-700">
-            Track catering and personal chef requests, quotes, approvals, and deposit status.
+          <p className="mt-3 max-w-2xl leading-7 text-[#6b5a50]">
+            Track catering and personal chef requests, quotes, approvals, and
+            deposit status.
           </p>
         </div>
 
         <div className="space-y-5">
           {user.cateringRequests.map((request: AccountCateringRequest) => (
-            <div
-              key={request.id}
-              className="rounded-2xl border bg-white p-6 shadow-sm"
-            >
+            <div key={request.id} className="brand-card p-6">
               <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                 <div>
-
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-amber-700">
+                    <p className="text-sm font-bold uppercase text-[#9f2f18]">
                       {request.eventType ?? "Service Request"}
                     </p>
 
-                    <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700">
+                    <span className="rounded-full bg-[#f4eadb] px-3 py-1 text-xs font-bold text-[#6f1f12]">
                       {formatServiceRequestType(request.requestType)}
                     </span>
                   </div>
 
-                  <h2 className="mt-2 text-2xl font-bold">
+                  <h2 className="mt-2 text-2xl font-black">
                     Submitted {request.createdAt.toLocaleDateString()}
                   </h2>
 
-                  <p className="mt-2 text-sm text-neutral-600">
+                  <p className="mt-2 text-sm text-[#6b5a50]">
                     Event Date:{" "}
                     {request.eventDate
                       ? request.eventDate.toLocaleString()
                       : "Not provided"}
                   </p>
 
-                  <p className="mt-1 text-sm text-neutral-600">
+                  <p className="mt-1 text-sm text-[#6b5a50]">
                     Guests: {request.guestCount ?? "Not provided"}
                   </p>
 
-                  <p className="mt-1 text-sm text-neutral-600">
+                  <p className="mt-1 text-sm text-[#6b5a50]">
                     Approval: {formatApprovalStatus(request.approvalStatus)}
                   </p>
                 </div>
 
                 <div className="text-left md:text-right">
-                  <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                  <span className="rounded-full bg-[#f4eadb] px-3 py-1 text-xs font-bold text-[#6f1f12]">
                     {formatServiceRequestStatus(request.status)}
                   </span>
 
                   {request.estimatedTotal != null && (
-                    <p className="mt-3 text-2xl font-bold">
+                    <p className="mt-3 text-2xl font-black">
                       ${Number(request.estimatedTotal).toFixed(2)}
                     </p>
                   )}
 
                   {request.depositAmount != null && (
-                    <div className="mt-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-                      <p className="font-medium">
+                    <div className="mt-2 rounded-lg border border-[#d99426] bg-[#fff3cf] p-3 text-sm text-[#6f1f12]">
+                      <p className="font-bold">
                         Deposit: ${Number(request.depositAmount).toFixed(2)}
                       </p>
 
@@ -129,36 +122,35 @@ export default async function AccountCateringPage() {
                   )}
                   <Link
                     href={`/account/catering/${request.id}`}
-                    className="mt-4 inline-flex rounded-xl bg-black px-5 py-2 text-sm font-medium text-white"
-                    >
+                    className="brand-button-primary mt-4 px-5 py-2 text-sm"
+                  >
                     View Details
-                </Link>
+                  </Link>
                 </div>
               </div>
             </div>
           ))}
 
           {user.cateringRequests.length === 0 && (
-            <div className="rounded-2xl border bg-white p-8 text-center shadow-sm">
-              <h2 className="text-2xl font-semibold">
-                No service requests yet
-              </h2>
+            <div className="brand-card p-8 text-center">
+              <h2 className="text-2xl font-black">No service requests yet</h2>
 
-              <p className="mt-2 text-neutral-600">
-                Catering and personal chef requests will appear here after submission.
+              <p className="mt-2 text-[#6b5a50]">
+                Catering and personal chef requests will appear here after
+                submission.
               </p>
 
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link
                   href="/catering"
-                  className="inline-flex rounded-xl bg-black px-5 py-3 font-medium text-white"
+                  className="brand-button-primary px-5 py-3"
                 >
                   Start Catering Request
                 </Link>
 
                 <Link
                   href="/personal-chef"
-                  className="inline-flex rounded-xl border px-5 py-3 font-medium"
+                  className="brand-button-secondary px-5 py-3"
                 >
                   Request Personal Chef
                 </Link>

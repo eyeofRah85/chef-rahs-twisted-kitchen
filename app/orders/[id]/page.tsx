@@ -78,7 +78,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
           weeklyMealPlanSelection: true,
         },
       },
-      user: true,      
+      user: true,
     },
   })) as OrderDetail | null;
 
@@ -99,57 +99,60 @@ export default async function OrderPage({ params }: OrderPageProps) {
     order.paymentStatus === "OFFLINE_PAYMENT_DUE";
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
+    <main className="brand-page px-6 py-12">
       <div className="mx-auto max-w-4xl">
-        <Link href="/account/orders" className="text-sm font-medium underline">
+        <Link
+          href="/account/orders"
+          className="text-sm font-bold text-[#9f2f18] underline"
+        >
           &larr; Back to Order History
         </Link>
 
-        <div className="mt-8 rounded-2xl border bg-white p-8 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Order Details
-          </p>
+        <div className="brand-card mt-8 p-6 sm:p-8">
+          <p className="brand-eyebrow">Order Details</p>
 
-          <h1 className="mt-3 text-4xl font-bold">Order Details</h1>
+          <h1 className="mt-3 text-5xl font-black">Order Details</h1>
 
-          <p className="mt-3 text-sm text-neutral-600">{order.id}</p>
+          <p className="mt-3 break-all text-sm text-[#6b5a50]">{order.id}</p>
 
           <section className="mt-8 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Status</p>
-              <p className="mt-2 font-semibold">
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Status</p>
+              <p className="mt-2 font-black">
                 {formatOrderStatus(order.status)}
               </p>
             </div>
 
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Approval</p>
-              <p className="mt-2 font-semibold">{formatApprovalStatus(order.approvalStatus)}</p>
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Approval</p>
+              <p className="mt-2 font-black">
+                {formatApprovalStatus(order.approvalStatus)}
+              </p>
             </div>
 
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Payment</p>
-              <p className="mt-2 font-semibold">
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Payment</p>
+              <p className="mt-2 font-black">
                 {formatPaymentStatus(order.paymentStatus) ?? "Not set"}
               </p>
             </div>
           </section>
 
           {order.approvalStatus === "PENDING" && (
-            <section className="mt-6 rounded-2xl border border-blue-300 bg-blue-50 p-5 text-blue-950">
-              <h2 className="text-xl font-semibold">Waiting for Chef Approval</h2>
+            <section className="mt-6 rounded-lg border border-blue-300 bg-blue-50 p-5 text-blue-950">
+              <h2 className="text-xl font-black">Waiting for Chef Approval</h2>
 
               <p className="mt-2 text-sm leading-6">
-                Your order has been received and is waiting for chef review.
-                You will receive an update once the order is approved or if
-                changes are needed.
+                Your order has been received and is waiting for chef review. You
+                will receive an update once the order is approved or if changes
+                are needed.
               </p>
             </section>
           )}
 
           {order.approvalStatus === "DENIED" && (
-            <section className="mt-6 rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950">
-              <h2 className="text-xl font-semibold">Order Not Approved</h2>
+            <section className="mt-6 rounded-lg border border-red-300 bg-red-50 p-5 text-red-950">
+              <h2 className="text-xl font-black">Order Not Approved</h2>
 
               <p className="mt-2 text-sm leading-6">
                 This order was not approved. Please review any notes from the
@@ -166,8 +169,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
           )}
 
           {order.approvalStatus === "APPROVED" && (
-            <section className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5 text-green-950">
-              <h2 className="text-xl font-semibold">Order Approved</h2>
+            <section className="mt-6 rounded-lg border border-green-300 bg-green-50 p-5 text-green-950">
+              <h2 className="text-xl font-black">Order Approved</h2>
 
               <p className="mt-2 text-sm leading-6">
                 This order has been approved and can continue through
@@ -183,8 +186,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
           )}
 
           {paymentDue && (
-            <section className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 p-5 text-amber-950">
-              <h2 className="text-xl font-semibold">Payment Due</h2>
+            <section className="mt-6 rounded-lg border border-[#d99426] bg-[#fff3cf] p-5 text-[#6f1f12]">
+              <h2 className="text-xl font-black">Payment Due</h2>
 
               <p className="mt-2 text-sm">
                 This order still needs payment.
@@ -194,17 +197,17 @@ export default async function OrderPage({ params }: OrderPageProps) {
               </p>
 
               <p className="mt-3 text-sm">
-                Online payment is coming soon. The business will confirm
-                invoice or cash/offline payment instructions after review.
+                Online payment is coming soon. The business will confirm invoice
+                or cash/offline payment instructions after review.
               </p>
             </section>
           )}
 
           <section className="mt-8 grid gap-6 md:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-semibold">Customer</h2>
+              <h2 className="text-2xl font-black">Customer</h2>
 
-              <div className="mt-4 space-y-2 text-sm text-neutral-700">
+              <div className="mt-4 space-y-2 text-sm text-[#6b5a50]">
                 <p>
                   <strong>Name:</strong> {order.customerName}
                 </p>
@@ -214,7 +217,8 @@ export default async function OrderPage({ params }: OrderPageProps) {
                 </p>
 
                 <p>
-                  <strong>Order Type:</strong> {formatOrderType(order.orderType)}
+                  <strong>Order Type:</strong>{" "}
+                  {formatOrderType(order.orderType)}
                 </p>
 
                 <p>
@@ -227,16 +231,17 @@ export default async function OrderPage({ params }: OrderPageProps) {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold">Payment</h2>
+              <h2 className="text-2xl font-black">Payment</h2>
 
-              <div className="mt-4 space-y-2 text-sm text-neutral-700">
+              <div className="mt-4 space-y-2 text-sm text-[#6b5a50]">
                 <p>
                   <strong>Provider:</strong>{" "}
                   {order.paymentProvider ?? "Not set"}
                 </p>
 
                 <p>
-                  <strong>Status:</strong> {formatPaymentStatus(order.paymentStatus)}
+                  <strong>Status:</strong>{" "}
+                  {formatPaymentStatus(order.paymentStatus)}
                 </p>
 
                 <p>
@@ -253,70 +258,72 @@ export default async function OrderPage({ params }: OrderPageProps) {
               </div>
             </div>
           </section>
-<section className="mt-8 rounded-2xl border bg-white p-6 shadow-sm">
-  <h2 className="text-2xl font-semibold">Contact / Delivery Information</h2>
+          <section className="mt-8 rounded-lg border border-[#ead8c1] bg-white p-6 shadow-sm">
+            <h2 className="text-2xl font-black">
+              Contact / Delivery Information
+            </h2>
 
-  <div className="mt-5 space-y-2 text-sm text-neutral-700">
-    <p>
-      <strong>Name:</strong>{" "}
-      {order.deliveryName ?? order.customerName ?? "Not provided"}
-    </p>
+            <div className="mt-5 space-y-2 text-sm text-[#6b5a50]">
+              <p>
+                <strong>Name:</strong>{" "}
+                {order.deliveryName ?? order.customerName ?? "Not provided"}
+              </p>
 
-    <p>
-      <strong>Phone:</strong>{" "}
-      {order.deliveryPhone ?? "Not provided"}
-    </p>
+              <p>
+                <strong>Phone:</strong> {order.deliveryPhone ?? "Not provided"}
+              </p>
 
-    {order.orderType === "DELIVERY" && (
-      <>
-        <p>
-          <strong>Address:</strong>{" "}
-          {order.deliveryAddressLine1
-            ? `${order.deliveryAddressLine1}${
-                order.deliveryAddressLine2
-                  ? `, ${order.deliveryAddressLine2}`
-                  : ""
-              }`
-            : "Not provided"}
-        </p>
+              {order.orderType === "DELIVERY" && (
+                <>
+                  <p>
+                    <strong>Address:</strong>{" "}
+                    {order.deliveryAddressLine1
+                      ? `${order.deliveryAddressLine1}${
+                          order.deliveryAddressLine2
+                            ? `, ${order.deliveryAddressLine2}`
+                            : ""
+                        }`
+                      : "Not provided"}
+                  </p>
 
-        <p>
-          <strong>City/State/ZIP:</strong>{" "}
-          {[
-            order.deliveryCity,
-            order.deliveryState,
-            order.deliveryPostalCode,
-          ]
-            .filter(Boolean)
-            .join(", ") || "Not provided"}
-        </p>
+                  <p>
+                    <strong>City/State/ZIP:</strong>{" "}
+                    {[
+                      order.deliveryCity,
+                      order.deliveryState,
+                      order.deliveryPostalCode,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || "Not provided"}
+                  </p>
 
-        <p>
-          <strong>Delivery Notes:</strong>{" "}
-          {order.deliveryNotes ?? "None"}
-        </p>
-      </>
-    )}
-  </div>
-</section>
+                  <p>
+                    <strong>Delivery Notes:</strong>{" "}
+                    {order.deliveryNotes ?? "None"}
+                  </p>
+                </>
+              )}
+            </div>
+          </section>
           <section className="mt-8">
-            <h2 className="text-2xl font-semibold">Items</h2>
+            <h2 className="text-2xl font-black">Items</h2>
 
             <div className="mt-5 space-y-3">
               {order.items.map((item) => (
-                <div key={item.id} className="rounded-xl border p-4">
+                <div
+                  key={item.id}
+                  className="rounded-lg border border-[#ead8c1] p-4"
+                >
                   {item.weeklyMealPlanSelection ? (
                     <div className="mb-3 border-l-4 border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
-                      <p className="font-semibold">
-                        Weekly Meal Plan Snapshot
-                      </p>
+                      <p className="font-semibold">Weekly Meal Plan Snapshot</p>
 
                       <dl className="mt-2 space-y-1">
                         {getWeeklyMealPlanSelectionDetails(
                           item.weeklyMealPlanSelection,
                         ).map((detail) => (
                           <div key={detail.label}>
-                            <dt className="inline font-semibold">
+                            <dt className="inline font-bold">
                               {detail.label}:{" "}
                             </dt>
                             <dd className="inline">{detail.value}</dd>
@@ -328,17 +335,17 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
                   <div className="flex justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold">
+                      <h3 className="font-black">
                         {item.quantity} x {item.name}
                       </h3>
 
-                      <p className="mt-1 text-sm text-neutral-600">
+                      <p className="mt-1 text-sm text-[#6b5a50]">
                         ${Number(item.unitPrice).toFixed(2)} each
                       </p>
 
                       {item.notes && (
-                        <div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900 whitespace-pre-wrap">
-                          <p className="mb-1 font-semibold">
+                        <div className="mt-3 whitespace-pre-wrap rounded-lg bg-[#fff3cf] p-3 text-sm text-[#6f1f12]">
+                          <p className="mb-1 font-black">
                             Selections / Add-ons
                           </p>
                           {item.notes}
@@ -346,7 +353,7 @@ export default async function OrderPage({ params }: OrderPageProps) {
                       )}
                     </div>
 
-                    <p className="font-semibold">
+                    <p className="font-black">
                       ${Number(item.lineTotal).toFixed(2)}
                     </p>
                   </div>
@@ -357,24 +364,26 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
           <section className="mt-8 space-y-5">
             <div>
-              <h2 className="text-xl font-semibold">Allergy Notes</h2>
+              <h2 className="text-xl font-black">Allergy Notes</h2>
 
               {order.allergyNotes ? (
-                <div className="mt-2 rounded-xl border-2 border-red-500 bg-red-50 p-4 text-sm text-red-900">
+                <div className="mt-2 rounded-lg border-2 border-red-500 bg-red-50 p-4 text-sm text-red-900">
                   {order.allergyNotes}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-neutral-700">None provided.</p>
+                <p className="mt-2 text-sm text-[#6b5a50]">None provided.</p>
               )}
             </div>
 
             {order.allergenAcknowledged && (
-              <div className="rounded-2xl border border-red-300 bg-red-50 p-5 text-sm text-red-900">
-                <h2 className="text-xl font-semibold">Allergen Warning Acknowledged</h2>
+              <div className="rounded-lg border border-red-300 bg-red-50 p-5 text-sm text-red-900">
+                <h2 className="text-xl font-black">
+                  Allergen Warning Acknowledged
+                </h2>
 
                 <p className="mt-2 leading-6">
-                  You acknowledged that this order may contain allergen tags matching your
-                  account preferences before submitting.
+                  You acknowledged that this order may contain allergen tags
+                  matching your account preferences before submitting.
                 </p>
 
                 {order.allergenAcknowledgedAt && (
@@ -387,17 +396,15 @@ export default async function OrderPage({ params }: OrderPageProps) {
             )}
 
             <div>
-              <h2 className="text-xl font-semibold">
-                Substitution Preference
-              </h2>
+              <h2 className="text-xl font-black">Substitution Preference</h2>
 
-              <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-700">
+              <p className="mt-2 whitespace-pre-wrap text-sm text-[#6b5a50]">
                 {order.substitutionPreference ?? "None provided."}
               </p>
             </div>
           </section>
 
-          <section className="mt-8 border-t pt-6">
+          <section className="mt-8 border-t border-[#ead8c1] pt-6">
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span>Subtotal</span>

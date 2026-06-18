@@ -39,7 +39,7 @@ export function MarkOrderPaidButton({ orderId }: Props) {
       type="button"
       onClick={markPaid}
       disabled={saving}
-      className="w-full rounded-xl bg-black px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
+      className="brand-button-primary w-full px-5 py-3 text-sm disabled:bg-neutral-400"
     >
       {saving ? "Saving..." : "Mark Paid"}
     </button>

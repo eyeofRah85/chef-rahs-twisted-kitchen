@@ -18,7 +18,9 @@ function formatOptionalCurrency(value: number | null) {
   return value === null ? "Not set" : `$${value.toFixed(2)}`;
 }
 
-export default async function AccountCateringDetailsPage({ params }: PageProps) {
+export default async function AccountCateringDetailsPage({
+  params,
+}: PageProps) {
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -47,44 +49,49 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
     request.depositAmount === null ? null : Number(request.depositAmount);
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
+    <main className="brand-page px-6 py-12">
       <div className="mx-auto max-w-4xl">
-        <Link href="/account/catering" className="text-sm font-medium underline">
+        <Link
+          href="/account/catering"
+          className="text-sm font-bold text-[#9f2f18] underline"
+        >
           &larr; Back to Service Requests
         </Link>
 
-        <div className="mt-8 rounded-2xl border bg-white p-8 shadow-sm">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            {requestTypeLabel} Request
-          </p>
+        <div className="brand-card mt-8 p-6 sm:p-8">
+          <p className="brand-eyebrow">{requestTypeLabel} Request</p>
 
-          <h1 className="mt-3 text-4xl font-bold">
+          <h1 className="mt-3 text-5xl font-black">
             {request.eventType ?? `${requestTypeLabel} Request`}
           </h1>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Status</p>
-              <p className="mt-2 font-semibold">{formatServiceRequestStatus(request.status)}</p>
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Status</p>
+              <p className="mt-2 font-black">
+                {formatServiceRequestStatus(request.status)}
+              </p>
             </div>
 
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Approval</p>
-              <p className="mt-2 font-semibold">{formatApprovalStatus(request.approvalStatus)}</p>
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Approval</p>
+              <p className="mt-2 font-black">
+                {formatApprovalStatus(request.approvalStatus)}
+              </p>
             </div>
 
-            <div className="rounded-xl bg-neutral-100 p-4">
-              <p className="text-sm text-neutral-500">Guests</p>
-              <p className="mt-2 font-semibold">
+            <div className="rounded-lg bg-[#fff8ee] p-4">
+              <p className="text-sm font-bold text-[#9f2f18]">Guests</p>
+              <p className="mt-2 font-black">
                 {request.guestCount ?? "Not provided"}
               </p>
             </div>
           </div>
 
           {request.approvalNote && (
-            <div className="mt-6 rounded-xl border bg-neutral-50 p-4 text-sm">
-              <p className="font-semibold">Approval Note</p>
-              <p className="mt-2 whitespace-pre-wrap text-neutral-700">
+            <div className="mt-6 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4 text-sm">
+              <p className="font-black">Approval Note</p>
+              <p className="mt-2 whitespace-pre-wrap text-[#6b5a50]">
                 {request.approvalNote}
               </p>
             </div>
@@ -92,9 +99,9 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
 
           <section className="mt-8 grid gap-6 md:grid-cols-2">
             <div>
-              <h2 className="text-2xl font-semibold">Event Details</h2>
+              <h2 className="text-2xl font-black">Event Details</h2>
 
-              <div className="mt-4 space-y-2 text-sm text-neutral-700">
+              <div className="mt-4 space-y-2 text-sm text-[#6b5a50]">
                 <p>
                   <strong>Date:</strong>{" "}
                   {request.eventDate
@@ -103,7 +110,8 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
                 </p>
 
                 <p>
-                  <strong>Location:</strong> {request.location ?? "Not provided"}
+                  <strong>Location:</strong>{" "}
+                  {request.location ?? "Not provided"}
                 </p>
 
                 <p>
@@ -114,9 +122,9 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold">Quote / Deposit</h2>
+              <h2 className="text-2xl font-black">Quote / Deposit</h2>
 
-              <div className="mt-4 space-y-2 text-sm text-neutral-700">
+              <div className="mt-4 space-y-2 text-sm text-[#6b5a50]">
                 <p>
                   <strong>Estimated Total:</strong>{" "}
                   {formatOptionalCurrency(estimatedTotal)}
@@ -130,8 +138,8 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
                 {depositAmount !== null &&
                   depositAmount > 0 &&
                   !request.depositPaidAt && (
-                    <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                      <p className="font-semibold">Deposit Pending</p>
+                    <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm text-[#6f1f12]">
+                      <p className="font-black">Deposit Pending</p>
 
                       <p className="mt-2">
                         A deposit of ${depositAmount.toFixed(2)} is due before
@@ -148,8 +156,8 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
                   )}
 
                 {depositAmount === 0 && !request.depositPaidAt && (
-                  <div className="mt-4 rounded-xl border bg-neutral-50 p-4 text-sm text-neutral-700">
-                    <p className="font-semibold">No Deposit Due</p>
+                  <div className="mt-4 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4 text-sm text-[#6b5a50]">
+                    <p className="font-black">No Deposit Due</p>
 
                     <p className="mt-2">
                       No deposit is due for this service request.
@@ -158,11 +166,12 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
                 )}
 
                 {request.depositPaidAt && (
-                  <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-900">
-                    <p className="font-semibold">Deposit Paid</p>
+                  <div className="mt-4 rounded-lg border border-green-300 bg-green-50 p-4 text-sm text-green-900">
+                    <p className="font-black">Deposit Paid</p>
 
                     <p className="mt-2">
-                      Deposit received on {request.depositPaidAt.toLocaleString()}.
+                      Deposit received on{" "}
+                      {request.depositPaidAt.toLocaleString()}.
                     </p>
                   </div>
                 )}
@@ -172,26 +181,26 @@ export default async function AccountCateringDetailsPage({ params }: PageProps) 
 
           <section className="mt-8 space-y-5">
             <div>
-              <h2 className="text-xl font-semibold">Requested Menu</h2>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-700">
+              <h2 className="text-xl font-black">Requested Menu</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-[#6b5a50]">
                 {request.requestedMenu ?? "None provided."}
               </p>
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold">Allergy Notes</h2>
+              <h2 className="text-xl font-black">Allergy Notes</h2>
               {request.allergyNotes ? (
-                <div className="mt-2 rounded-xl border-2 border-red-500 bg-red-50 p-4 text-sm text-red-900">
+                <div className="mt-2 rounded-lg border-2 border-red-500 bg-red-50 p-4 text-sm text-red-900">
                   {request.allergyNotes}
                 </div>
               ) : (
-                <p className="mt-2 text-sm text-neutral-700">None provided.</p>
+                <p className="mt-2 text-sm text-[#6b5a50]">None provided.</p>
               )}
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold">Special Requests</h2>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-neutral-700">
+              <h2 className="text-xl font-black">Special Requests</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-[#6b5a50]">
                 {request.specialRequests ?? "None provided."}
               </p>
             </div>

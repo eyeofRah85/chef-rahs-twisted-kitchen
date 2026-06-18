@@ -39,7 +39,7 @@ export function DeleteOptionGroupButton({ optionGroupId }: Props) {
       type="button"
       onClick={deleteGroup}
       disabled={deleting}
-      className="mt-2 rounded-xl border border-red-300 bg-red-50 px-3 py-1 text-xs font-medium text-red-700 disabled:bg-neutral-100"
+      className="admin-button-danger mt-2 text-xs"
     >
       {deleting ? "Deleting..." : "Delete Group"}
     </button>

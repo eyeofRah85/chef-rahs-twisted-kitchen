@@ -17,8 +17,7 @@ export function CateringApprovalForm({
   const [approvalNote, setApprovalNote] = useState("");
 
   const finalized =
-    currentApprovalStatus === "APPROVED" ||
-    currentApprovalStatus === "DENIED";
+    currentApprovalStatus === "APPROVED" || currentApprovalStatus === "DENIED";
 
   async function submitApproval(approvalStatus: "APPROVED" | "DENIED") {
     if (saving || finalized) return;
@@ -33,19 +32,16 @@ export function CateringApprovalForm({
 
     setSaving(true);
 
-    const response = await fetch(
-      `/api/admin/catering/${requestId}/approval`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          approvalStatus,
-          approvalNote,
-        }),
+    const response = await fetch(`/api/admin/catering/${requestId}/approval`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        approvalStatus,
+        approvalNote,
+      }),
+    });
 
     setSaving(false);
 
@@ -60,7 +56,7 @@ export function CateringApprovalForm({
 
   if (currentApprovalStatus === "APPROVED") {
     return (
-      <div className="rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-900">
+      <div className="rounded-lg border border-green-300 bg-green-50 p-4 text-sm font-medium text-green-900">
         This service request has already been approved.
       </div>
     );
@@ -68,7 +64,7 @@ export function CateringApprovalForm({
 
   if (currentApprovalStatus === "DENIED") {
     return (
-      <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">
+      <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm font-medium text-red-900">
         This service request has already been denied.
       </div>
     );
@@ -86,7 +82,7 @@ export function CateringApprovalForm({
         onChange={(e) => setApprovalNote(e.target.value)}
         rows={3}
         placeholder="Optional note to include with the decision"
-        className="mt-5 w-full rounded-xl border px-4 py-3 text-sm"
+        className="mt-5 w-full rounded-lg border border-[#d7bea1] px-4 py-3 text-sm outline-none transition focus:border-[#8a2b18] focus:ring-2 focus:ring-[#d99426]/30"
       />
 
       <div className="mt-5 flex flex-wrap gap-3">
@@ -94,7 +90,7 @@ export function CateringApprovalForm({
           type="button"
           disabled={saving}
           onClick={() => submitApproval("APPROVED")}
-          className="rounded-xl bg-green-700 px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
+          className="rounded-lg bg-green-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-green-800 disabled:bg-neutral-400"
         >
           {saving ? "Saving..." : "Approve Request"}
         </button>
@@ -103,7 +99,7 @@ export function CateringApprovalForm({
           type="button"
           disabled={saving}
           onClick={() => submitApproval("DENIED")}
-          className="rounded-xl bg-red-700 px-5 py-3 text-sm font-medium text-white disabled:bg-neutral-400"
+          className="rounded-lg bg-red-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-800 disabled:bg-neutral-400"
         >
           {saving ? "Saving..." : "Deny Request"}
         </button>

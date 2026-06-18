@@ -23,52 +23,52 @@ export function AccountProfileForm({ user, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(formData: FormData) {
-  setSaving(true);
+    setSaving(true);
 
-  const response = await fetch("/api/account/profile", {
-    method: "PATCH",
-    body: formData,
-  });
+    const response = await fetch("/api/account/profile", {
+      method: "PATCH",
+      body: formData,
+    });
 
-  setSaving(false);
+    setSaving(false);
 
-  if (!response.ok) {
-    alert("Failed to update account information.");
-    return;
+    if (!response.ok) {
+      alert("Failed to update account information.");
+      return;
+    }
+
+    router.refresh();
+    onSaved?.();
   }
-
-  router.refresh();
-  onSaved?.();
-}
 
   return (
     <form
       action={handleSubmit}
-      className="rounded-2xl border bg-neutral-50 p-5"
+      className="rounded-lg border border-[#ead8c1] bg-white p-5"
     >
-      <h2 className="text-2xl font-semibold">Account Information</h2>
+      <h2 className="text-2xl font-black">Account Information</h2>
 
-      <p className="mt-2 text-sm text-neutral-600">
-        Update your contact, delivery, and service-location information for orders
-        and service requests.
+      <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
+        Update your contact, delivery, and service-location information for
+        orders and service requests.
       </p>
 
       <div className="mt-6 grid gap-5 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium">Name</label>
+          <label className="block text-sm font-bold">Name</label>
           <input
             name="name"
             defaultValue={user.name ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Email</label>
+          <label className="block text-sm font-bold">Email</label>
           <input
             value={user.email ?? ""}
             disabled
-            className="mt-2 w-full rounded-xl border bg-neutral-100 px-4 py-3 text-neutral-500"
+            className="mt-2 w-full rounded-lg border border-[#ead8c1] bg-[#fff8ee] px-4 py-3 text-[#6b5a50]"
           />
           <p className="mt-1 text-xs text-neutral-500">
             Email changes are not available here yet.
@@ -76,75 +76,75 @@ export function AccountProfileForm({ user, onSaved }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium">Phone</label>
+          <label className="block text-sm font-bold">Phone</label>
           <input
             name="phone"
             defaultValue={user.phone ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">ZIP / Postal Code</label>
+          <label className="block text-sm font-bold">ZIP / Postal Code</label>
           <input
             name="postalCode"
             defaultValue={user.postalCode ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium">Address Line 1</label>
+          <label className="block text-sm font-bold">Address Line 1</label>
           <input
             name="addressLine1"
             defaultValue={user.addressLine1 ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium">Address Line 2</label>
+          <label className="block text-sm font-bold">Address Line 2</label>
           <input
             name="addressLine2"
             defaultValue={user.addressLine2 ?? ""}
             placeholder="Apartment, suite, unit, building, etc."
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition placeholder:text-[#9c897d] focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">City</label>
+          <label className="block text-sm font-bold">City</label>
           <input
             name="city"
             defaultValue={user.city ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium">State</label>
+          <label className="block text-sm font-bold">State</label>
           <input
             name="state"
             defaultValue={user.state ?? ""}
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
 
         <div className="md:col-span-2">
-          <label className="block text-sm font-medium">Delivery Notes</label>
+          <label className="block text-sm font-bold">Delivery Notes</label>
           <textarea
             name="deliveryNotes"
             defaultValue={user.deliveryNotes ?? ""}
             rows={4}
             placeholder="Gate code, apartment instructions, preferred drop-off notes, parking details, etc."
-            className="mt-2 w-full rounded-xl border px-4 py-3"
+            className="mt-2 w-full rounded-lg border border-[#d7bea1] px-4 py-3 outline-none transition placeholder:text-[#9c897d] focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
           />
         </div>
       </div>
 
       <button
         disabled={saving}
-        className="mt-8 rounded-xl bg-black px-5 py-3 font-medium text-white disabled:bg-neutral-400"
+        className="brand-button-primary mt-8 px-5 py-3 disabled:bg-neutral-400 disabled:text-neutral-700 disabled:shadow-none"
       >
         {saving ? "Saving..." : "Save Account Information"}
       </button>

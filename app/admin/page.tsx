@@ -27,7 +27,7 @@ export default async function AdminPage() {
   } catch {
     redirect("/");
   }
-  
+
   const metrics = {
     pendingOrders: prisma.order.count({
       where: { status: "PENDING" },
@@ -103,7 +103,6 @@ export default async function AdminPage() {
     }),
 
     businessSettings: getBusinessSettings(),
-
   };
 
   const [
@@ -213,21 +212,36 @@ export default async function AdminPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-12">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-amber-700">
-            Admin Dashboard
-          </p>
+    <main className="admin-page">
+      <div className="admin-container">
+        <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="admin-eyebrow">Admin Dashboard</p>
 
-          <h1 className="mt-3 text-4xl font-bold">
-            Kitchen Control Center
-          </h1>
+            <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">
+              Kitchen Control Center
+            </h1>
 
-          <p className="mt-3 max-w-2xl text-neutral-700">
-            Monitor orders, payments, menu items, meal plans, and kitchen
-            workflow from one place.
-          </p>
+            <p className="mt-3 max-w-2xl text-[#6b5a50]">
+              Monitor orders, payments, menu items, meal plans, and kitchen
+              workflow from one place.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/admin/orders"
+              className="brand-button-primary px-5 py-3 text-sm"
+            >
+              Review Orders
+            </Link>
+            <Link
+              href="/admin/kitchen"
+              className="brand-button-secondary px-5 py-3 text-sm"
+            >
+              Kitchen View
+            </Link>
+          </div>
         </div>
 
         <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -235,26 +249,26 @@ export default async function AdminPage() {
             <Link
               key={card.label}
               href={card.href}
-              className="rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="admin-card group p-6 transition hover:-translate-y-1 hover:border-[#8a2b18] hover:shadow-xl"
             >
-              <p className="text-sm font-medium text-neutral-500">
-                {card.label}
-              </p>
+              <p className="text-sm font-bold text-[#6b5a50]">{card.label}</p>
 
-              <p className="mt-3 text-4xl font-bold">{card.value}</p>
+              <p className="mt-3 text-4xl font-black tracking-tight">
+                {card.value}
+              </p>
+              <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8a2b18] opacity-0 transition group-hover:opacity-100">
+                Open
+              </p>
             </Link>
           ))}
         </section>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
-          <section className="rounded-2xl border bg-white p-6 shadow-sm">
+          <section className="admin-card p-6">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">Recent Orders</h2>
+              <h2 className="text-2xl font-black">Recent Orders</h2>
 
-              <Link
-                href="/admin/orders"
-                className="text-sm font-medium underline"
-              >
+              <Link href="/admin/orders" className="admin-action-link text-sm">
                 View all
               </Link>
             </div>
@@ -269,13 +283,13 @@ export default async function AdminPage() {
                   <Link
                     key={order.id}
                     href={`/admin/orders/${order.id}`}
-                    className="block rounded-xl border p-4 transition hover:bg-neutral-50"
+                    className="block rounded-lg border border-[#ead8c1] p-4 transition hover:border-[#d99426] hover:bg-[#fff8ee]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="font-semibold">{order.customerName}</p>
+                        <p className="font-black">{order.customerName}</p>
 
-                        <p className="mt-1 text-sm text-neutral-600">
+                        <p className="mt-1 text-sm text-[#6b5a50]">
                           {formatOrderType(order.orderType)} -{" "}
                           {order.items.length} item
                           {order.items.length === 1 ? "" : "s"}
@@ -294,7 +308,7 @@ export default async function AdminPage() {
                       </div>
 
                       <div className="text-right">
-                        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+                        <span className="admin-badge admin-badge-neutral">
                           {formatOrderStatus(order.status)}
                         </span>
 
@@ -308,20 +322,22 @@ export default async function AdminPage() {
               })}
 
               {recentAdminOrders.length === 0 && (
-                <p className="text-neutral-500">No recent orders yet.</p>
+                <p className="admin-card-muted p-4 text-[#6b5a50]">
+                  No recent orders yet.
+                </p>
               )}
             </div>
           </section>
 
           <aside className="space-y-8">
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Operational Alerts</h2>
+            <section className="admin-card p-6">
+              <h2 className="text-2xl font-black">Operational Alerts</h2>
 
               <div className="mt-5 space-y-3 text-sm">
                 {unpaidOrders > 0 && (
                   <Link
                     href="/admin/orders"
-                    className="block rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-900"
+                    className="block rounded-lg border border-amber-300 bg-amber-50 p-4 font-medium text-amber-950 transition hover:border-amber-500"
                   >
                     {unpaidOrders} order{unpaidOrders === 1 ? "" : "s"} with
                     payment still due.
@@ -331,7 +347,7 @@ export default async function AdminPage() {
                 {approvalOrders > 0 && (
                   <Link
                     href="/admin/orders"
-                    className="block rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900"
+                    className="block rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950 transition hover:border-blue-500"
                   >
                     {approvalOrders} order{approvalOrders === 1 ? "" : "s"} may
                     require chef approval.
@@ -341,7 +357,7 @@ export default async function AdminPage() {
                 {pendingOrders > 0 && (
                   <Link
                     href="/admin/orders"
-                    className="block rounded-xl border bg-neutral-50 p-4"
+                    className="block rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4 font-medium transition hover:border-[#d99426]"
                   >
                     {pendingOrders} pending order
                     {pendingOrders === 1 ? "" : "s"} waiting for review.
@@ -351,10 +367,11 @@ export default async function AdminPage() {
                 {pendingCateringApprovals > 0 && (
                   <Link
                     href="/admin/catering?approval=PENDING"
-                    className="block rounded-xl border border-blue-300 bg-blue-50 p-4 text-blue-900"
+                    className="block rounded-lg border border-blue-300 bg-blue-50 p-4 font-medium text-blue-950 transition hover:border-blue-500"
                   >
                     {pendingCateringApprovals} service request
-                    {pendingCateringApprovals === 1 ? "" : "s"} waiting for approval.
+                    {pendingCateringApprovals === 1 ? "" : "s"} waiting for
+                    approval.
                   </Link>
                 )}
 
@@ -362,56 +379,60 @@ export default async function AdminPage() {
                   approvalOrders === 0 &&
                   pendingCateringApprovals === 0 &&
                   pendingOrders === 0 && (
-                    <p className="rounded-xl bg-neutral-100 p-4 text-neutral-600">
+                    <p className="rounded-lg bg-[#f1ede7] p-4 text-[#6b5a50]">
                       No urgent alerts.
                     </p>
                   )}
               </div>
             </section>
-{businessSettings && (
-  <section className="rounded-2xl border bg-white p-6 shadow-sm">
-    <h2 className="text-2xl font-semibold">Active Business Rules</h2>
+            {businessSettings && (
+              <section className="admin-card p-6">
+                <h2 className="text-2xl font-black">Active Business Rules</h2>
 
-    <div className="mt-5 space-y-3 text-sm">
-      <div className="flex justify-between">
-        <span className="text-neutral-600">Delivery Fee</span>
-        <span className="font-medium">
-          ${Number(businessSettings.deliveryFee).toFixed(2)}
-        </span>
-      </div>
+                <div className="mt-5 space-y-3 text-sm">
+                  <div className="flex justify-between gap-4 border-b border-[#ead8c1] pb-3">
+                    <span className="text-[#6b5a50]">Delivery Fee</span>
+                    <span className="font-bold">
+                      ${Number(businessSettings.deliveryFee).toFixed(2)}
+                    </span>
+                  </div>
 
-      <div className="flex justify-between">
-        <span className="text-neutral-600">Late Fee</span>
-        <span className="font-medium">
-          ${Number(businessSettings.lateFee).toFixed(2)}
-        </span>
-      </div>
+                  <div className="flex justify-between gap-4 border-b border-[#ead8c1] pb-3">
+                    <span className="text-[#6b5a50]">Late Fee</span>
+                    <span className="font-bold">
+                      ${Number(businessSettings.lateFee).toFixed(2)}
+                    </span>
+                  </div>
 
-      <div className="flex justify-between">
-        <span className="text-neutral-600">Service Request Deposit</span>
-        <span className="font-medium">
-          {businessSettings.cateringDepositPercent}%
-        </span>
-      </div>
+                  <div className="flex justify-between gap-4 border-b border-[#ead8c1] pb-3">
+                    <span className="text-[#6b5a50]">
+                      Service Request Deposit
+                    </span>
+                    <span className="font-bold">
+                      {businessSettings.cateringDepositPercent}%
+                    </span>
+                  </div>
 
-      <div className="flex justify-between">
-        <span className="text-neutral-600">Weekend Orders</span>
-        <span className="font-medium">
-          {businessSettings.noWeekendOrdering ? "Disabled" : "Allowed"}
-        </span>
-      </div>
-    </div>
-  </section>
-)}
-            <section className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-2xl font-semibold">Quick Links</h2>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-[#6b5a50]">Weekend Orders</span>
+                    <span className="font-bold">
+                      {businessSettings.noWeekendOrdering
+                        ? "Disabled"
+                        : "Allowed"}
+                    </span>
+                  </div>
+                </div>
+              </section>
+            )}
+            <section className="admin-card p-6">
+              <h2 className="text-2xl font-black">Quick Links</h2>
 
               <div className="mt-5 grid gap-3">
                 {sections.map((item) => (
                   <Link
                     key={item.label}
                     href={item.href}
-                    className="rounded-xl border px-4 py-3 text-sm font-medium transition hover:bg-neutral-50"
+                    className="rounded-lg border border-[#ead8c1] px-4 py-3 text-sm font-bold transition hover:border-[#8a2b18] hover:bg-[#fff8ee]"
                   >
                     {item.label}
                   </Link>
