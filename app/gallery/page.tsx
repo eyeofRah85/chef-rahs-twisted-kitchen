@@ -17,7 +17,7 @@ export default async function GalleryPage() {
         <div className="mb-10">
           <p className="brand-eyebrow">Gallery</p>
 
-          <h1 className="mt-3 max-w-4xl text-5xl font-black leading-tight">
+          <h1 className="mt-3 max-w-4xl text-5xl font-script font-black leading-tight">
             Meal Prep, Catering, and Personal Chef Services
           </h1>
 

@@ -446,11 +446,7 @@ body {
 .mt-10 {
   margin-top: 2.5rem;
 }
-/* .stock1{
-  background: var(--background);
-  color: var(--foreground);
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 350px;
-  height: 200px;} */
+
+.font-script {
+  font-family: var(--font-script), cursive;
+}

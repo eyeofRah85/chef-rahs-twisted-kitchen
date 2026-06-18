@@ -284,7 +284,7 @@ export default async function MenuPage() {
             Meal Plans & A La Carte
           </p>
 
-          <h1 className="mt-3 max-w-4xl text-5xl font-black leading-tight md:text-6xl">
+          <h1 className="mt-3 max-w-4xl text-5xl font-script font-black leading-tight md:text-6xl">
             Weekly meals and chef-prepared favorites.
           </h1>
 
