@@ -551,10 +551,20 @@ Next work items - June 8, 2026:
    - Polished dense menu, weekly menu, gallery, category, business settings, package, offering, option, allergen, and customization forms so controls stack cleanly and use consistent focus/hover states.
    - Aligned recurring admin action controls for archive, delete, restore, availability, meal plan template application, weekly option/offering deletion, gallery deletion, and option choice editing.
    - Browser smoke-tested the refreshed admin management routes on desktop, plus compact mobile checks for opened `/admin/menu` and `/admin/menu/weekly` detail panels, with no page-level horizontal overflow or browser console errors in the tested tab.
-   - `npm run check` passes after the remaining admin refresh. The existing `components/layout/SiteFooter.tsx` unused `Image` lint warning still appears, but it is not from this admin work.
+   - `npm run check` passes after the remaining admin refresh. The then-existing `components/layout/SiteFooter.tsx` unused `Image` lint warning was unrelated to this admin work and was cleaned up in item 41.
    - No database schema, routes, API behavior, approval guards, payment tracking, allergen acknowledgement, order workflow, menu workflow, or weekly capacity logic was intentionally changed.
 
-41. Suggested next Codex prompt
+41. Launch readiness validation refresh - completed June 18, 2026
+   - Re-ran the launch checklist validation commands after the About page commit.
+   - `npm run check` passes without lint warnings after removing an unused `next/image` import from the site footer.
+   - Prisma reports 16 migrations and the configured local development database schema is up to date.
+   - `npm run env:check -- --report` runs without printing secret values when invoked through the working npm path.
+   - Next patched `package-lock.json` with the missing SWC optional dependency entries during build; keep this lockfile update so future installs/builds do not repeat the warning.
+   - Current environment guard blockers are production URLs still pointing at localhost and `EMAIL_DRY_RUN` not being `false`.
+   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, Stripe intentionally unset while card checkout is disabled, and `ADMIN_EMAIL` not set for admin promotion.
+   - Updated `docs/launch-readiness-checklist.md` with the June 18 review status.
+
+42. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
 
 Next work items - June 16, 2026:

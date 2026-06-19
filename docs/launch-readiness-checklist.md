@@ -6,18 +6,18 @@ Use this checklist before deploying Chef Rah's Twisted Kitchen to a public produ
 
 ## Current Review Status
 
-Last reviewed: June 16, 2026
+Last reviewed: June 18, 2026
 
 Completed locally:
 
-- `npm run check` passes.
+- `npm run check` passes without lint warnings.
 - Prisma reports 16 migrations and the configured local development database schema is up to date.
 - `npm run env:check -- --report` runs without printing secret values.
+- The local `.env` now includes `BUSINESS_TIME_ZONE`.
 
 Current production blockers reported by the environment guard:
 
 - `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` still point at localhost and must be production `https://` URLs.
-- `BUSINESS_TIME_ZONE` is missing from the current local `.env`; production should set it to `America/New_York` unless the business chooses a different operating timezone.
 - `EMAIL_DRY_RUN` is not `false`; live customer emails will not send until production explicitly disables dry-run mode.
 
 Current warnings to resolve or accept before launch:
