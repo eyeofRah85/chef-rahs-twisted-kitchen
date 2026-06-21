@@ -78,6 +78,11 @@ export function SiteHeader() {
           >
             Gallery
           </Link>
+          <Link href="/about"
+            className="rounded-lg px-3 py-2 text-[#3b241b] transition hover:bg-white hover:text-[#9f2f18]"
+            >
+            About
+          </Link>
           <Link
             href="/cart"
             className="inline-flex items-center gap-2 rounded-lg border border-[#ead8c1] bg-white px-3 py-2 text-[#24130f] shadow-sm transition hover:border-[#d99426]"

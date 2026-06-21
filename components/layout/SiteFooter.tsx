@@ -1,11 +1,8 @@
-import Image from "next/image";
-
 export function SiteFooter() {
   return (
     <footer className="border-t border-[#ead8c1] bg-[#24130f] text-[#fff8ee]">
       <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 text-sm md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-
           <p className="text-lg font-bold">Chef Rah&apos;s Twisted Kitchen</p>
 
           <p className="mt-3 max-w-md leading-6 text-[#f3dcc4]">

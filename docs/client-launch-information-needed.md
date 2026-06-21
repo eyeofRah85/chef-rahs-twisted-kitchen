@@ -1,0 +1,173 @@
+# Client Launch Information Needed
+
+Last updated: June 19, 2026
+
+Use this list to request the remaining information and assets from the client before launching Chef Rah's Twisted Kitchen.
+
+## Launch Blockers
+
+These items are needed before production can safely go live.
+
+### Production Website And Hosting
+
+- Final production domain.
+- Confirmed public production site URL, such as `https://example.com`.
+- Hosting provider or deployment target.
+- Production PostgreSQL database connection string for `DATABASE_URL`.
+- Confirmation that the production database is separate from local/demo data.
+- Confirmation of who has deployment access.
+
+### Authentication And Admin Access
+
+- Email address for the first admin account.
+- Confirm whether the first admin should be role `ADMIN` or `OWNER`.
+- Confirmation that the admin user will register before `npm run admin:promote` is run.
+- Final `AUTH_SECRET` value, or approval for the developer/deployment host to generate it.
+- Production values for:
+  - `AUTH_URL`
+  - `NEXTAUTH_URL`
+  - `NEXT_PUBLIC_APP_URL`
+
+### Email Sending
+
+- Email provider account access or production `RESEND_API_KEY`.
+- Verified sender domain or sender address.
+- Final `EMAIL_FROM_ADDRESS`.
+- Confirm whether a reply-to or business inbox should be used for customer replies.
+- Confirm who receives internal contact/service notifications if `CONTACT_TO_EMAIL` will be used later.
+- Approval to set `EMAIL_DRY_RUN=false` for the first live email test.
+- Approval to set `EMAIL_PREVIEW_FILES=false` in production.
+
+### Upload And Image Storage
+
+- Decision on production image storage:
+  - Use external public image URLs only for launch.
+  - Or allow local production uploads temporarily.
+  - Or choose a durable storage provider.
+- If durable storage is required, provide provider choice and credentials/access:
+  - Hostinger storage, S3-compatible storage, Cloudflare R2, Supabase Storage, UploadThing, or another provider.
+- Confirmation of `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` value.
+- Approved process for replacing menu/gallery images after launch.
+
+### Business Settings
+
+- Business timezone for `BUSINESS_TIME_ZONE`.
+- Pickup address and pickup instructions.
+- Delivery area or delivery radius.
+- Delivery fee.
+- Minimum lead time for orders.
+- Late fee rules, if any.
+- Service request deposit percentage.
+- Preferred manual payment instructions for customer orders.
+- Preferred manual deposit/payment instructions for service requests.
+- Refund, cancellation, and rescheduling rules.
+
+### Menu And Weekly Meal Plan Launch Data
+
+- Final launch-week weekly menu.
+- Weekly menu start date and end date.
+- Ordering cutoff date/time.
+- Weekly order capacity. Current expected value is 10 customer orders per weekly menu.
+- Final 1-meal package price.
+- Final 2-meal package price.
+- Confirmation that 3-meal packages should remain removed.
+- Final weekly offerings with names, descriptions, and images if available.
+- Allergen tags for every weekly offering.
+- Allowed spice levels.
+- Allowed protein substitutions.
+- Which protein substitutions are request-only and approval-required.
+- Confirmation that beef, pork, lamb, or other premium proteins require approval when applicable.
+- A La Carte launch items, prices, descriptions, categories, images, and allergens.
+- Desserts and sides launch items, prices, descriptions, images, and allergens.
+- Any items that should stay archived or hidden at launch.
+
+### Payment Policy
+
+- Confirm whether online card checkout is disabled at launch.
+- If card checkout is desired, provide Stripe account access and production keys:
+  - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+  - `STRIPE_SECRET_KEY`
+  - `STRIPE_WEBHOOK_SECRET`
+- If manual payment only, provide exact copy for:
+  - Invoice payment instructions.
+  - Cash/offline payment instructions.
+  - Deposit instructions for service requests.
+  - Pay-by-date expectations.
+
+### Legal And Customer Policy Copy
+
+- Privacy policy copy or approval to launch without a dedicated privacy page.
+- Terms of service copy or approval to launch without a dedicated terms page.
+- Allergen disclaimer wording.
+- Refund/cancellation policy wording.
+- Delivery/pickup policy wording.
+- Any required business license, health, or food safety wording the client wants shown.
+
+## Content And Brand Polish
+
+These items may not block launch, but they improve quality and client confidence.
+
+### Brand Assets
+
+- Final approved logo files.
+- Final brand colors if different from the current site style.
+- Final social media profile URLs.
+- Final business phone number.
+- Final business email.
+- Final public business address, if it should be shown.
+- Business hours or response-time expectations.
+
+### Public Page Content
+
+- Final About page approval.
+- Final home page headline and service descriptions.
+- Final Catering description.
+- Final Personal Chef description.
+- Final gallery category names.
+- Final hero image or approved food/service images.
+- Customer testimonials, if any.
+- FAQ content, if desired.
+
+### Image Assets
+
+- Hero image for the home page.
+- Service image for Catering.
+- Service image for Personal Chef.
+- Menu item images.
+- Weekly offering images.
+- Gallery images in WebP, JPG, or PNG format.
+- Alt text notes for important images, if the client has preferences.
+
+Image preference:
+
+- WebP is preferred for performance.
+- Production images should be hosted from durable public URLs unless production upload storage is confirmed.
+
+## QA And Signoff Contacts
+
+Ask the client to identify:
+
+- Person responsible for approving public site copy.
+- Person responsible for approving menu/pricing.
+- Person responsible for approving allergen tags.
+- Person responsible for approving email wording.
+- Person responsible for approving production test orders.
+- Person who should receive launch-day issue reports.
+
+## Suggested Client Message
+
+Use or adapt this message:
+
+```text
+We are ready for the final launch-prep phase. The app is functionally built and has passed local validation, but production launch is blocked until we receive the final production environment details, email sending information, upload/storage decision, launch menu data, payment instructions, policy copy, and admin account details.
+
+Please review the attached launch information list and send the launch-blocking items first. Brand/content polish items can follow separately if needed.
+```
+
+## Internal Notes
+
+- Do not use the local development database as production.
+- Do not enable live email until the client approves the sender address and first live-send test.
+- Do not allow local production uploads unless the client accepts the durability risk or the host guarantees persistent shared storage.
+- Do not enable Stripe/card checkout unless the client provides production Stripe credentials and approves that workflow.
+- Keep Catering and Personal Chef as service request workflows, not checkout products.

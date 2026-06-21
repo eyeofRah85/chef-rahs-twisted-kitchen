@@ -551,10 +551,39 @@ Next work items - June 8, 2026:
    - Polished dense menu, weekly menu, gallery, category, business settings, package, offering, option, allergen, and customization forms so controls stack cleanly and use consistent focus/hover states.
    - Aligned recurring admin action controls for archive, delete, restore, availability, meal plan template application, weekly option/offering deletion, gallery deletion, and option choice editing.
    - Browser smoke-tested the refreshed admin management routes on desktop, plus compact mobile checks for opened `/admin/menu` and `/admin/menu/weekly` detail panels, with no page-level horizontal overflow or browser console errors in the tested tab.
-   - `npm run check` passes after the remaining admin refresh. The existing `components/layout/SiteFooter.tsx` unused `Image` lint warning still appears, but it is not from this admin work.
+   - `npm run check` passes after the remaining admin refresh. The then-existing `components/layout/SiteFooter.tsx` unused `Image` lint warning was unrelated to this admin work and was cleaned up in item 41.
    - No database schema, routes, API behavior, approval guards, payment tracking, allergen acknowledgement, order workflow, menu workflow, or weekly capacity logic was intentionally changed.
 
-41. Suggested next Codex prompt
+41. Launch readiness validation refresh - completed June 18, 2026
+   - Re-ran the launch checklist validation commands after the About page commit.
+   - `npm run check` passes without lint warnings after removing an unused `next/image` import from the site footer.
+   - Prisma reports 16 migrations and the configured local development database schema is up to date.
+   - `npm run env:check -- --report` runs without printing secret values when invoked through the working npm path.
+   - Next patched `package-lock.json` with the missing SWC optional dependency entries during build; keep this lockfile update so future installs/builds do not repeat the warning.
+   - Current environment guard blockers are production URLs still pointing at localhost and `EMAIL_DRY_RUN` not being `false`.
+   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, Stripe intentionally unset while card checkout is disabled, and `ADMIN_EMAIL` not set for admin promotion.
+   - Updated `docs/launch-readiness-checklist.md` with the June 18 review status.
+
+42. Admin dashboard user guide - completed June 18, 2026
+   - Added `docs/admin-dashboard-user-guide.md` as an in-depth operator guide for the admin dashboard.
+   - The guide covers admin access, daily operations, dashboard metrics, orders, kitchen workflow, service requests, menu management, weekly menus, gallery management, customer lookup, payments, reports, notifications, business settings, image uploads, allergens, approval safeguards, operating cadence, common mistakes, launch notes, and troubleshooting.
+   - The guide explicitly notes that `/admin/catering` is the shared Service Requests workflow for Catering and Personal Chef, and that menu category display names should not be confused with menu item type behavior.
+   - No app behavior, routes, schema, or business logic were changed.
+
+43. Admin reports Business Insights section - completed June 19, 2026
+   - Added an additive Business Insights section to `/admin/reports` while keeping the existing report cards, order breakdown, top ordered items, operational alerts, and revenue snapshot content in place.
+   - Added `lib/admin-report-metrics.ts` for server-side period aggregation of revenue, order count, average order value, pending approvals, manual-payment follow-up, service request counts, revenue trend, order status/type breakdowns, and top selling item quantity/revenue.
+   - Added reusable admin report components under `components/admin/reports` for KPI cards, empty chart states, responsive bar charts, revenue trend charts, top selling item summaries, and the composed Business Insights section.
+   - Business Insights supports 30-day, 90-day, and 12-month period filters and shows polished empty states when there is not enough data for a chart.
+   - `npm run check` passes after the reports enhancement.
+   - No database schema, checkout/order/payment, service request, approval, routing, or admin workflow behavior was changed.
+
+44. Pre-launch QA runbook and client launch information list - completed June 19, 2026
+   - Added `docs/pre-launch-qa-runbook.md` with a practical end-to-end QA process for public pages, account/profile/allergen flows, menu/cart/checkout, order details, email previews, admin orders, kitchen, service requests, weekly menus, gallery/menu management, reports, notifications, settings, accessibility, mobile, and production smoke testing.
+   - Added `docs/client-launch-information-needed.md` with launch-blocking production details, email requirements, upload/storage decisions, business settings, launch menu data, payment policy, legal/customer policy copy, brand/content assets, QA approvers, and a suggested client message.
+   - The new docs are launch-support documentation only; no app source, schema, route, workflow, checkout, payment, approval, or email behavior was changed.
+
+45. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
 
 Next work items - June 16, 2026:

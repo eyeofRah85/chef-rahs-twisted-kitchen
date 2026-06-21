@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/auth-guards";
 import Link from "next/link";
+import { BusinessInsightsSection } from "@/components/admin/reports/BusinessInsightsSection";
+import { getBusinessInsightsMetrics } from "@/lib/admin-report-metrics";
 
 type TopOrderedItem = {
   name: string;
@@ -10,13 +12,20 @@ type TopOrderedItem = {
   };
 };
 
-export default async function AdminReportsPage() {
+type PageProps = {
+  searchParams: Promise<{
+    period?: string;
+  }>;
+};
+
+export default async function AdminReportsPage({ searchParams }: PageProps) {
   try {
     await requireAdmin();
   } catch {
     redirect("/");
   }
 
+  const params = await searchParams;
   const now = new Date();
 
   const weekAgo = new Date();
@@ -111,6 +120,8 @@ export default async function AdminReportsPage() {
         requestType: "PERSONAL_CHEF",
       },
     }),
+
+    businessInsights: getBusinessInsightsMetrics(params.period),
   };
 
   const [
@@ -126,6 +137,7 @@ export default async function AdminReportsPage() {
     topItems,
     pendingOrderApprovals,
     pendingCateringApprovals,
+    businessInsights,
   ] = await Promise.all([
     metricQueries.totalRevenueResult,
     metricQueries.weeklyOrders,
@@ -139,6 +151,7 @@ export default async function AdminReportsPage() {
     metricQueries.topItems,
     metricQueries.pendingOrderApprovals,
     metricQueries.pendingCateringApprovals,
+    metricQueries.businessInsights,
   ]);
 
   const totalRevenue = Number(totalRevenueResult._sum.total ?? 0);
@@ -353,6 +366,8 @@ export default async function AdminReportsPage() {
             </section>
           </aside>
         </div>
+
+        <BusinessInsightsSection metrics={businessInsights} />
       </div>
     </main>
   );
