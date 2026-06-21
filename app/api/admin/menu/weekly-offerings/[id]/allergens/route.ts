@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
 
@@ -11,7 +11,7 @@ type RouteContext = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const { id } = await context.params;
     const body = (await request.json()) as {

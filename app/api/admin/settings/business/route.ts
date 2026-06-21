@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 export async function PATCH(request: Request) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const formData = await request.formData();
 

@@ -23,7 +23,7 @@ import {
   type WeeklyMenuCloneSource,
 } from "@/components/admin/WeeklyMenuCloneForm";
 import { WeeklyOfferingAllergenEditor } from "@/components/admin/WeeklyOfferingAllergenEditor";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage  } from "@/lib/auth-guards";
 import {
   formatApprovalStatus,
   formatOrderStatus,
@@ -336,7 +336,7 @@ function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
 
 export default async function AdminWeeklyMenuPage() {
   try {
-    await requireAdmin();
+    await requireAdminPage ();
   } catch {
     redirect("/");
   }

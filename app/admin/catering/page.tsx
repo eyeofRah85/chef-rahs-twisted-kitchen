@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage  } from "@/lib/auth-guards";
 import {
   formatApprovalStatus,
   formatServiceRequestStatus,
@@ -58,7 +58,7 @@ function approvalStatusBadgeClass(status: string) {
 
 export default async function AdminCateringPage({ searchParams }: PageProps) {
   try {
-    await requireAdmin();
+    await requireAdminPage ();
   } catch {
     redirect("/");
   }

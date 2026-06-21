@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
@@ -15,7 +15,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const { id } = await context.params;
     const formData = await request.formData();
@@ -112,7 +112,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const { id } = await context.params;
     const existing = await prisma.menuItem.findUnique({

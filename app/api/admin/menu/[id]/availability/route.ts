@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
 type RouteContext = {
@@ -11,7 +11,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const { id } = await context.params;
     const body = await request.json();

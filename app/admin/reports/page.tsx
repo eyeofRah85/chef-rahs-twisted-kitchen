@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage  } from "@/lib/auth-guards";
 import Link from "next/link";
 import { BusinessInsightsSection } from "@/components/admin/reports/BusinessInsightsSection";
 import { getBusinessInsightsMetrics } from "@/lib/admin-report-metrics";
@@ -20,7 +20,7 @@ type PageProps = {
 
 export default async function AdminReportsPage({ searchParams }: PageProps) {
   try {
-    await requireAdmin();
+    await requireAdminPage ();
   } catch {
     redirect("/");
   }

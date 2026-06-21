@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage  } from "@/lib/auth-guards";
 import { RestoreMenuItemButton } from "@/components/admin/RestoreMenuItemButton";
 import { DeleteMenuItemButton } from "@/components/admin/DeleteMenuItemButton";
 import Link from "next/link";
@@ -18,7 +18,7 @@ type ArchivedMenuItem = {
 
 export default async function ArchivedMenuItemsPage() {
   try {
-    await requireAdmin();
+    await requireAdminPage ();
   } catch {
     redirect("/");
   }

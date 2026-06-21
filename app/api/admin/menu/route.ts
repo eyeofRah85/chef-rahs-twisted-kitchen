@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
@@ -9,7 +9,7 @@ import { savePublicImageUpload } from "@/lib/public-upload";
 
 export async function POST(request: Request) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const formData = await request.formData();
 

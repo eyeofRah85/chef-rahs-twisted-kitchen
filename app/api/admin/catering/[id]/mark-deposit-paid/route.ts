@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi  } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringDepositPaidEmail } from "@/emails/CateringDepositPaidEmail";
 import { formatServiceRequestType } from "@/lib/format-labels";
@@ -13,7 +13,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    await requireAdminApi ();
 
     const { id } = await context.params;
     const paidAt = new Date();

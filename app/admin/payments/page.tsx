@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage  } from "@/lib/auth-guards";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { formatPaymentStatus } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
@@ -17,7 +17,7 @@ type PaymentDueOrder = {
 
 export default async function AdminPaymentsPage() {
   try {
-    await requireAdmin();
+    await requireAdminPage ();
   } catch {
     redirect("/");
   }
