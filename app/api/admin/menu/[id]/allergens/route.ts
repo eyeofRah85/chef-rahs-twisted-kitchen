@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
 type RouteContext = {
@@ -14,7 +14,8 @@ export async function POST(
   context: RouteContext,
 ) {
   try {
-    await requireAdmin();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
 

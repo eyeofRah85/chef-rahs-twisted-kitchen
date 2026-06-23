@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import {
   formatApprovalStatus,
   formatOrderStatus,
@@ -74,11 +73,7 @@ function paymentStatusBadgeClass(status: string | null) {
 }
 
 export default async function AdminOrdersPage({ searchParams }: PageProps) {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const params = await searchParams;
 

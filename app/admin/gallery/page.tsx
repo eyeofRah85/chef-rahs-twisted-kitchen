@@ -1,19 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { DeleteGalleryImageButton } from "@/components/admin/DeleteGalleryImageButton";
 import { GalleryImageEditForm } from "@/components/admin/GalleryImageEditForm";
 import { GalleryImageForm } from "@/components/admin/GalleryImageForm";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { getAdminGalleryImages } from "@/lib/gallery-images";
 import { isRemoteImageUrl } from "@/lib/image-urls";
 
 export default async function AdminGalleryPage() {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const images = await getAdminGalleryImages();
 

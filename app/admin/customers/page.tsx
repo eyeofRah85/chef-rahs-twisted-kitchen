@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
@@ -33,11 +32,7 @@ type CustomerListRow = {
 };
 
 export default async function AdminCustomersPage({ searchParams }: PageProps) {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const params = await searchParams;
   const filter = params.filter;

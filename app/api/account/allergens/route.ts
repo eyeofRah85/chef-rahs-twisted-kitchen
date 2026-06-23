@@ -79,7 +79,7 @@ export async function PATCH(request: Request) {
     body.selectedAllergenIds,
   );
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findFirst({
     where: {
       email: session.user.email,
     },

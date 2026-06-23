@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
   type GalleryImageCategory,
@@ -33,7 +33,8 @@ function parseGalleryFields(formData: FormData) {
 
 export async function POST(request: Request) {
   try {
-    await requireAdmin();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const formData = await request.formData();
     const image = formData.get("image") as File | null;

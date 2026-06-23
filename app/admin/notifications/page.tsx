@@ -1,15 +1,10 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { getEmailDeliveryMode } from "@/lib/email";
 import Link from "next/link";
 
 export default async function AdminNotificationsPage() {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const emailDeliveryMode = getEmailDeliveryMode();
   const emailStatus =

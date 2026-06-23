@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isMenuOptionValidationError,
   normalizeMenuOptionChoice,
@@ -24,7 +24,8 @@ type CreateOptionGroupInput = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    await requireAdmin();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = (await request.json()) as CreateOptionGroupInput;

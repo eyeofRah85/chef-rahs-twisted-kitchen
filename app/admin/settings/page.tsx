@@ -1,15 +1,10 @@
-import { redirect } from "next/navigation";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { BusinessSettingsForm } from "@/components/admin/BusinessSettingsForm";
 import Link from "next/link";
 import { getBusinessSettings } from "@/lib/business-settings";
 
 export default async function AdminSettingsPage() {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const settings = await getBusinessSettings();
 

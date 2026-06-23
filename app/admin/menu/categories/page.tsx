@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { MenuCategoryEditForm } from "@/components/admin/MenuCategoryEditForm";
 import Link from "next/link";
 
@@ -12,11 +11,7 @@ type MenuCategoryRow = {
 };
 
 export default async function MenuCategoriesPage() {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const categories = (await prisma.menuCategory.findMany({
     orderBy: {

@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { getBusinessSettings } from "@/lib/business-settings";
 import { formatOrderStatus, formatOrderType } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
@@ -22,11 +21,7 @@ type AdminRecentOrder = {
 };
 
 export default async function AdminPage() {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const metrics = {
     pendingOrders: prisma.order.count({

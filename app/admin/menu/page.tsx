@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { MenuItemForm } from "@/components/admin/MenuItemForm";
 import { MenuItemCustomizationEditor } from "@/components/admin/MenuItemCustomizationEditor";
 import { MenuAvailabilityToggle } from "@/components/admin/MenuAvailabilityToggle";
@@ -82,11 +81,7 @@ type AdminMenuCategory = {
 };
 
 export default async function AdminMenuPage({ searchParams }: PageProps) {
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const params = await searchParams;
   const selectedType = parseEnumValue(menuItemTypes, params.type) ?? "ALL";
