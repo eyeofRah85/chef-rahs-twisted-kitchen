@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import {
   isWeeklyMenuValidationError,
@@ -23,7 +23,8 @@ function isDuplicatePackageError(error: unknown) {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const period = await prisma.weeklyMenuPeriod.findUnique({

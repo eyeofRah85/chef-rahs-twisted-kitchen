@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { hasPublishedWeeklyMenuOverlap } from "@/lib/weekly-menu-admin";
 import {
@@ -10,7 +10,8 @@ import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
 
 export async function POST(request: Request) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const formData = await request.formData();
     const data = parseWeeklyMenuPeriodForm(formData);
