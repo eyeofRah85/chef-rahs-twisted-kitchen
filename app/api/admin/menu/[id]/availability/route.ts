@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-<<<<<<< HEAD
 import { writeAdminAuditLog } from "@/lib/admin-audit-log";
-=======
->>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
@@ -15,11 +12,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-<<<<<<< HEAD
     const { session, response } = await requireAdminApi();
-=======
-    const { response } = await requireAdminApi();
->>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
