@@ -1,5 +1,9 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
@@ -42,7 +46,11 @@ function parseGalleryFields(formData: FormData) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -81,6 +89,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     revalidatePath("/gallery");
     revalidatePath("/admin/gallery");
 
+    await writeAdminAuditLog({
+      session,
+      action: "GALLERY_IMAGE_UPDATED",
+      entityType: "GalleryImage",
+      entityId: updated.id,
+      metadata: { category: updated.category },
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     const message =
@@ -92,7 +108,11 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -114,6 +134,14 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     revalidatePath("/gallery");
     revalidatePath("/admin/gallery");
+
+    await writeAdminAuditLog({
+      session,
+      action: "GALLERY_IMAGE_DELETED",
+      entityType: "GalleryImage",
+      entityId: existing.id,
+      metadata: { category: existing.category },
+    });
 
     return NextResponse.json({ success: true });
   } catch {

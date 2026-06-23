@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { PaymentReceivedEmail } from "@/emails/PaymentReceivedEmail";
@@ -14,7 +18,11 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -104,6 +112,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           ? updatedOrder.paidAt.toLocaleString()
           : paidAt.toLocaleString(),
       }),
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "ORDER_PAYMENT_MARKED_PAID",
+      entityType: "Order",
+      entityId: updatedOrder.id,
+      metadata: { paymentStatus: updatedOrder.paymentStatus },
     });
 
     return NextResponse.json(updatedOrder);

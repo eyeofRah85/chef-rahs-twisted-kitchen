@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
@@ -15,7 +19,11 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -90,6 +98,14 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     revalidateMenuPages({ includeArchived: true, includeCategories: true });
 
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_UPDATED",
+      entityType: "MenuItem",
+      entityId: updated.id,
+      metadata: { type: updated.type, categoryId: updated.categoryId },
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     if (
@@ -113,7 +129,11 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -138,6 +158,13 @@ export async function DELETE(request: Request, context: RouteContext) {
     await removePublicUpload(existing.imageUrl, "menu");
 
     revalidateMenuPages({ includeArchived: true, includeCategories: true });
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_DELETED",
+      entityType: "MenuItem",
+      entityId: existing.id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

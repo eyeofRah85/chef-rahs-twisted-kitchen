@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import {
@@ -23,7 +27,11 @@ function isDuplicateOptionError(error: unknown) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -58,6 +66,13 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     revalidateWeeklyMenuAdminPages();
 
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MEAL_PLAN_OPTION_UPDATED",
+      entityType: "WeeklyMealPlanAllowedOption",
+      entityId: id,
+    });
+
     return NextResponse.json({ success: true });
   } catch (error) {
     if (isWeeklyMenuValidationError(error)) {
@@ -85,7 +100,11 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -97,6 +116,13 @@ export async function DELETE(request: Request, context: RouteContext) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MEAL_PLAN_OPTION_DELETED",
+      entityType: "WeeklyMealPlanAllowedOption",
+      entityId: id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

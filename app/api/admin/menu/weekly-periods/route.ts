@@ -1,4 +1,8 @@
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { hasPublishedWeeklyMenuOverlap } from "@/lib/weekly-menu-admin";
@@ -10,7 +14,11 @@ import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
 
 export async function POST(request: Request) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const formData = await request.formData();
@@ -32,6 +40,14 @@ export async function POST(request: Request) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MENU_PERIOD_CREATED",
+      entityType: "WeeklyMenuPeriod",
+      entityId: created.id,
+      metadata: { status: data.status },
+    });
 
     return NextResponse.json(created);
   } catch (error) {

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
@@ -23,7 +27,11 @@ function parseOptionalAmount(value: unknown) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -118,6 +126,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           updated.depositAmount === null ? null : Number(updated.depositAmount),
         requestUrl: `${appUrl}/account/catering/${updated.id}`,
       }),
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "SERVICE_REQUEST_QUOTE_UPDATED",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { requestType: updated.requestType, status: updated.status },
     });
 
     return NextResponse.json(updated);

@@ -204,6 +204,7 @@ export default async function AdminPage() {
     { label: "Business Settings", href: "/admin/settings" },
     { label: "Payment Settings", href: "/admin/payments" },
     { label: "Notifications", href: "/admin/notifications" },
+    { label: "Audit Log", href: "/admin/audit" },
   ];
 
   return (

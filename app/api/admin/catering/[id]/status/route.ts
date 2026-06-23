@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { cateringStatuses } from "@/lib/prisma-enums";
@@ -13,7 +17,11 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -94,6 +102,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updated = await prisma.cateringRequest.update({
       where: { id },
       data: { status },
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "SERVICE_REQUEST_STATUS_UPDATED",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { status },
     });
 
     return NextResponse.json(updated);

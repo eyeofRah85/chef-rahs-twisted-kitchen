@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+<<<<<<< HEAD
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringStatusEmail } from "@/emails/CateringStatusEmail";
@@ -13,7 +17,11 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
+<<<<<<< HEAD
+    const { session, response } = await requireAdminApi();
+=======
     const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const { id } = await context.params;
@@ -115,6 +123,19 @@ export async function PATCH(request: Request, context: RouteContext) {
           }),
         });
       }
+    await writeAdminAuditLog({
+      session,
+      action:
+        approvalStatus === "APPROVED"
+          ? "SERVICE_REQUEST_APPROVED"
+          : approvalStatus === "DENIED"
+            ? "SERVICE_REQUEST_DENIED"
+            : "SERVICE_REQUEST_APPROVAL_RESET",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { approvalStatus, requestType: updated.requestType },
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error(error);
