@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { cateringStatuses } from "@/lib/prisma-enums";
 import { isTerminalServiceRequestStatus } from "@/lib/service-request-workflow";
@@ -13,7 +13,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = await request.json();

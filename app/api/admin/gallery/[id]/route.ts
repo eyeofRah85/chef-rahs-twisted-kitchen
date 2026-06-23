@@ -1,6 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
   type GalleryImageCategory,
@@ -42,7 +42,8 @@ function parseGalleryFields(formData: FormData) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.galleryImage.findUnique({
@@ -91,7 +92,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.galleryImage.findUnique({

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 
 export async function POST() {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     return NextResponse.json(
       {

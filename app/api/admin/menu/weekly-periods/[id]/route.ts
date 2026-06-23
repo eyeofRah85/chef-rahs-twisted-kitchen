@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { hasPublishedWeeklyMenuOverlap } from "@/lib/weekly-menu-admin";
 import {
@@ -16,7 +16,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.weeklyMenuPeriod.findUnique({

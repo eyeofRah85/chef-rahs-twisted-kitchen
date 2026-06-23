@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringStatusEmail } from "@/emails/CateringStatusEmail";
@@ -23,7 +23,8 @@ function parseOptionalAmount(value: unknown) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = await request.json();
