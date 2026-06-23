@@ -1,6 +1,9 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+<<<<<<< HEAD
 import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+=======
+>>>>>>> security/baseline-hardening
 import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
@@ -34,7 +37,11 @@ function parseGalleryFields(formData: FormData) {
 
 export async function POST(request: Request) {
   try {
+<<<<<<< HEAD
     const { session, response } = await requireAdminApi();
+=======
+    const { response } = await requireAdminApi();
+>>>>>>> security/baseline-hardening
     if (response) return response;
 
     const formData = await request.formData();
