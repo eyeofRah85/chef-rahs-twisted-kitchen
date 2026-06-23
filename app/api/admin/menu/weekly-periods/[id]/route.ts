@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { hasPublishedWeeklyMenuOverlap } from "@/lib/weekly-menu-admin";
 import {
@@ -16,7 +17,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.weeklyMenuPeriod.findUnique({
@@ -60,6 +62,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MENU_PERIOD_UPDATED",
+      entityType: "WeeklyMenuPeriod",
+      entityId: id,
+      metadata: { status: data.status },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

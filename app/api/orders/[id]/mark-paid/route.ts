@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { PaymentReceivedEmail } from "@/emails/PaymentReceivedEmail";
 
@@ -14,7 +15,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const paidAt = new Date();
@@ -103,6 +105,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           ? updatedOrder.paidAt.toLocaleString()
           : paidAt.toLocaleString(),
       }),
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "ORDER_PAYMENT_MARKED_PAID",
+      entityType: "Order",
+      entityId: updatedOrder.id,
+      metadata: { paymentStatus: updatedOrder.paymentStatus },
     });
 
     return NextResponse.json(updatedOrder);

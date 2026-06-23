@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
@@ -15,7 +16,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const formData = await request.formData();
@@ -89,6 +91,14 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     revalidateMenuPages({ includeArchived: true, includeCategories: true });
 
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_UPDATED",
+      entityType: "MenuItem",
+      entityId: updated.id,
+      metadata: { type: updated.type, categoryId: updated.categoryId },
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     if (
@@ -112,7 +122,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.menuItem.findUnique({
@@ -136,6 +147,13 @@ export async function DELETE(request: Request, context: RouteContext) {
     await removePublicUpload(existing.imageUrl, "menu");
 
     revalidateMenuPages({ includeArchived: true, includeCategories: true });
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_DELETED",
+      entityType: "MenuItem",
+      entityId: existing.id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

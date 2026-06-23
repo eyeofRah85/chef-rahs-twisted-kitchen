@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
@@ -9,7 +10,8 @@ import { savePublicImageUpload } from "@/lib/public-upload";
 
 export async function POST(request: Request) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const formData = await request.formData();
 
@@ -77,6 +79,14 @@ export async function POST(request: Request) {
     });
 
     revalidateMenuPages({ includeCategories: true });
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_CREATED",
+      entityType: "MenuItem",
+      entityId: item.id,
+      metadata: { type: item.type, categoryId: item.categoryId },
+    });
 
     return NextResponse.json(item);
   } catch (error) {

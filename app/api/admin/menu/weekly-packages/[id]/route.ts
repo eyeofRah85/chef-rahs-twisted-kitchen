@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import {
   isWeeklyMenuValidationError,
@@ -23,7 +24,8 @@ function isDuplicatePackageError(error: unknown) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.weeklyMealPlanPackage.findUnique({
@@ -56,6 +58,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MEAL_PLAN_PACKAGE_UPDATED",
+      entityType: "WeeklyMealPlanPackage",
+      entityId: id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

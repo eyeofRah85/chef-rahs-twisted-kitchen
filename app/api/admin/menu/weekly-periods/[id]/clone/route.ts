@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import {
   isWeeklyMenuValidationError,
@@ -15,7 +16,8 @@ type RouteContext = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const formData = await request.formData();
@@ -146,6 +148,14 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MENU_PERIOD_CLONED",
+      entityType: "WeeklyMenuPeriod",
+      entityId: cloned.id,
+      metadata: { cloneSourceId: id },
+    });
 
     return NextResponse.json(cloned);
   } catch (error) {
