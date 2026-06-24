@@ -70,8 +70,13 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
   const { id } = await params;
 
-  const order = (await prisma.order.findUnique({
-    where: { id },
+const order = (await prisma.order.findFirst({
+  where: {
+    id,
+    user: {
+      email: session.user.email,
+    },
+  },
     include: {
       items: {
         include: {
