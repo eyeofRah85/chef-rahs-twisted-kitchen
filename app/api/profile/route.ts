@@ -37,6 +37,17 @@ export async function PATCH(request: Request) {
       postalCode: postalCode || null,
       deliveryNotes: deliveryNotes || null,
     },
+    select: {
+      name: true,
+      email: true,
+      phone: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      postalCode: true,
+      deliveryNotes: true,
+    },
   });
 
   return NextResponse.json(updatedUser);

@@ -18,11 +18,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { session, response } = await requireAdminApi();
     if (response) return response;
 
-    const customerEmail = session.user.email;
-    if (!customerEmail) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
     const { id } = await context.params;
     const paidAt = new Date();
 
@@ -56,24 +51,14 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
       });
 
-      return tx.order.findFirst({
-      where: {
-        id,
-        user: {
-          email: customerEmail,
-        },
-      },
+      return tx.order.findUnique({
+        where: { id },
       });
     });
 
     if (!updatedOrder) {
-      const existingOrder = await prisma.order.findFirst({
-        where: {
-          id,
-          user: {
-            email: customerEmail,
-          },
-        },
+      const existingOrder = await prisma.order.findUnique({
+        where: { id },
         select: {
           paidAt: true,
           paymentStatus: true,

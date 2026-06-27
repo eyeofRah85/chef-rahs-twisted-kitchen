@@ -586,6 +586,13 @@ Next work items - June 8, 2026:
 45. Suggested next Codex prompt
    - Pause code changes until production environment values, durable upload storage, admin account promotion, and the first live email test environment are ready; then run the launch checklist end to end and fix only issues found during that final deployment QA.
 
+46. Customer ownership/security review fixes - completed June 27, 2026
+   - Fixed the legacy `/api/profile` update route so it returns only non-sensitive profile fields, matching the safer `/api/account/profile` response shape.
+   - Restored admin mark-paid behavior in `/api/orders/[id]/mark-paid` so admin-gated payment updates are not incorrectly filtered by the admin user's customer email.
+   - Restored `/orders/[id]` to fetch by order ID and then apply the existing owner/admin authorization check, so customers remain scoped to their own orders while admin access is not accidentally blocked.
+   - Cleaned account profile route formatting around the existing safe selected-field response.
+   - `npm run check` passes after these fixes.
+
 Next work items - June 16, 2026:
 
 ## Completed Visual Refresh / Brand Polish Pass

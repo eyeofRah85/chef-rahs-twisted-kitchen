@@ -55,33 +55,31 @@ export async function PATCH(request: Request) {
   const deliveryNotes = String(formData.get("deliveryNotes") ?? "").trim();
 
   const updatedUser = await prisma.user.update({
-  where: {
-    email: session.user.email,
-  },
-  data: {
-    name: name || null,
-    phone: phone || null,
-    addressLine1: addressLine1 || null,
-    addressLine2: addressLine2 || null,
-    city: city || null,
-    state: state || null,
-    postalCode: postalCode || null,
-    deliveryNotes: deliveryNotes || null,
-  },
-  select: {
-    name: true,
-    email: true,
-    phone: true,
-    addressLine1: true,
-    addressLine2: true,
-    city: true,
-    state: true,
-    postalCode: true,
-    deliveryNotes: true,
-  },
-});
-
-
+    where: {
+      email: session.user.email,
+    },
+    data: {
+      name: name || null,
+      phone: phone || null,
+      addressLine1: addressLine1 || null,
+      addressLine2: addressLine2 || null,
+      city: city || null,
+      state: state || null,
+      postalCode: postalCode || null,
+      deliveryNotes: deliveryNotes || null,
+    },
+    select: {
+      name: true,
+      email: true,
+      phone: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      state: true,
+      postalCode: true,
+      deliveryNotes: true,
+    },
+  });
 
   revalidatePath("/account");
   revalidatePath("/catering");
