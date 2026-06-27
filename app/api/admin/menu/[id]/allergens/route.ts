@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
@@ -14,7 +15,7 @@ export async function POST(
   context: RouteContext,
 ) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -97,6 +98,14 @@ export async function POST(
     });
 
     revalidateMenuPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_ALLERGENS_UPDATED",
+      entityType: "MenuItem",
+      entityId: id,
+      metadata: { allergenCount: allergenIds.length },
+    });
 
     return NextResponse.json({
       success: true,

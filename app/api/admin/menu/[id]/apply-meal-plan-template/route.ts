@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { optionGroupTemplates } from "@/data/option-templates";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
@@ -23,7 +24,7 @@ const mealPlanTemplateNames = [
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -85,6 +86,14 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     revalidateMenuPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_MEAL_PLAN_TEMPLATE_APPLIED",
+      entityType: "MenuItem",
+      entityId: id,
+      metadata: { templateCount: mealPlanTemplates.length },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
@@ -11,7 +12,7 @@ type RouteContext = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -96,6 +97,14 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     revalidateWeeklyMenuAdminPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "WEEKLY_MEAL_PLAN_OFFERING_ALLERGENS_UPDATED",
+      entityType: "WeeklyMealPlanOffering",
+      entityId: id,
+      metadata: { allergenCount: allergenIds.length },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 export async function PATCH(request: Request) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const formData = await request.formData();
@@ -51,6 +52,19 @@ export async function PATCH(request: Request) {
           : orderCutoffMinute,
         deliveryArea: deliveryArea || null,
         noWeekendOrdering,
+      },
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "BUSINESS_SETTINGS_UPDATED",
+      entityType: "BusinessSettings",
+      entityId: updated.id,
+      metadata: {
+        deliveryFee: Number(updated.deliveryFee),
+        lateFee: Number(updated.lateFee),
+        cateringDepositPercent: updated.cateringDepositPercent,
+        noWeekendOrdering: updated.noWeekendOrdering,
       },
     });
 

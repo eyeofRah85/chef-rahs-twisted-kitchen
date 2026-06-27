@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
@@ -11,16 +12,28 @@ type RouteContext = {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
 
-    await prisma.menuItemOptionGroup.delete({
+    const deleted = await prisma.menuItemOptionGroup.delete({
       where: { id },
+      select: {
+        id: true,
+        menuItemId: true,
+      },
     });
 
     revalidateMenuPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_OPTION_GROUP_DELETED",
+      entityType: "MenuItemOptionGroup",
+      entityId: deleted.id,
+      metadata: { menuItemId: deleted.menuItemId },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

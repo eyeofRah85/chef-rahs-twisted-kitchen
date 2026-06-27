@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isMenuOptionValidationError,
@@ -24,7 +25,7 @@ type CreateOptionGroupInput = {
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -60,6 +61,19 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     revalidateMenuPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_OPTION_GROUP_CREATED",
+      entityType: "MenuItemOptionGroup",
+      entityId: optionGroup.id,
+      metadata: {
+        menuItemId: id,
+        choiceCount: optionGroup.choices.length,
+        required: optionGroup.required,
+        multiple: optionGroup.multiple,
+      },
+    });
 
     return NextResponse.json(optionGroup);
   } catch (error) {

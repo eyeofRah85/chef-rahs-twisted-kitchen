@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isMenuOptionValidationError,
@@ -15,7 +16,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -36,6 +37,17 @@ export async function PATCH(request: Request, context: RouteContext) {
     });
 
     revalidateMenuPages();
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_ITEM_OPTION_CHOICE_UPDATED",
+      entityType: "MenuItemOptionChoice",
+      entityId: updated.id,
+      metadata: {
+        optionGroupId: updated.optionGroupId,
+        requestOnly: updated.requestOnly,
+      },
+    });
 
     return NextResponse.json(updated);
   } catch (error) {

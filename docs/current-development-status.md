@@ -593,6 +593,14 @@ Next work items - June 8, 2026:
    - Cleaned account profile route formatting around the existing safe selected-field response.
    - `npm run check` passes after these fixes.
 
+47. Admin audit logging review - completed June 27, 2026
+   - Reviewed the existing `AdminAuditLog` model, `writeAdminAuditLog` helper, and all admin mutation routes under `/api/admin`.
+   - Confirmed existing audit coverage for order approvals, order status/payment changes, service request approvals/status/quote/deposit changes, gallery image changes, menu item create/update/archive/restore/delete/availability changes, and weekly menu period/offering/package/option changes.
+   - Added missing additive audit logs for menu item allergen assignment, meal plan template application, menu option group create/delete, menu option choice updates, menu category updates, weekly offering allergen assignment, and business settings updates.
+   - Left the admin order allergen/options snapshot routes unlogged because they return `410` unsupported-operation responses and do not mutate data.
+   - No Prisma schema, route, UI, checkout, payment, menu, weekly meal plan, gallery, order, or service request business logic changes were made.
+   - `npm run check`, `npm run build`, and `git diff --check` pass after the audit logging additions.
+
 Next work items - June 16, 2026:
 
 ## Completed Visual Refresh / Brand Polish Pass

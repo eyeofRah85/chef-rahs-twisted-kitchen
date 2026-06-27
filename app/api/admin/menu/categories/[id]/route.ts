@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
@@ -11,7 +12,7 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { response } = await requireAdminApi();
+    const { session, response } = await requireAdminApi();
     if (response) return response;
 
     const { id } = await context.params;
@@ -38,6 +39,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     revalidateMenuPages({
       includeArchived: true,
       includeCategories: true,
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "MENU_CATEGORY_UPDATED",
+      entityType: "MenuCategory",
+      entityId: updated.id,
+      metadata: { sortOrder: updated.sortOrder },
     });
 
     return NextResponse.json(updated);
