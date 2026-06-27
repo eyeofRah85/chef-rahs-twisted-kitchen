@@ -1,8 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { rateLimits, rateLimitRequest } from "@/lib/rate-limit";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rateLimitResponse = rateLimitRequest(request, rateLimits.accountCreate);
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
   const formData = await request.formData();
 
   const name = String(formData.get("name") ?? "").trim();

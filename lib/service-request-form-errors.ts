@@ -5,6 +5,7 @@ export const serviceRequestErrorMessages = {
     "Please enter a valid event date, or leave it blank so we can confirm timing later.",
   "invalid-guest-count":
     "Please enter the guest count as a whole number greater than zero.",
+    "rate-limited": "Too many requests. Please wait a few minutes and try again.",
 } as const;
 
 export type ServiceRequestErrorCode =

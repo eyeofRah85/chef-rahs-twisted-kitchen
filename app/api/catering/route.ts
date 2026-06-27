@@ -1,12 +1,13 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringRequestEmail } from "@/emails/CateringRequestEmail";
 import {
   serviceRequestErrorMessages,
   type ServiceRequestErrorCode,
 } from "@/lib/service-request-form-errors";
+import { rateLimitRequest, rateLimits } from "@/lib/rate-limit";
 
 function serviceRequestValidationError(
   request: Request,
@@ -25,7 +26,15 @@ function serviceRequestValidationError(
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rateLimitResponse = rateLimitRequest(
+    request,
+    rateLimits.serviceRequestCreate,
+  );
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
   const session = await auth();
   const formData = await request.formData();
 

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { calculateTip } from "@/lib/order-calculations";
 import {
   calculateServerDeliveryFee,
@@ -16,6 +16,7 @@ import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
 import type { WeeklyOrderSelectionDisplay } from "@/lib/weekly-order-display";
 import type { Prisma } from "@prisma/client";
+import { rateLimitRequest, rateLimits } from "@/lib/rate-limit";
 
 type CreateOrderRequest = {
   items?: CartItem[];
@@ -130,7 +131,12 @@ class OrderSubmissionError extends Error {
 const allowedTipTypes = new Set(["none", "10", "15", "20", "custom"]);
 const allowedPaymentMethods = new Set(["manual", "cash"]);
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rateLimitResponse = rateLimitRequest(request, rateLimits.orderCreate);
+
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
   try {
     const session = await auth();
 
