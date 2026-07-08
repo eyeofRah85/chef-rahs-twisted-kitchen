@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
@@ -124,8 +125,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           <h3 className="text-2xl font-black">Build Your Weekly Plan</h3>
 
           <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
-            Choose a package, one fixed meal offering, spice level, and any
-            allowed protein substitution.
+            Choose the package size, then pick the actual weekly meal offering
+            you want prepared.
           </p>
         </div>
 
@@ -236,6 +237,54 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           </select>
         </label>
       </div>
+
+      {selectedOffering && (
+        <section className="mt-5 rounded-lg border border-[#ead8c1] bg-white p-4">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-[#f7ead7] md:w-44 md:shrink-0">
+              <Image
+                src={selectedOffering.imageUrl || "/placeholder.png"}
+                alt={selectedOffering.name}
+                fill
+                sizes="(max-width: 768px) 100vw, 176px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black uppercase text-[#9f2f18]">
+                Selected Offering
+              </p>
+
+              <h4 className="mt-1 text-xl font-black">
+                {selectedOffering.name}
+              </h4>
+
+              <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
+                {selectedOffering.description}
+              </p>
+
+              <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                {selectedOffering.dietaryInfo && (
+                  <span className="rounded-full bg-[#f4eadb] px-3 py-1 font-bold text-[#6f1f12]">
+                    {selectedOffering.dietaryInfo}
+                  </span>
+                )}
+
+                {selectedOffering.allergens.map((allergen) => (
+                  <span
+                    key={allergen.id}
+                    className="rounded-full bg-red-50 px-3 py-1 font-bold text-red-800"
+                  >
+                    {allergen.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {allergenConflicts.length > 0 && (
         <div className="mt-5">

@@ -127,9 +127,28 @@ export function MenuItemModal({ item, open, onClose }: Props) {
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#24130f]/70 px-4 backdrop-blur-sm">
       <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg bg-[#fff8ee] p-5 shadow-2xl sm:p-6">
+        {item.imageUrl && (
+          <div className="relative mb-6 aspect-[16/7] overflow-hidden rounded-lg bg-[#f7ead7]">
+            <Image
+              src={item.imageUrl}
+              alt={item.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 896px"
+              className="object-cover"
+              unoptimized
+            />
+
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#24130f]/80 to-transparent p-5 text-white">
+              <p className="text-sm font-black uppercase tracking-wide">
+                {item.category}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="brand-eyebrow">Customize</p>
+            <p className="brand-eyebrow">Menu Details</p>
 
             <h2 className="mt-2 text-3xl font-black leading-tight">
               {item.name}
@@ -153,12 +172,40 @@ export function MenuItemModal({ item, open, onClose }: Props) {
           </button>
         </div>
 
-        {item.allergens?.length ? (
-          <div className="mt-5 rounded-lg border border-[#ead8c1] bg-white p-4 text-sm text-[#6b5a50]">
-            <strong>Allergens:</strong>{" "}
-            {item.allergens.map((a) => a.name).join(", ")}
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg border border-[#ead8c1] bg-white p-4">
+            <p className="text-xs font-black uppercase text-[#9f2f18]">
+              Starting At
+            </p>
+            <p className="mt-1 text-2xl font-black">
+              ${item.price.toFixed(2)}
+            </p>
           </div>
-        ) : null}
+
+          <div className="rounded-lg border border-[#ead8c1] bg-white p-4">
+            <p className="text-xs font-black uppercase text-[#9f2f18]">
+              Options
+            </p>
+            <p className="mt-1 font-bold">
+              {item.optionGroups?.length
+                ? `${item.optionGroups.length} group${
+                    item.optionGroups.length === 1 ? "" : "s"
+                  }`
+                : "Ready as listed"}
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-[#ead8c1] bg-white p-4">
+            <p className="text-xs font-black uppercase text-[#9f2f18]">
+              Allergens
+            </p>
+            <p className="mt-1 font-bold">
+              {item.allergens?.length
+                ? item.allergens.map((a) => a.name).join(", ")
+                : "Ask if needed"}
+            </p>
+          </div>
+        </div>
 
         {allergenConflicts.length > 0 && (
           <div className="mt-4">

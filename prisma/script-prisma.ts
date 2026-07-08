@@ -1,13 +1,10 @@
+import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
-
 function getMariaDbConfig() {
   if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set.");
+    throw new Error("DATABASE_URL is required.");
   }
 
   const url = new URL(process.env.DATABASE_URL);
@@ -23,13 +20,7 @@ function getMariaDbConfig() {
 
 const adapter = new PrismaMariaDb(getMariaDbConfig());
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    adapter,
-    log: ["error", "warn"],
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+export const prisma = new PrismaClient({
+  adapter,
+  log: ["error", "warn"],
+});

@@ -4,7 +4,6 @@ import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
 import { WeeklyMenuSection } from "@/components/menu/WeeklyMenuSection";
 import Image from "next/image";
 import Link from "next/link";
-import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import {
   formatWeeklyMenuDisplayDate,
   getWeeklyMenuQueryDateRange,
@@ -157,7 +156,7 @@ function toPublicWeeklyMenu(weeklyMenu: {
 
 export default async function MenuPage() {
   const today = new Date();
-  const { dayStart, dayEnd } = getWeeklyMenuQueryDateRange(today);
+  const { dayStart } = getWeeklyMenuQueryDateRange(today);
 
   const [categories, weeklyMenu] = await Promise.all([
     prisma.menuCategory.findMany({
@@ -168,9 +167,7 @@ export default async function MenuPage() {
         items: {
           where: {
             archived: false,
-            type: {
-              not: "CATERING",
-            },
+            NOT: [{ type: "CATERING" }, { type: "MEAL_PLAN" }],
           },
           orderBy: {
             createdAt: "desc",
@@ -193,15 +190,12 @@ export default async function MenuPage() {
     prisma.weeklyMenuPeriod.findFirst({
       where: {
         status: "PUBLISHED",
-        startDate: {
-          lte: dayEnd,
-        },
         endDate: {
           gte: dayStart,
         },
       },
       orderBy: {
-        startDate: "desc",
+        startDate: "asc",
       },
       include: {
         packages: {
@@ -289,9 +283,8 @@ export default async function MenuPage() {
           </h1>
 
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#fff1df]">
-            Choose fixed weekly meal plan offerings, select spice level and
-            allowed protein substitutions, or add a la carte favorites to your
-            order.
+            Choose a weekly meal package, pick the meal offering you want for
+            that week, or add chef-prepared favorites to your order.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -313,13 +306,12 @@ export default async function MenuPage() {
 
       <div className="brand-container py-12">
         <div className="brand-card-soft p-5 text-[#6f1f12]">
-          <h2 className="text-xl font-black">Meal Plan Notes</h2>
+          <h2 className="text-xl font-black">How Weekly Meal Plans Work</h2>
 
           <p className="mt-2 text-sm leading-6">
-            Meal plans are fixed offerings prepared by the business.
-            Customer-facing choices are limited to spice level and allowed
-            protein substitutions. Pork and beef are available by request only
-            and pricing may vary.
+            Pick a package for the number of days and meals, then choose one of
+            this week&apos;s meal offerings. Each offering shows the actual meal
+            style, allergens, spice choices, and allowed protein substitutions.
           </p>
         </div>
 
@@ -348,11 +340,6 @@ export default async function MenuPage() {
 
               <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 {category.items.map((item) => {
-                  const optionGroups = filterMealPlanCustomerOptionGroups(
-                    item.type,
-                    item.optionGroups,
-                  );
-
                   return (
                     <MenuCard
                       key={item.id}
@@ -373,7 +360,7 @@ export default async function MenuPage() {
                         requiresApproval: item.requiresApproval,
                         customerInstructionsEnabled:
                           item.customerInstructionsEnabled,
-                        optionGroups: optionGroups.map((group) => ({
+                        optionGroups: item.optionGroups.map((group) => ({
                           id: group.id,
                           name: group.name,
                           required: group.required,

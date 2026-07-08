@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
 const adminRoles = ["ADMIN", "OWNER"] as const;
 type AdminRole = (typeof adminRoles)[number];
@@ -24,21 +24,30 @@ function isPrismaNotFoundError(error: unknown) {
   );
 }
 
-const databaseUrl = process.env.DATABASE_URL;
+function getMariaDbConfig() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL is required.");
+  }
+
+  const url = new URL(process.env.DATABASE_URL);
+
+  return {
+    host: url.hostname,
+    port: Number(url.port || 3306),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace("/", ""),
+  };
+}
+
 const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 const adminRole = parseAdminRole(process.env.ADMIN_ROLE);
-
-if (!databaseUrl) {
-  throw new Error("DATABASE_URL is required.");
-}
 
 if (!adminEmail) {
   throw new Error("ADMIN_EMAIL is required.");
 }
 
-const adapter = new PrismaPg({
-  connectionString: databaseUrl,
-});
+const adapter = new PrismaMariaDb(getMariaDbConfig());
 
 const prisma = new PrismaClient({
   adapter,

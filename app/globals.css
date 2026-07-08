@@ -450,3 +450,20 @@ body {
 .font-script {
   font-family: var(--font-script), cursive;
 }
+
+.menu-item-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: rgba(36, 19, 15, 0.72);
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.menu-item-detail-modal:target {
+  display: flex;
+}
