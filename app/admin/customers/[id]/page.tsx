@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import {
   formatOrderStatus,
   formatOrderType,
@@ -45,11 +45,7 @@ type CustomerServiceRequest = {
 };
 
 export default async function AdminCustomerDetailsPage({ params }: PageProps) {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const { id } = await params;
 

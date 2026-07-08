@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { optionGroupTemplates } from "@/data/option-templates";
 import { revalidateMenuPages } from "@/lib/menu-revalidation";
 
@@ -23,7 +23,8 @@ const mealPlanTemplateNames = [
 
 export async function POST(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
 

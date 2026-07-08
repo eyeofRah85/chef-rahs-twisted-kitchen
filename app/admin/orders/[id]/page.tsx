@@ -1,6 +1,6 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { UpdateOrderStatusForm } from "@/components/admin/UpdateOrderStatusForm";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { OrderApprovalForm } from "@/components/admin/OrderApprovalForm";
@@ -72,11 +72,7 @@ type AdminOrderDetail = {
 };
 
 export default async function AdminOrderDetailsPage({ params }: PageProps) {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const { id } = await params;
 

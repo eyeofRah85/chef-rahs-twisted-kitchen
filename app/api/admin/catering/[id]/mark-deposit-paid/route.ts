@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringDepositPaidEmail } from "@/emails/CateringDepositPaidEmail";
 import { formatServiceRequestType } from "@/lib/format-labels";
@@ -13,7 +14,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const paidAt = new Date();
@@ -134,6 +136,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           : paidAt.toLocaleString(),
         requestUrl: `${appUrl}/account/catering/${updated.id}`,
       }),
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "SERVICE_REQUEST_DEPOSIT_MARKED_PAID",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { requestType: updated.requestType, status: updated.status },
     });
 
     return NextResponse.json(updated);

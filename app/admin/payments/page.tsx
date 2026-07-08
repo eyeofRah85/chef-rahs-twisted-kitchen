@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { MarkOrderPaidButton } from "@/components/admin/MarkOrderPaidButton";
 import { formatPaymentStatus } from "@/lib/format-labels";
 import type { DecimalLike } from "@/types/display";
@@ -16,11 +15,7 @@ type PaymentDueOrder = {
 };
 
 export default async function AdminPaymentsPage() {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const paymentDueOrders = (await prisma.order.findMany({
     where: {
@@ -81,7 +76,7 @@ export default async function AdminPaymentsPage() {
           </div>
 
           <div className="admin-card p-6">
-            <p className="text-sm font-bold text-[#6b5a50]">Stripe</p>
+            <p className="text-sm font-bold text-[#6b5a50]">Online checkout</p>
             <p className="mt-3 text-2xl font-black">Coming Soon</p>
           </div>
         </section>

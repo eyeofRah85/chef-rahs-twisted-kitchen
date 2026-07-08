@@ -721,7 +721,7 @@ The page shows:
 
 - Count of payments due.
 - Outstanding total.
-- Stripe placeholder status.
+- Online checkout placeholder status.
 - Table of outstanding payments.
 
 Use Mark Paid only after payment has been confirmed. The app rejects duplicate payment marking once an order is already paid.
@@ -924,7 +924,7 @@ Before production launch:
 - Email dry-run must be disabled only when ready for live customer email.
 - `ADMIN_EMAIL` must be set before promoting the first admin.
 - Durable image storage must be decided if admins need direct production uploads.
-- Stripe can remain unset while card checkout is disabled.
+- Square/PayPal automated checkout is future work; manual payment tracking remains supported for launch.
 
 See `docs/launch-readiness-checklist.md` for the technical launch checklist.
 

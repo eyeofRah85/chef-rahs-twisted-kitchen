@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { calculateServerCateringDeposit } from "@/lib/server-business-rules";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { CateringStatusEmail } from "@/emails/CateringStatusEmail";
@@ -23,7 +24,8 @@ function parseOptionalAmount(value: unknown) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = await request.json();
@@ -117,6 +119,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           updated.depositAmount === null ? null : Number(updated.depositAmount),
         requestUrl: `${appUrl}/account/catering/${updated.id}`,
       }),
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "SERVICE_REQUEST_QUOTE_UPDATED",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { requestType: updated.requestType, status: updated.status },
     });
 
     return NextResponse.json(updated);

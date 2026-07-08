@@ -54,8 +54,19 @@ async function main() {
         role: adminRole,
       },
       select: {
+        id: true,
         email: true,
         role: true,
+      },
+    });
+
+    await prisma.adminAuditLog.create({
+      data: {
+        action: "ADMIN_ROLE_PROMOTED",
+        entityType: "User",
+        entityId: user.id,
+        actorEmail: "admin:promote-script",
+        metadata: { role: user.role },
       },
     });
 

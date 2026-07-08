@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { DeleteWeeklyMealPlanOfferingButton } from "@/components/admin/DeleteWeeklyMealPlanOfferingButton";
 import { DeleteWeeklyMealPlanOptionButton } from "@/components/admin/DeleteWeeklyMealPlanOptionButton";
 import {
@@ -23,7 +22,7 @@ import {
   type WeeklyMenuCloneSource,
 } from "@/components/admin/WeeklyMenuCloneForm";
 import { WeeklyOfferingAllergenEditor } from "@/components/admin/WeeklyOfferingAllergenEditor";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import {
   formatApprovalStatus,
   formatOrderStatus,
@@ -335,11 +334,7 @@ function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
 }
 
 export default async function AdminWeeklyMenuPage() {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const [periods, allergens] = await Promise.all([
     prisma.weeklyMenuPeriod.findMany({

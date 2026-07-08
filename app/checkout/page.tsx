@@ -714,7 +714,7 @@ export default function CheckoutPage() {
 
                 <p className="rounded-lg bg-[#fff8ee] p-3 text-xs leading-5 text-[#6b5a50]">
                   {details.paymentMethod === "cash"
-                    ? "Cash or offline payment will be confirmed after review. Online card payments remain disabled until Stripe is connected."
+                    ? "Cash or offline payment will be confirmed after review. Online card payments remain disabled until a future Square/PayPal checkout integration is available."
                     : "Manual invoice orders can be submitted now. The business will confirm payment instructions after review."}
                 </p>
 

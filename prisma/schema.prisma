@@ -529,3 +529,18 @@ model UserAllergen {
 
   @@unique([userId, allergenId])
 }
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  action      String
+  entityType  String
+  entityId    String?
+  actorUserId String?
+  actorEmail  String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([action, createdAt])
+  @@index([entityType, entityId])
+  @@index([actorUserId, createdAt])
+}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { parseEnumValue } from "@/lib/enum-values";
 import { cateringStatuses } from "@/lib/prisma-enums";
 import { isTerminalServiceRequestStatus } from "@/lib/service-request-workflow";
@@ -13,7 +14,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = await request.json();
@@ -93,6 +95,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updated = await prisma.cateringRequest.update({
       where: { id },
       data: { status },
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "SERVICE_REQUEST_STATUS_UPDATED",
+      entityType: "CateringRequest",
+      entityId: updated.id,
+      metadata: { status },
     });
 
     return NextResponse.json(updated);

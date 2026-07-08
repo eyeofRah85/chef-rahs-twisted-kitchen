@@ -1,6 +1,6 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { UpdateCateringStatusForm } from "@/components/admin/UpdateCateringStatusForm";
 import { CateringApprovalForm } from "@/components/admin/CateringApprovalForm";
 import Link from "next/link";
@@ -27,11 +27,7 @@ function formatOptionalCurrency(value: number | null) {
 }
 
 export default async function AdminCateringDetailsPage({ params }: PageProps) {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const { id } = await params;
 

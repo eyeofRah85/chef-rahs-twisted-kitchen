@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
   type GalleryImageCategory,
@@ -42,7 +43,8 @@ function parseGalleryFields(formData: FormData) {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.galleryImage.findUnique({
@@ -80,6 +82,14 @@ export async function PATCH(request: Request, context: RouteContext) {
     revalidatePath("/gallery");
     revalidatePath("/admin/gallery");
 
+    await writeAdminAuditLog({
+      session,
+      action: "GALLERY_IMAGE_UPDATED",
+      entityType: "GalleryImage",
+      entityId: updated.id,
+      metadata: { category: updated.category },
+    });
+
     return NextResponse.json(updated);
   } catch (error) {
     const message =
@@ -91,7 +101,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const existing = await prisma.galleryImage.findUnique({
@@ -112,6 +123,14 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     revalidatePath("/gallery");
     revalidatePath("/admin/gallery");
+
+    await writeAdminAuditLog({
+      session,
+      action: "GALLERY_IMAGE_DELETED",
+      entityType: "GalleryImage",
+      entityId: existing.id,
+      metadata: { category: existing.category },
+    });
 
     return NextResponse.json({ success: true });
   } catch {

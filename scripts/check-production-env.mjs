@@ -160,14 +160,14 @@ const stripeValues = [
 ].map((name) => [name, readEnv(name)]);
 const configuredStripeValues = stripeValues.filter(([, value]) => value);
 
-if (configuredStripeValues.length > 0 && configuredStripeValues.length < stripeValues.length) {
+if (configuredStripeValues.length > 0) {
   addWarning(
-    "Stripe is partially configured. Card checkout is disabled in the UI, but finish all Stripe variables before enabling it.",
+    "Legacy Stripe variables are present, but Stripe is no longer the planned launch provider. Keep online checkout disabled until Square/PayPal integration is implemented.",
   );
-} else if (configuredStripeValues.length === 0) {
-  addWarning("Stripe is not configured, which is acceptable while card payments remain disabled.");
 } else {
-  addPass("Stripe variables are all present.");
+  addPass(
+    "Legacy Stripe variables are blank; Square/PayPal automated checkout is future work.",
+  );
 }
 
 if (!readEnv("ADMIN_EMAIL")) {

@@ -33,7 +33,7 @@ Delivery fee rules
 Late fee rules
 Catering deposit rules
 
-That way, Stripe can be used now, but changed later without rewriting the whole app.
+That way, the selected payment providers can change without rewriting the whole app. Current client-selected future providers are Square and PayPal.
 
 Important business rules
 
@@ -60,10 +60,10 @@ Tailwind CSS
 PostgreSQL
 Prisma
 NextAuth/Auth.js or Clerk
-Stripe initially
+Square and PayPal in a future payment phase
 Resend for email
 Twilio later for SMS
-Vercel for hosting
+Hostinger for domain/hosting
 Supabase or Neon for database
 GitHub for version control/project tracking
 
@@ -137,7 +137,7 @@ Customer accounts
 Cart
 Order scheduling
 Pickup/delivery/catering choice
-Stripe payment
+Manual payment tracking at launch; Square/PayPal online payment later
 Admin order dashboard
 Menu editing
 Email notifications

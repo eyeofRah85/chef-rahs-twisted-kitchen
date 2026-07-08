@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import {
   isGalleryImageCategory,
   type GalleryImageCategory,
@@ -33,7 +34,8 @@ function parseGalleryFields(formData: FormData) {
 
 export async function POST(request: Request) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const formData = await request.formData();
     const image = formData.get("image") as File | null;
@@ -61,6 +63,14 @@ export async function POST(request: Request) {
 
     revalidatePath("/gallery");
     revalidatePath("/admin/gallery");
+
+    await writeAdminAuditLog({
+      session,
+      action: "GALLERY_IMAGE_CREATED",
+      entityType: "GalleryImage",
+      entityId: created.id,
+      metadata: { category: created.category },
+    });
 
     return NextResponse.json(created);
   } catch (error) {

@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { KitchenOrderCard } from "@/components/admin/KitchenOrderCard";
 import Link from "next/link";
 import type { DecimalLike } from "@/types/display";
@@ -24,11 +23,7 @@ type KitchenOrderRow = {
 };
 
 export default async function KitchenPage() {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const activeOrders = (await prisma.order.findMany({
     where: {

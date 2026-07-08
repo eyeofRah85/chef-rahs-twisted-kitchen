@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdminApi  } from "@/lib/auth-guards";
+import { writeAdminAuditLog } from "@/lib/admin-audit-log";
+import { requireAdminApi } from "@/lib/auth-guards";
 import { orderStatuses } from "@/lib/prisma-enums";
 import { parseEnumValue } from "@/lib/enum-values";
 
@@ -12,7 +13,8 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminApi ();
+    const { session, response } = await requireAdminApi();
+    if (response) return response;
 
     const { id } = await context.params;
     const body = await request.json();
@@ -47,6 +49,14 @@ export async function PATCH(request: Request, context: RouteContext) {
           },
         },
       },
+    });
+
+    await writeAdminAuditLog({
+      session,
+      action: "ORDER_STATUS_UPDATED",
+      entityType: "Order",
+      entityId: updatedOrder.id,
+      metadata: { status },
     });
 
     return NextResponse.json(updatedOrder);

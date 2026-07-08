@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { requireAdminPage  } from "@/lib/auth-guards";
+import { requireAdminPage } from "@/lib/auth-guards";
 import { RestoreMenuItemButton } from "@/components/admin/RestoreMenuItemButton";
 import { DeleteMenuItemButton } from "@/components/admin/DeleteMenuItemButton";
 import Link from "next/link";
@@ -17,11 +16,7 @@ type ArchivedMenuItem = {
 };
 
 export default async function ArchivedMenuItemsPage() {
-  try {
-    await requireAdminPage ();
-  } catch {
-    redirect("/");
-  }
+  await requireAdminPage();
 
   const items = (await prisma.menuItem.findMany({
     where: {
