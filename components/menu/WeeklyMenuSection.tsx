@@ -59,6 +59,33 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
         </div>
       </div>
 
+      <div className="mb-8 rounded-lg border border-[#f4c46f]/35 bg-white/10 p-5">
+        <h3 className="text-xl font-black">Choose In This Order</h3>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-lg bg-white/10 p-4">
+            <p className="text-sm font-black text-[#f4c46f]">1. Package</p>
+            <p className="mt-2 text-sm leading-6 text-[#f3dcc4]">
+              Choose how many days and meals per day you want.
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-white/10 p-4">
+            <p className="text-sm font-black text-[#f4c46f]">2. Offering</p>
+            <p className="mt-2 text-sm leading-6 text-[#f3dcc4]">
+              Pick the actual meal prep offering for this week.
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-white/10 p-4">
+            <p className="text-sm font-black text-[#f4c46f]">3. Options</p>
+            <p className="mt-2 text-sm leading-6 text-[#f3dcc4]">
+              Select spice level and allowed substitutions.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {weeklyMenu.packages.length > 0 && (
         <div className="mb-8">
           <h3 className="mb-3 text-xl font-black">Packages</h3>
@@ -95,9 +122,7 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
         </div>
       )}
 
-      <WeeklyMenuOrderForm weeklyMenu={weeklyMenu} />
-
-      <div>
+      <div className="mb-8">
         <h3 className="mb-3 text-xl font-black">This Week&apos;s Offerings</h3>
 
         <div className="grid gap-5 md:grid-cols-2">
@@ -191,6 +216,8 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
           })}
         </div>
       </div>
+
+      <WeeklyMenuOrderForm weeklyMenu={weeklyMenu} />
     </section>
   );
 }
