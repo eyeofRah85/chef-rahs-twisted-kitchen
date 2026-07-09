@@ -1,14 +1,5 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Text,
-  Button
-} from "react-email";
+import { Button, Section, Text } from "react-email";
+import { BrandedEmailLayout } from "@/emails/BrandedEmailLayout";
 import { emailStyles } from "@/emails/styles";
 import { formatServiceRequestType } from "@/lib/format-labels";
 
@@ -20,6 +11,14 @@ type Props = {
   paidAt: string;
   requestUrl: string;
 };
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={emailStyles.row}>
+      <span style={emailStyles.label}>{label}:</span> {value}
+    </Text>
+  );
+}
 
 export function CateringDepositPaidEmail({
   customerName,
@@ -33,54 +32,28 @@ export function CateringDepositPaidEmail({
   const requestLabelLower = requestLabel.toLowerCase();
 
   return (
-    <Html>
-      <Head />
+    <BrandedEmailLayout
+      preview={`Your ${requestLabelLower} deposit has been received.`}
+      eyebrow="Deposit update"
+      title={`${requestLabel} Deposit Received`}
+    >
+      <Text style={emailStyles.text}>Hello {customerName},</Text>
 
-      <Preview>Your {requestLabelLower} deposit has been received.</Preview>
+      <Text style={emailStyles.text}>
+        Your {requestLabelLower} deposit has been marked as received. Thank you.
+        Your request can now continue through the planning process.
+      </Text>
 
-      <Body
-        style={emailStyles.body}
-      >
-        <Container
-          style={emailStyles.container}
-        >
-          <Heading>{requestLabel} Deposit Received</Heading>
+      <Section style={emailStyles.accentCard}>
+        <Text style={emailStyles.cardTitle}>Deposit Summary</Text>
+        <DetailRow label="Event" value={eventType} />
+        <DetailRow label="Paid At" value={paidAt} />
+        <Text style={emailStyles.totalText}>${depositAmount.toFixed(2)}</Text>
+      </Section>
 
-          <Text>Hello {customerName},</Text>
-
-          <Text>Your {requestLabelLower} deposit has been marked as received.</Text>
-
-          <Text>
-            <strong>Event:</strong> {eventType}
-          </Text>
-
-          <Text>
-            <strong>Deposit:</strong> ${depositAmount.toFixed(2)}
-          </Text>
-
-          <Text>
-            <strong>Paid At:</strong> {paidAt}
-          </Text>
-
-          <Hr />
-
-          <Text>
-            Thank you. Your {requestLabelLower} request can now continue through the
-            planning process.
-          </Text>
-            <Button
-              href={requestUrl}
-              style={emailStyles.button}
-            >
-              View {requestLabel} Request
-            </Button>
-          <Text
-            style={emailStyles.footerText}
-          >
-            Chef Rah&apos;s Twisted Kitchen
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+      <Button href={requestUrl} style={emailStyles.button}>
+        View {requestLabel} Request
+      </Button>
+    </BrandedEmailLayout>
   );
 }

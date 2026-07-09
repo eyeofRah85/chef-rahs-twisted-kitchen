@@ -1,15 +1,5 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Button
-} from "react-email";
+import { Button, Hr, Section, Text } from "react-email";
+import { BrandedEmailLayout } from "@/emails/BrandedEmailLayout";
 import { emailStyles } from "@/emails/styles";
 import {
   formatApprovalStatus,
@@ -56,6 +46,14 @@ type Props = {
   deliveryNotes?: string | null;
 };
 
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={emailStyles.row}>
+      <span style={emailStyles.label}>{label}:</span> {value}
+    </Text>
+  );
+}
+
 export function OrderConfirmationEmail({
   customerName,
   orderId,
@@ -81,195 +79,134 @@ export function OrderConfirmationEmail({
   allergenAcknowledgedAt,
 }: Props) {
   const isDelivery = orderType === "DELIVERY";
+  const address = deliveryAddressLine1
+    ? `${deliveryAddressLine1}${deliveryAddressLine2 ? `, ${deliveryAddressLine2}` : ""}`
+    : "Not provided";
+  const cityStateZip =
+    [deliveryCity, deliveryState, deliveryPostalCode].filter(Boolean).join(", ") ||
+    "Not provided";
 
   return (
-    <Html>
-      <Head />
+    <BrandedEmailLayout
+      preview="Your Chef Rah's Twisted Kitchen order has been received."
+      eyebrow="Order received"
+      title="Order Confirmation"
+    >
+      <Text style={emailStyles.text}>Hello {customerName},</Text>
 
-      <Preview>
-        Your Chef Rah&apos;s Twisted Kitchen order has been received.
-      </Preview>
+      <Text style={emailStyles.text}>
+        Thank you for your order with Chef Rah&apos;s Twisted Kitchen. Your
+        order has been received and is now being processed.
+      </Text>
 
-      <Body
-        style={emailStyles.body}
-      >
-        <Container
-          style={emailStyles.container}
-        >
-          <Heading>Order Confirmation</Heading>
+      <Section style={emailStyles.accentCard}>
+        <Text style={emailStyles.cardTitle}>Order Snapshot</Text>
+        <DetailRow label="Order ID" value={orderId} />
+        <DetailRow label="Order Type" value={formatOrderType(orderType)} />
+        <DetailRow label="Payment" value={formatPaymentStatus(paymentStatus)} />
+        <DetailRow
+          label="Approval"
+          value={formatApprovalStatus(approvalStatus)}
+        />
+        <Text style={emailStyles.totalText}>${total.toFixed(2)}</Text>
+      </Section>
 
-          <Text>Hello {customerName},</Text>
+      <Section style={emailStyles.card}>
+        <Text style={emailStyles.cardTitle}>Contact / Delivery Information</Text>
+        <DetailRow label="Name" value={deliveryName ?? customerName} />
+        <DetailRow label="Phone" value={deliveryPhone ?? "Not provided"} />
 
-          <Text>
-            Thank you for your order with Chef Rah&apos;s Twisted Kitchen.
-          </Text>
-
-          <Section>
-            <Text>
-              <strong>Order ID:</strong> {orderId}
-            </Text>
-
-            <Text>
-              <strong>Order Type:</strong> {formatOrderType(orderType)}
-            </Text>
-            <Text>
-              <strong>Payment:</strong> {formatPaymentStatus(paymentStatus)}
-            </Text>
-
-            <Text>
-              <strong>Approval:</strong> {formatApprovalStatus(approvalStatus)}
-            </Text>
-
-            <Hr />
-
-            <Heading as="h2">Contact / Delivery Information</Heading>
-
-            <Text>
-              <strong>Name:</strong> {deliveryName ?? customerName}
-            </Text>
-
-            <Text>
-              <strong>Phone:</strong> {deliveryPhone ?? "Not provided"}
-            </Text>
-
-            {isDelivery && (
-              <>
-                <Text>
-                  <strong>Address:</strong>{" "}
-                  {deliveryAddressLine1
-                    ? `${deliveryAddressLine1}${
-                        deliveryAddressLine2 ? `, ${deliveryAddressLine2}` : ""
-                      }`
-                    : "Not provided"}
-                </Text>
-
-                <Text>
-                  <strong>City/State/ZIP:</strong>{" "}
-                  {[deliveryCity, deliveryState, deliveryPostalCode]
-                    .filter(Boolean)
-                    .join(", ") || "Not provided"}
-                </Text>
-
-                {deliveryNotes && (
-                  <Text>
-                    <strong>Delivery Notes:</strong> {deliveryNotes}
-                  </Text>
-                )}                
-              </>
+        {isDelivery && (
+          <>
+            <DetailRow label="Address" value={address} />
+            <DetailRow label="City/State/ZIP" value={cityStateZip} />
+            {deliveryNotes && (
+              <DetailRow label="Delivery Notes" value={deliveryNotes} />
             )}
-            <Heading as="h2">Order Summary</Heading>
-              {allergenAcknowledged && (
-                <>
-                  <Hr />
+          </>
+        )}
+      </Section>
 
-                  <Heading as="h2">Allergen Warning Acknowledged</Heading>
+      {allergenAcknowledged && (
+        <Section style={emailStyles.alertBox}>
+          <Text style={emailStyles.cardTitle}>Allergen Warning Acknowledged</Text>
+          <Text style={emailStyles.mutedText}>
+            You acknowledged that this order may contain allergen tags matching
+            your account preferences before submitting.
+          </Text>
 
-                  <Text>
-                    You acknowledged that this order may contain allergen tags matching your
-                    account preferences before submitting.
+          {allergenAcknowledgedAt && (
+            <DetailRow
+              label="Acknowledged"
+              value={new Date(allergenAcknowledgedAt).toLocaleString()}
+            />
+          )}
+        </Section>
+      )}
+
+      <Section style={emailStyles.section}>
+        <Text style={emailStyles.heading}>Order Summary</Text>
+
+        {items.map((item, index) => {
+          const weeklyDetails = item.weeklyMealPlanSelection
+            ? getWeeklyMealPlanSelectionDetails(item.weeklyMealPlanSelection)
+            : [];
+
+          return (
+            <Section key={`${item.name}-${index}`} style={emailStyles.card}>
+              <Text style={emailStyles.cardTitle}>
+                {item.quantity} x {item.name}
+              </Text>
+
+              <DetailRow
+                label="Item total"
+                value={`$${item.unitPrice.toFixed(2)} each - $${item.lineTotal.toFixed(2)}`}
+              />
+
+              {weeklyDetails.length > 0 && (
+                <Section style={emailStyles.alertBox}>
+                  <Text style={emailStyles.cardTitle}>
+                    Weekly Meal Plan Snapshot
                   </Text>
 
-                  {allergenAcknowledgedAt && (
-                    <Text>
-                      <strong>Acknowledged:</strong>{" "}
-                      {new Date(allergenAcknowledgedAt).toLocaleString()}
-                    </Text>
-                  )}
-                </>
-              )}
-            {items.map((item, index) => {
-              const weeklyDetails = item.weeklyMealPlanSelection
-                ? getWeeklyMealPlanSelectionDetails(
-                    item.weeklyMealPlanSelection,
-                  )
-                : [];
-
-              return (
-                <Section key={`${item.name}-${index}`}>
-                  <Text>
-                    <strong>
-                      {item.quantity} x {item.name}
-                    </strong>
-                  </Text>
-
-                  <Text>
-                    ${item.unitPrice.toFixed(2)} each - $
-                    {item.lineTotal.toFixed(2)}
-                  </Text>
-
-                  {weeklyDetails.length > 0 && (
-                    <>
-                      <Text>
-                        <strong>Weekly Meal Plan Snapshot</strong>
-                      </Text>
-
-                      {weeklyDetails.map((detail) => (
-                        <Text key={detail.label}>
-                          <strong>{detail.label}:</strong> {detail.value}
-                        </Text>
-                      ))}
-                    </>
-                  )}
-
-                  {item.notes && (
-                    <Text style={{ whiteSpace: "pre-wrap" }}>
-                      {item.notes}
-                    </Text>
-                  )}
+                  {weeklyDetails.map((detail) => (
+                    <DetailRow
+                      key={detail.label}
+                      label={detail.label}
+                      value={detail.value}
+                    />
+                  ))}
                 </Section>
-              );
-            })}
+              )}
 
-            <Hr />
+              {item.notes && (
+                <Text style={{ ...emailStyles.mutedText, whiteSpace: "pre-wrap" }}>
+                  {item.notes}
+                </Text>
+              )}
+            </Section>
+          );
+        })}
+      </Section>
 
-            <Text>
-              <strong>Subtotal:</strong> ${subtotal.toFixed(2)}
-            </Text>
+      <Section style={emailStyles.card}>
+        <Text style={emailStyles.cardTitle}>Payment Summary</Text>
+        <DetailRow label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
+        <DetailRow label="Delivery Fee" value={`$${deliveryFee.toFixed(2)}`} />
+        <DetailRow label="Late Fee" value={`$${lateFee.toFixed(2)}`} />
+        <DetailRow label="Tip" value={`$${tipAmount.toFixed(2)}`} />
+        <Hr style={emailStyles.divider} />
+        <Text style={emailStyles.totalText}>${total.toFixed(2)}</Text>
+      </Section>
 
-            <Text>
-              <strong>Delivery Fee:</strong> ${deliveryFee.toFixed(2)}
-            </Text>
+      <Button href={orderUrl} style={emailStyles.button}>
+        View Order Details
+      </Button>
 
-            <Text>
-              <strong>Late Fee:</strong> ${lateFee.toFixed(2)}
-            </Text>
-
-            <Text>
-              <strong>Tip:</strong> ${tipAmount.toFixed(2)}
-            </Text>
-
-            <Text>
-              <strong>Total:</strong> ${total.toFixed(2)}
-            </Text>
-
-            <Button
-              href={orderUrl}
-              style={emailStyles.button}
-            >
-              View Order Details
-            </Button>
-          </Section>
-
-          <Hr />
-
-          <Text>
-            Your order has been received and is now being processed.
-          </Text>
-
-          <Text>
-            You can log into your account to track status updates and payment
-            information.
-          </Text>
-
-          <Hr />
-
-          <Text
-            style={emailStyles.footerText}
-          >
-            Chef Rah&apos;s Twisted Kitchen
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+      <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
+        You can log into your account to track status updates and payment
+        information.
+      </Text>
+    </BrandedEmailLayout>
   );
 }

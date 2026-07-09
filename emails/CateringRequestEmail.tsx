@@ -1,15 +1,5 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Button
-} from "react-email";
+import { Button, Section, Text } from "react-email";
+import { BrandedEmailLayout } from "@/emails/BrandedEmailLayout";
 import { emailStyles } from "@/emails/styles";
 import { formatServiceRequestType } from "@/lib/format-labels";
 
@@ -26,6 +16,14 @@ type Props = {
   requestUrl: string;
 };
 
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={emailStyles.row}>
+      <span style={emailStyles.label}>{label}:</span> {value}
+    </Text>
+  );
+}
+
 export function CateringRequestEmail({
   customerName,
   requestType,
@@ -35,94 +33,58 @@ export function CateringRequestEmail({
   requestedMenu,
   location,
   specialRequests,
-  requestUrl
+  requestUrl,
 }: Props) {
   const requestLabel = formatServiceRequestType(requestType);
   const requestLabelLower = requestLabel.toLowerCase();
 
   return (
-    <Html>
-      <Head />
+    <BrandedEmailLayout
+      preview={`Your ${requestLabelLower} request has been received.`}
+      eyebrow="Request received"
+      title={`${requestLabel} Request Received`}
+    >
+      <Text style={emailStyles.text}>Hello {customerName},</Text>
 
-      <Preview>
-        Your {requestLabelLower} request has been received.
-      </Preview>
+      <Text style={emailStyles.text}>
+        Thank you for contacting Chef Rah&apos;s Twisted Kitchen for your{" "}
+        {requestLabelLower} request. Your request has been received and will be
+        reviewed shortly.
+      </Text>
 
-      <Body
-        style={emailStyles.body}
-      >
-        <Container
-          style={emailStyles.container}
-        >
-          <Heading>{requestLabel} Request Received</Heading>
+      <Section style={emailStyles.accentCard}>
+        <Text style={emailStyles.cardTitle}>Request Details</Text>
+        <DetailRow label="Event Type" value={eventType} />
+        <DetailRow
+          label="Guest Count"
+          value={guestCount?.toString() ?? "Not provided"}
+        />
+        <DetailRow label="Event Date" value={eventDate ?? "Not provided"} />
+        <DetailRow label="Location" value={location ?? "Not provided"} />
+      </Section>
 
-          <Text>Hello {customerName},</Text>
+      {(requestedMenu || specialRequests) && (
+        <Section style={emailStyles.card}>
+          <Text style={emailStyles.cardTitle}>Menu & Notes</Text>
 
-          <Text>
-            Thank you for contacting Chef Rah&apos;s Twisted Kitchen for your
-            {" "}
-            {requestLabelLower} request.
-          </Text>
+          {requestedMenu && (
+            <DetailRow label="Requested Menu" value={requestedMenu} />
+          )}
 
-          <Section>
-            <Text>
-              <strong>Event Type:</strong> {eventType}
-            </Text>
+          {specialRequests && (
+            <DetailRow label="Special Requests" value={specialRequests} />
+          )}
+        </Section>
+      )}
 
-            <Text>
-              <strong>Guest Count:</strong>{" "}
-              {guestCount ?? "Not provided"}
-            </Text>
+      <Button href={requestUrl} style={emailStyles.button}>
+        View {requestLabel} Request
+      </Button>
 
-            <Text>
-              <strong>Event Date:</strong>{" "}
-              {eventDate ?? "Not provided"}
-            </Text>
-
-            <Text>
-              <strong>Location:</strong> {location ?? "Not provided"}
-            </Text>
-
-            {requestedMenu && (
-              <Text>
-                <strong>Requested Menu:</strong> {requestedMenu}
-              </Text>
-            )}
-
-            {specialRequests && (
-              <Text>
-                <strong>Special Requests:</strong> {specialRequests}
-              </Text>
-            )}
-
-            <Button
-              href={requestUrl}
-              style={emailStyles.button}
-            >
-              View {requestLabel} Request
-            </Button>
-          </Section>
-
-          <Hr />
-
-          <Text>
-            Your request has been received and will be reviewed shortly.
-          </Text>
-
-          <Text>
-            You can log into your account to track approval status, quotes, and
-            deposit information.
-          </Text>
-
-          <Hr />
-
-          <Text
-            style={emailStyles.footerText}
-          >
-            Chef Rah&apos;s Twisted Kitchen
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+      <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
+        You can log into your account to track approval status, quotes, and
+        deposit information.
+      </Text>
+    </BrandedEmailLayout>
   );
 }

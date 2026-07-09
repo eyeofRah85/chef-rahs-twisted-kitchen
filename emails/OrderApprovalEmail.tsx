@@ -1,14 +1,5 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Text,
-  Button
-} from "react-email";
+import { Button, Section, Text } from "react-email";
+import { BrandedEmailLayout } from "@/emails/BrandedEmailLayout";
 import { emailStyles } from "@/emails/styles";
 
 type Props = {
@@ -19,65 +10,54 @@ type Props = {
   orderUrl: string;
 };
 
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={emailStyles.row}>
+      <span style={emailStyles.label}>{label}:</span> {value}
+    </Text>
+  );
+}
+
 export function OrderApprovalEmail({
   customerName,
   orderId,
   approved,
   approvalNote,
-  orderUrl
+  orderUrl,
 }: Props) {
+  const statusLabel = approved ? "Approved" : "Not Approved";
+
   return (
-    <Html>
-      <Head />
+    <BrandedEmailLayout
+      preview={`Your order has been ${approved ? "approved" : "not approved"}.`}
+      eyebrow="Order update"
+      title={`Order ${statusLabel}`}
+    >
+      <Text style={emailStyles.text}>Hello {customerName},</Text>
 
-      <Preview>
-        Your order has been {approved ? "approved" : "not approved"}.
-      </Preview>
+      <Section style={approved ? emailStyles.accentCard : emailStyles.alertBox}>
+        <Text style={emailStyles.cardTitle}>Status</Text>
+        <Text style={emailStyles.text}>
+          Your order has been {approved ? "approved" : "not approved"}.
+        </Text>
+        <DetailRow label="Order ID" value={orderId} />
+        <Text style={emailStyles.statusPill}>{statusLabel}</Text>
+      </Section>
 
-      <Body
-        style={emailStyles.body}
-      >
-        <Container
-          style={emailStyles.container}
-        >
-          <Heading>
-            Order {approved ? "Approved" : "Not Approved"}
-          </Heading>
+      {approvalNote && (
+        <Section style={emailStyles.card}>
+          <Text style={emailStyles.cardTitle}>Note from Chef Rah</Text>
+          <Text style={emailStyles.text}>{approvalNote}</Text>
+        </Section>
+      )}
 
-          <Text>Hello {customerName},</Text>
+      <Button href={orderUrl} style={emailStyles.button}>
+        View Order Details
+      </Button>
 
-          <Text>
-            Your order has been {approved ? "approved" : "not approved"}.
-          </Text>
-
-          <Text>
-            <strong>Order ID:</strong> {orderId}
-          </Text>
-
-          {approvalNote && (
-            <Text>
-              <strong>Note:</strong> {approvalNote}
-            </Text>
-          )}
-          <Button
-            href={orderUrl}
-            style={emailStyles.button}
-          >
-            View Order Details
-          </Button>
-          <Hr />
-
-          <Text>
-            You can log into your account to view order details and updates.
-          </Text>
-
-          <Text
-            style={emailStyles.footerText}
-          >
-            Chef Rah&apos;s Twisted Kitchen
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+      <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
+        You can log into your account to view order details and updates.
+      </Text>
+    </BrandedEmailLayout>
   );
 }
