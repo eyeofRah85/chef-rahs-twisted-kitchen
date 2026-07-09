@@ -10,7 +10,10 @@ import {
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
-import { isDateInWeeklyMenuRange } from "@/lib/weekly-menu-dates";
+import {
+  getWeeklyMenuQueryDateRange,
+  isRequestedDateTimeInWeeklyMenuRange,
+} from "@/lib/weekly-menu-dates";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
@@ -389,6 +392,7 @@ export async function POST(request: NextRequest) {
       if (item.weeklyMealPlanSelection) {
         const selection = item.weeklyMealPlanSelection;
         const now = new Date();
+        const { dayStart: todayStart } = getWeeklyMenuQueryDateRange(now);
 
         if (
           !selection.weeklyMenuPeriodId ||
@@ -440,14 +444,29 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        if (!isDateInWeeklyMenuRange(weeklyPeriod, now)) {
+        if (weeklyPeriod.endDate < todayStart) {
           return NextResponse.json(
-            { error: "Weekly meal plans can only be ordered for the current published week." },
+            { error: "This weekly meal plan is no longer available." },
             { status: 400 },
           );
         }
 
-        if (weeklyPeriod.orderCutoffAt && weeklyPeriod.orderCutoffAt < now) {
+        if (
+          !isRequestedDateTimeInWeeklyMenuRange(
+            weeklyPeriod,
+            checkout.requestedDateTime,
+          )
+        ) {
+          return NextResponse.json(
+            { error: "Weekly meal plans can only be ordered for their published weekly menu dates." },
+            { status: 400 },
+          );
+        }
+
+        if (
+          weeklyPeriod.orderCutoffAt &&
+          requestedDate > weeklyPeriod.orderCutoffAt
+        ) {
           return NextResponse.json(
             { error: "Ordering for this weekly meal plan has closed." },
             { status: 400 },
