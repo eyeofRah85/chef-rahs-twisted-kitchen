@@ -76,7 +76,7 @@ export default async function AdminPaymentsPage() {
           </div>
 
           <div className="admin-card p-6">
-            <p className="text-sm font-bold text-[#6b5a50]">Stripe</p>
+            <p className="text-sm font-bold text-[#6b5a50]">Online checkout</p>
             <p className="mt-3 text-2xl font-black">Coming Soon</p>
           </div>
         </section>
