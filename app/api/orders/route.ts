@@ -925,11 +925,11 @@ export async function POST(request: NextRequest) {
     const order: CreatedOrderWithItems = await prisma.$transaction(async (tx) => {
       for (const weeklyPeriodId of weeklyPeriodIds) {
         const updatedCount = await tx.$executeRaw`
-          UPDATE "WeeklyMenuPeriod"
-          SET "ordersPlaced" = "ordersPlaced" + 1
-          WHERE "id" = ${weeklyPeriodId}
-            AND "status" = 'PUBLISHED'
-            AND "ordersPlaced" < "capacity"
+          UPDATE \`WeeklyMenuPeriod\`
+          SET \`ordersPlaced\` = \`ordersPlaced\` + 1
+          WHERE \`id\` = ${weeklyPeriodId}
+            AND \`status\` = 'PUBLISHED'
+            AND \`ordersPlaced\` < \`capacity\`
         `;
 
         if (updatedCount !== 1) {
