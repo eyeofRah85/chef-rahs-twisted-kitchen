@@ -17,14 +17,14 @@ Completed locally:
 
 Current production blockers reported by the environment guard:
 
-- `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` still point at localhost and must be production `https://` URLs.
+- `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` must be set to `https://rahstwistedkitchen.com` for production.
 - `EMAIL_DRY_RUN` is not `false`; live customer emails will not send until production explicitly disables dry-run mode.
 
 Current warnings to resolve or accept before launch:
 
 - `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` is not set. This is acceptable only if production uploads stay blocked and admins use public image URLs.
 - `EMAIL_PREVIEW_FILES` is enabled. Disable preview file output in production unless intentionally debugging email rendering.
-- Stripe is not configured. This is acceptable while online card checkout remains disabled.
+- Stripe is no longer the planned payment provider. Square and PayPal are selected for a future dedicated integration; manual Square/PayPal links or invoices are acceptable while online checkout remains disabled.
 - `ADMIN_EMAIL` is not set. Set it before running `npm run admin:promote`.
 
 ## Required Validation
@@ -42,15 +42,21 @@ For a local dry run of the environment report without failing the command:
 npm run env:check -- --report
 ```
 
+## Hosting And Domain
+
+- Hosting/domain provider confirmed by client: Hostinger.
+- Production domain confirmed by client: `rahstwistedkitchen.com`.
+- App production origin should be `https://rahstwistedkitchen.com`.
+
 ## Production Environment Variables
 
 Required before launch:
 
 - `DATABASE_URL`: production PostgreSQL connection string.
 - `AUTH_SECRET`: generated production Auth.js secret, at least 32 characters.
-- `AUTH_URL`: public production site URL.
-- `NEXTAUTH_URL`: public production site URL.
-- `NEXT_PUBLIC_APP_URL`: public production site URL used in email links.
+- `AUTH_URL`: `https://rahstwistedkitchen.com`.
+- `NEXTAUTH_URL`: `https://rahstwistedkitchen.com`.
+- `NEXT_PUBLIC_APP_URL`: `https://rahstwistedkitchen.com` for email links.
 - `BUSINESS_TIME_ZONE`: business timezone for weekly menu and cutoff checks.
 - `RESEND_API_KEY`: production email provider key.
 - `EMAIL_FROM_ADDRESS`: verified production sender address.
@@ -63,7 +69,7 @@ Optional or workflow-specific:
 - `ADMIN_EMAIL`: used by `npm run admin:promote`.
 - `ADMIN_ROLE`: defaults to `ADMIN`; set to `OWNER` only when appropriate.
 - `CONTACT_TO_EMAIL`: reserved for future internal contact notifications.
-- Stripe variables can remain blank while online card checkout is disabled.
+- Square/PayPal API credentials are not required until the future automated checkout integration phase. Legacy Stripe variables can remain blank while online card checkout is disabled.
 
 ## Durable Upload Storage
 

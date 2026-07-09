@@ -84,11 +84,9 @@ These items are needed before production can safely go live.
 ### Payment Policy
 
 - Confirm whether online card checkout is disabled at launch.
-- If card checkout is desired, provide Stripe account access and production keys:
-  - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-  - `STRIPE_SECRET_KEY`
-  - `STRIPE_WEBHOOK_SECRET`
-- If manual payment only, provide exact copy for:
+- Online card checkout remains disabled for launch unless a separate Square/PayPal integration phase is approved and implemented.
+- Client-selected future online payment providers: Square and PayPal.
+- Manual Square/PayPal payment links or invoices are acceptable for launch. Provide exact copy for:
   - Invoice payment instructions.
   - Cash/offline payment instructions.
   - Deposit instructions for service requests.
@@ -169,5 +167,5 @@ Please review the attached launch information list and send the launch-blocking 
 - Do not use the local development database as production.
 - Do not enable live email until the client approves the sender address and first live-send test.
 - Do not allow local production uploads unless the client accepts the durability risk or the host guarantees persistent shared storage.
-- Do not enable Stripe/card checkout unless the client provides production Stripe credentials and approves that workflow.
+- Do not enable automated Square/PayPal checkout unless the client approves a dedicated future payment integration phase. Manual Square/PayPal payment links or invoices are acceptable for launch.
 - Keep Catering and Personal Chef as service request workflows, not checkout products.

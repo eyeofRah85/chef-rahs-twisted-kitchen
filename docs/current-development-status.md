@@ -211,7 +211,7 @@ Progress update - June 6, 2026:
   - Orders store allergen acknowledgement fields for the checkout submission.
   - Checkout persistence now treats allergen acknowledgement as transient so a prior acknowledgement cannot carry into a later checkout.
 - Deployment readiness pass:
-  - Added `.env.example` with the required database, Auth.js, app URL, Resend, Stripe placeholder, and admin-promotion variables.
+  - Added `.env.example` with the required database, Auth.js, app URL, Resend, legacy Stripe placeholders, and admin-promotion variables.
   - Added `npm run admin:promote` to promote an existing registered user to `ADMIN` or `OWNER` by `ADMIN_EMAIL`.
   - Confirmed Prisma migration status is up to date against the configured local development database on June 12, 2026.
   - Confirmed email links are centralized through `NEXT_PUBLIC_APP_URL` in `lib/email.ts`; production must set this to the public site URL.
@@ -246,7 +246,7 @@ Review notes from main branch inspection - June 8, 2026:
 - `package.json` exposes `dev`, `build`, `start`, `lint`, `typecheck`, `prisma:generate`, and `check` scripts.
 - Use `npm run typecheck` for standalone TypeScript validation, `npm run prisma:generate` when Prisma client output needs refreshing, and `npm run check` for the full local verification workflow.
 - Checkout is currently a client page with sectioned UI and profile hydration via `/api/account/profile`. It uses `resetContactDetails()` before loading the signed-in profile and uses `cache: "no-store"` when fetching profile data.
-- Checkout still allows a disabled `stripe` option in the UI, while the order API only accepts `manual` and `cash`. This is intentional for now, but should remain disabled until Stripe is fully implemented.
+- Checkout still allows only manual invoice and cash/offline submissions; the disabled online-card placeholder must remain disabled until a future Square/PayPal integration is implemented.
 - Order creation now performs the authoritative price and option validation server-side. Treat the client cart totals as display-only; do not trust them for order persistence.
 - Prisma still has `OrderType.CATERING` in the schema for legacy compatibility, but checkout and order creation should only create `DELIVERY` and `PICKUP` orders.
 - Catering and Personal Chef remain stored in `CateringRequest`. This is intentionally stable for now even though the UI should say Service Requests where both request types appear.
@@ -263,7 +263,7 @@ Next work items - June 8, 2026:
    - `/checkout` shows an empty-cart call-to-action when no cart items exist.
    - Submit is defensively disabled if the cart has no items.
    - Checkout contact fields explain profile prefill and optional profile saving.
-   - The Stripe option remains disabled until payment integration is wired server-side.
+   - The online card option remains disabled until Square/PayPal payment integration is wired server-side in a dedicated future phase.
 
 3. Improve account/profile freshness after edits - completed June 8, 2026
    - Profile saves revalidate `/account`, `/catering`, and `/personal-chef`.
@@ -560,8 +560,8 @@ Next work items - June 8, 2026:
    - Prisma reports 16 migrations and the configured local development database schema is up to date.
    - `npm run env:check -- --report` runs without printing secret values when invoked through the working npm path.
    - Next patched `package-lock.json` with the missing SWC optional dependency entries during build; keep this lockfile update so future installs/builds do not repeat the warning.
-   - Current environment guard blockers are production URLs still pointing at localhost and `EMAIL_DRY_RUN` not being `false`.
-   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, Stripe intentionally unset while card checkout is disabled, and `ADMIN_EMAIL` not set for admin promotion.
+   - Current production URL target is `https://rahstwistedkitchen.com`; production env values for `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` should use that origin. `EMAIL_DRY_RUN` must be `false` before live email sending.
+   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, online checkout intentionally disabled while Square/PayPal integration is future work, and `ADMIN_EMAIL` not set for admin promotion.
    - Updated `docs/launch-readiness-checklist.md` with the June 18 review status.
 
 42. Admin dashboard user guide - completed June 18, 2026
