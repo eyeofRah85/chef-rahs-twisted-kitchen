@@ -27,12 +27,6 @@ function toDateKeyFromStoredDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function toDateKeyFromDateTimeInput(value: string) {
-  const match = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2})?$/.exec(value);
-
-  return match?.[1] ?? null;
-}
-
 function fromDateKey(dateKey: string, time: "start" | "end") {
   return new Date(
     `${dateKey}T${time === "start" ? "00:00:00.000" : "23:59:59.999"}Z`,
@@ -75,17 +69,6 @@ export function getWeeklyMenuQueryDateRange(date = new Date()) {
   };
 }
 
-export function getWeeklyMenuDateInputRange(dateKey: string) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
-    return null;
-  }
-
-  return {
-    dayStart: fromDateKey(dateKey, "start"),
-    dayEnd: fromDateKey(dateKey, "end"),
-  };
-}
-
 export function isDateInWeeklyMenuRange(
   period: {
     startDate: Date;
@@ -96,26 +79,4 @@ export function isDateInWeeklyMenuRange(
   const { dayStart, dayEnd } = getWeeklyMenuQueryDateRange(date);
 
   return period.startDate <= dayEnd && period.endDate >= dayStart;
-}
-
-export function isRequestedDateTimeInWeeklyMenuRange(
-  period: {
-    startDate: Date;
-    endDate: Date;
-  },
-  requestedDateTime: string,
-) {
-  const requestedDateKey = toDateKeyFromDateTimeInput(requestedDateTime);
-
-  if (!requestedDateKey) {
-    return false;
-  }
-
-  const range = getWeeklyMenuDateInputRange(requestedDateKey);
-
-  if (!range) {
-    return false;
-  }
-
-  return period.startDate <= range.dayEnd && period.endDate >= range.dayStart;
 }

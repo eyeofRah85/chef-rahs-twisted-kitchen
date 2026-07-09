@@ -12,7 +12,6 @@ import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import {
   getWeeklyMenuQueryDateRange,
-  isRequestedDateTimeInWeeklyMenuRange,
 } from "@/lib/weekly-menu-dates";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
@@ -447,18 +446,6 @@ export async function POST(request: NextRequest) {
         if (weeklyPeriod.endDate < todayStart) {
           return NextResponse.json(
             { error: "This weekly meal plan is no longer available." },
-            { status: 400 },
-          );
-        }
-
-        if (
-          !isRequestedDateTimeInWeeklyMenuRange(
-            weeklyPeriod,
-            checkout.requestedDateTime,
-          )
-        ) {
-          return NextResponse.json(
-            { error: "Weekly meal plans can only be ordered for their published weekly menu dates." },
             { status: 400 },
           );
         }
