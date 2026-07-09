@@ -49,6 +49,11 @@ Current next priorities:
 
 Start by auditing the checkout/profile/order flow and tell me what you find. Then propose the smallest safe patch.
 
+Progress update - July 9, 2026:
+- Added `docs/production-runbook.md` as the production deployment runbook for `https://rahstwistedkitchen.com`.
+- The runbook covers production environment variables, MySQL/MariaDB database setup, Prisma migration/deploy commands, foundation seed notes, first admin promotion, Resend setup, Hostinger/DNS notes, disabled local production uploads, manual Square/PayPal payment launch posture, security launch posture, QA, smoke tests, rollback, and future follow-up items.
+- This was a documentation-only pass. No application code, Prisma schema, checkout/order/payment behavior, auth logic, upload behavior, security headers, Resend sending behavior, or email templates were changed.
+
 Progress update - June 6, 2026:
 - Checkout/profile/order flow has been audited and patched:
   - Checkout contact details are reset before account profile preload.
