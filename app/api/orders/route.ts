@@ -118,6 +118,10 @@ function normalizeSubmittedChoiceName(choiceName: string) {
   return choiceName.replace(/\s+\(Request Only\)$/i, "").trim();
 }
 
+function hasRequestedDateAndTime(value: string) {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value);
+}
+
 class OrderSubmissionError extends Error {
   status: number;
 
@@ -184,7 +188,7 @@ export async function POST(request: NextRequest) {
       deliveryNotes: String(checkout.deliveryNotes ?? "").trim(),
     };
 
-    if (!checkout.requestedDateTime) {
+    if (!hasRequestedDateAndTime(checkout.requestedDateTime ?? "")) {
       return NextResponse.json(
         { error: "Please choose a requested date and time." },
         { status: 400 },

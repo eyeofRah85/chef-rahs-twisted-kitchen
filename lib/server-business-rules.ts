@@ -1,4 +1,6 @@
 import { getBusinessSettings } from "@/lib/business-settings";
+import { calculateLateFeeFromSettings } from "@/lib/business-rules";
+import { weeklyMenuTimeZone } from "@/lib/weekly-menu-dates";
 
 export function isWeekend(date: Date) {
   const day = date.getDay();
@@ -13,15 +15,14 @@ export async function calculateServerDeliveryFee(orderType: string) {
 
 export async function calculateServerLateFee() {
   const settings = await getBusinessSettings();
-  const now = new Date();
 
-  const cutoff = getCurrentWeekCutoff({
+  return calculateLateFeeFromSettings({
+    lateFee: settings.lateFee,
     cutoffDay: settings.orderCutoffDay,
     cutoffHour: settings.orderCutoffHour,
     cutoffMinute: settings.orderCutoffMinute,
+    timeZone: weeklyMenuTimeZone,
   });
-
-  return now > cutoff ? settings.lateFee : 0;
 }
 
 export async function validateServerRequestedDate(requestedDate: Date) {
@@ -43,26 +44,4 @@ export async function calculateServerCateringDeposit(total: number) {
   const settings = await getBusinessSettings();
 
   return total * (settings.cateringDepositPercent / 100);
-}
-
-function getCurrentWeekCutoff({
-  cutoffDay,
-  cutoffHour,
-  cutoffMinute,
-}: {
-  cutoffDay: number;
-  cutoffHour: number;
-  cutoffMinute: number;
-}) {
-  const now = new Date();
-
-  const cutoff = new Date(now);
-  cutoff.setHours(cutoffHour, cutoffMinute, 0, 0);
-
-  const currentDay = cutoff.getDay();
-  const diff = cutoffDay - currentDay;
-
-  cutoff.setDate(cutoff.getDate() + diff);
-
-  return cutoff;
 }
