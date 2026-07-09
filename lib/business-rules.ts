@@ -11,12 +11,76 @@ type CutoffSettings = {
   cutoffMinute: number;
   timeZone?: string;
   now?: Date;
+  requestedDateTime?: string;
 };
+
+type BusinessDateTimeParts = {
+  weekday: number;
+  hour: number;
+  minute: number;
+  second: number;
+};
+
+function getWeekdayFromDateParts(year: number, month: number, day: number) {
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date.getUTCDay();
+}
+
+function parseRequestedDateTimeParts(
+  requestedDateTime: string,
+): BusinessDateTimeParts | null {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(
+      requestedDateTime,
+    );
+
+  if (!match) {
+    return null;
+  }
+
+  const [, yearValue, monthValue, dayValue, hourValue, minuteValue, secondValue] =
+    match;
+  const year = Number(yearValue);
+  const month = Number(monthValue);
+  const day = Number(dayValue);
+  const hour = Number(hourValue);
+  const minute = Number(minuteValue);
+  const second = Number(secondValue ?? 0);
+  const weekday = getWeekdayFromDateParts(year, month, day);
+
+  if (
+    weekday === null ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59 ||
+    second < 0 ||
+    second > 59
+  ) {
+    return null;
+  }
+
+  return {
+    weekday,
+    hour,
+    minute,
+    second,
+  };
+}
 
 function getBusinessDateTimeParts(
   date: Date,
   timeZone = DEFAULT_BUSINESS_TIME_ZONE,
-) {
+): BusinessDateTimeParts {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
     weekday: "short",
@@ -46,28 +110,46 @@ function getBusinessDateTimeParts(
   };
 }
 
+function isAfterOrAtCutoff(
+  businessDateTime: BusinessDateTimeParts,
+  {
+    cutoffDay,
+    cutoffHour,
+    cutoffMinute,
+  }: Pick<CutoffSettings, "cutoffDay" | "cutoffHour" | "cutoffMinute">,
+) {
+  if (businessDateTime.weekday !== cutoffDay) {
+    return businessDateTime.weekday > cutoffDay;
+  }
+
+  if (businessDateTime.hour !== cutoffHour) {
+    return businessDateTime.hour > cutoffHour;
+  }
+
+  return businessDateTime.minute >= cutoffMinute;
+}
+
 export function isLateOrder({
   cutoffDay,
   cutoffHour,
   cutoffMinute,
   timeZone,
   now = new Date(),
+  requestedDateTime,
 }: CutoffSettings) {
-  const businessNow = getBusinessDateTimeParts(now, timeZone);
+  const businessDateTime = requestedDateTime
+    ? parseRequestedDateTimeParts(requestedDateTime)
+    : getBusinessDateTimeParts(now, timeZone);
 
-  if (businessNow.weekday !== cutoffDay) {
-    return businessNow.weekday > cutoffDay;
+  if (!businessDateTime) {
+    return false;
   }
 
-  if (businessNow.hour !== cutoffHour) {
-    return businessNow.hour > cutoffHour;
-  }
-
-  if (businessNow.minute !== cutoffMinute) {
-    return businessNow.minute > cutoffMinute;
-  }
-
-  return businessNow.second > 0;
+  return isAfterOrAtCutoff(businessDateTime, {
+    cutoffDay,
+    cutoffHour,
+    cutoffMinute,
+  });
 }
 
 export function calculateLateFeeFromSettings({
@@ -77,6 +159,7 @@ export function calculateLateFeeFromSettings({
   cutoffMinute,
   timeZone,
   now,
+  requestedDateTime,
 }: {
   lateFee: number;
 } & CutoffSettings) {
@@ -86,9 +169,40 @@ export function calculateLateFeeFromSettings({
     cutoffMinute,
     timeZone,
     now,
+    requestedDateTime,
   })
     ? lateFee
     : 0;
+}
+
+export function validateRequestedDateTime(
+  requestedDateTime: string,
+  options?: {
+    noWeekendOrdering?: boolean;
+  },
+) {
+  const requestedDateTimeParts = parseRequestedDateTimeParts(requestedDateTime);
+
+  if (!requestedDateTimeParts) {
+    return {
+      valid: false,
+      error: "Please choose a valid requested date and time.",
+    };
+  }
+
+  if (
+    options?.noWeekendOrdering &&
+    (requestedDateTimeParts.weekday === 0 || requestedDateTimeParts.weekday === 6)
+  ) {
+    return {
+      valid: false,
+      error: "Weekend ordering is unavailable.",
+    };
+  }
+
+  return {
+    valid: true,
+  };
 }
 
 export function validateRequestedDate(

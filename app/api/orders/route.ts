@@ -5,7 +5,7 @@ import { calculateTip } from "@/lib/order-calculations";
 import {
   calculateServerDeliveryFee,
   calculateServerLateFee,
-  validateServerRequestedDate,
+  validateServerRequestedDateTime,
 } from "@/lib/server-business-rules";
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
@@ -204,8 +204,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const requestedDateValidation =
-      await validateServerRequestedDate(requestedDate);
+    const requestedDateValidation = await validateServerRequestedDateTime(
+      checkout.requestedDateTime,
+    );
 
     if (!requestedDateValidation.valid) {
       return NextResponse.json(
@@ -883,7 +884,7 @@ export async function POST(request: NextRequest) {
     );
 
     const deliveryFee = await calculateServerDeliveryFee(checkout.orderType);
-    const lateFee = await calculateServerLateFee();
+    const lateFee = await calculateServerLateFee(checkout.requestedDateTime);
 
     const tipAmount = calculateTip(
       subtotal,

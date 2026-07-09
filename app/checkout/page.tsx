@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   calculateLateFeeFromSettings,
-  validateRequestedDate,
+  validateRequestedDateTime,
 } from "@/lib/business-rules";
 import { useBusinessSettings } from "@/hooks/useBusinessSettings";
 import type { CheckoutDetails } from "@/types/order";
@@ -205,12 +205,22 @@ export default function CheckoutPage() {
   const deliveryFee =
     details.orderType === "delivery" ? settings.deliveryFee : 0;
 
-  const lateFee = calculateLateFeeFromSettings({
-    lateFee: settings.lateFee,
-    cutoffDay: settings.orderCutoffDay,
-    cutoffHour: settings.orderCutoffHour,
-    cutoffMinute: settings.orderCutoffMinute,
-  });
+  const requestedDateTimeValidation = validateRequestedDateTime(
+    details.requestedDateTime,
+    {
+      noWeekendOrdering: settings.noWeekendOrdering,
+    },
+  );
+
+  const lateFee = requestedDateTimeValidation.valid
+    ? calculateLateFeeFromSettings({
+        lateFee: settings.lateFee,
+        cutoffDay: settings.orderCutoffDay,
+        cutoffHour: settings.orderCutoffHour,
+        cutoffMinute: settings.orderCutoffMinute,
+        requestedDateTime: details.requestedDateTime,
+      })
+    : 0;
 
   const tipAmount = calculateTip(
     subtotal,
@@ -276,12 +286,8 @@ export default function CheckoutPage() {
         return;
       }
 
-      const validation = validateRequestedDate(requestedDate, {
-        noWeekendOrdering: settings.noWeekendOrdering,
-      });
-
-      if (!validation.valid) {
-        alert(validation.error);
+      if (!requestedDateTimeValidation.valid) {
+        alert(requestedDateTimeValidation.error);
         return;
       }
 

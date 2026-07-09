@@ -1,5 +1,8 @@
 import { getBusinessSettings } from "@/lib/business-settings";
-import { calculateLateFeeFromSettings } from "@/lib/business-rules";
+import {
+  calculateLateFeeFromSettings,
+  validateRequestedDateTime,
+} from "@/lib/business-rules";
 import { weeklyMenuTimeZone } from "@/lib/weekly-menu-dates";
 
 export function isWeekend(date: Date) {
@@ -13,7 +16,7 @@ export async function calculateServerDeliveryFee(orderType: string) {
   return orderType === "delivery" ? settings.deliveryFee : 0;
 }
 
-export async function calculateServerLateFee() {
+export async function calculateServerLateFee(requestedDateTime: string) {
   const settings = await getBusinessSettings();
 
   return calculateLateFeeFromSettings({
@@ -22,22 +25,16 @@ export async function calculateServerLateFee() {
     cutoffHour: settings.orderCutoffHour,
     cutoffMinute: settings.orderCutoffMinute,
     timeZone: weeklyMenuTimeZone,
+    requestedDateTime,
   });
 }
 
-export async function validateServerRequestedDate(requestedDate: Date) {
+export async function validateServerRequestedDateTime(requestedDateTime: string) {
   const settings = await getBusinessSettings();
 
-  if (settings.noWeekendOrdering && isWeekend(requestedDate)) {
-    return {
-      valid: false,
-      error: "Weekend ordering is unavailable.",
-    };
-  }
-
-  return {
-    valid: true,
-  };
+  return validateRequestedDateTime(requestedDateTime, {
+    noWeekendOrdering: settings.noWeekendOrdering,
+  });
 }
 
 export async function calculateServerCateringDeposit(total: number) {
