@@ -6,7 +6,19 @@ Use this runbook to prepare, deploy, verify, and recover the production Chef Rah
 
 This is a documentation-only launch guide. It does not enable automated online checkout, change email sending behavior, or change the production upload posture.
 
-## 1. Production Environment Variable Checklist
+## 1. Node.js Runtime
+
+Use Node.js 24 LTS for local release builds and production builds.
+
+Node.js Current releases, including Node 26, should not be used for production builds unless the exact version has been explicitly verified with this project. A local build on Node.js v26.4.0 completed successfully, but it showed toolchain instability:
+
+- a Turbopack Rust panic message during build,
+- a `DEP0205` deprecation warning from `@tailwindcss/node` using `module.register()`,
+- the warning came from the dependency/toolchain layer, not from app code.
+
+Treat Node 26 build output as a signal to switch back to the recommended LTS runtime before deployment. Keep the production host, local release machine, and CI build environment on Node.js 24 LTS unless a future upgrade is tested and documented.
+
+## 2. Production Environment Variable Checklist
 
 Configure these variables in the production host before deploying:
 
@@ -37,7 +49,7 @@ Legacy/optional payment variables:
 - Stripe is not the planned launch provider.
 - Square and PayPal are the selected future automated checkout providers, but no Square or PayPal API credentials are required for launch because automated online checkout remains disabled.
 
-## 2. Database Setup
+## 3. Database Setup
 
 The app currently uses Prisma with a MySQL datasource and the MariaDB adapter. Provision a production MySQL/MariaDB-compatible database before deploy.
 
@@ -47,7 +59,8 @@ Database setup checklist:
 2. Grant the app user only the permissions needed to run migrations and operate the app.
 3. Confirm the database is reachable from the production host.
 4. Store the production connection string in `DATABASE_URL`.
-5. Take a baseline backup before launch migrations.
+5. Run the current Prisma migrations against a fresh MySQL/MariaDB database.
+6. Take a baseline backup before launch migrations.
 
 PowerShell connection-string shape:
 
@@ -55,11 +68,11 @@ PowerShell connection-string shape:
 $env:DATABASE_URL = "mysql://USER:PASSWORD@HOST:3306/DATABASE"
 ```
 
-Do not point production at a local database, a development database, or a throwaway preview database.
+Do not point production at a local database, a development database, a throwaway preview database, or any old PostgreSQL database from earlier project assumptions.
 
-## 3. Prisma Migration And Deploy Steps
+## 4. Prisma Migration And Deploy Steps
 
-Run migrations against production after the production environment is configured and before opening the site to customers.
+Run the current Prisma migrations against the fresh production MySQL/MariaDB database after the production environment is configured and before opening the site to customers.
 
 Recommended production sequence:
 
@@ -78,7 +91,7 @@ npx prisma migrate deploy
 
 After migrations, confirm the app can boot with the production environment. Do not use `prisma migrate dev` in production.
 
-## 4. Seed And Setup Notes
+## 5. Seed And Setup Notes
 
 The production-safe foundation seed is configured in `prisma.config.ts` and `package.json`. It creates common allergens and default business settings with upserts.
 
@@ -96,7 +109,7 @@ npm run db:seed-demo
 
 Launch menu items, weekly meal plan periods, offerings, gallery images, pricing, and business settings should be reviewed and configured through the admin UI after the first admin account is promoted.
 
-## 5. First Admin Account Creation And Promotion
+## 6. First Admin Account Creation And Promotion
 
 The promotion script only promotes an existing registered user. It does not create the account.
 
@@ -116,7 +129,7 @@ npm run admin:promote
 
 After promotion, sign out and sign back in, then confirm `/admin` loads for the promoted account.
 
-## 6. Resend Setup Notes
+## 7. Resend Setup Notes
 
 Before setting `EMAIL_DRY_RUN=false`, finish Resend production setup:
 
@@ -138,7 +151,7 @@ First live email test:
 
 Preview routes and preview files are for development only. Production preview routes remain blocked by `NODE_ENV === "production"`.
 
-## 7. DNS And Domain Notes
+## 8. DNS And Domain Notes
 
 Production domain: `https://rahstwistedkitchen.com`
 
@@ -160,7 +173,7 @@ Invoke-WebRequest -Uri "https://rahstwistedkitchen.com" -UseBasicParsing
 Invoke-WebRequest -Uri "https://rahstwistedkitchen.com/menu" -UseBasicParsing
 ```
 
-## 8. Upload And Storage Launch Posture
+## 9. Upload And Storage Launch Posture
 
 Local production uploads must remain disabled for launch:
 
@@ -174,7 +187,7 @@ Launch posture:
 - Do not rely on `public/uploads` in production unless the host explicitly provides durable, shared storage.
 - If direct production uploads are required later, choose a durable object-storage provider first and add a provider-specific upload adapter in a future code change.
 
-## 9. Payment Launch Posture
+## 10. Payment Launch Posture
 
 Automated online checkout is disabled for launch.
 
@@ -186,7 +199,7 @@ Launch posture:
 - Do not configure Square or PayPal API credentials until a future automated checkout integration phase.
 - Do not add Stripe launch wording; Stripe is legacy/optional only while current env parsing still exists.
 
-## 10. Security Launch Posture
+## 11. Security Launch Posture
 
 Security work already completed:
 
@@ -205,7 +218,7 @@ Launch posture:
 - Do not expose `.env` values in logs, screenshots, tickets, or client messages.
 - Keep admin access limited to known owner/admin accounts.
 
-## 11. Manual Pre-Launch QA Checklist
+## 12. Manual Pre-Launch QA Checklist
 
 Run this after production env vars, migrations, seed, DNS, and the first admin promotion are complete.
 
@@ -243,7 +256,7 @@ Email:
 - Confirm catering or personal-chef request email.
 - Confirm Resend delivery logs for the internal tests.
 
-## 12. Post-Launch Smoke Test Checklist
+## 13. Post-Launch Smoke Test Checklist
 
 Run immediately after launch:
 
@@ -260,7 +273,7 @@ Run immediately after launch:
 - Gallery images and menu images render.
 - Production uploads remain blocked when `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION=false` or unset.
 
-## 13. Rollback Notes
+## 14. Rollback Notes
 
 Prepare rollback before launch:
 
@@ -288,7 +301,7 @@ If live email sends incorrectly:
 - Review Resend logs and app audit history.
 - Resume live email only after the issue is understood.
 
-## 14. Known Future Follow-Up Items
+## 15. Known Future Follow-Up Items
 
 - Implement automated Square/PayPal checkout in a dedicated future phase.
 - Choose durable production upload storage and wire direct admin uploads to it.
