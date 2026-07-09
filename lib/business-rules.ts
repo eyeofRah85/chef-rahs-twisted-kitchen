@@ -3,44 +3,71 @@ export function isWeekend(date: Date) {
   return day === 0 || day === 6;
 }
 
-export function getCurrentWeekCutoff({
-  cutoffDay,
-  cutoffHour,
-  cutoffMinute,
-}: {
+const DEFAULT_BUSINESS_TIME_ZONE = "America/New_York";
+
+type CutoffSettings = {
   cutoffDay: number;
   cutoffHour: number;
   cutoffMinute: number;
-}) {
-  const now = new Date();
+  timeZone?: string;
+  now?: Date;
+};
 
-  const cutoff = new Date(now);
-  cutoff.setHours(cutoffHour, cutoffMinute, 0, 0);
+function getBusinessDateTimeParts(
+  date: Date,
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE,
+) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
 
-  const currentDay = cutoff.getDay();
-  const diff = cutoffDay - currentDay;
+  const valueFor = (type: string) =>
+    parts.find((part) => part.type === type)?.value;
 
-  cutoff.setDate(cutoff.getDate() + diff);
+  const weekday = valueFor("weekday");
+  const weekdayIndex = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(
+    weekday ?? "",
+  );
 
-  return cutoff;
+  if (weekdayIndex < 0) {
+    throw new Error("Unable to determine business weekday.");
+  }
+
+  return {
+    weekday: weekdayIndex,
+    hour: Number(valueFor("hour") ?? 0),
+    minute: Number(valueFor("minute") ?? 0),
+    second: Number(valueFor("second") ?? 0),
+  };
 }
 
 export function isLateOrder({
   cutoffDay,
   cutoffHour,
   cutoffMinute,
-}: {
-  cutoffDay: number;
-  cutoffHour: number;
-  cutoffMinute: number;
-}) {
-  const now = new Date();
+  timeZone,
+  now = new Date(),
+}: CutoffSettings) {
+  const businessNow = getBusinessDateTimeParts(now, timeZone);
 
-  return now > getCurrentWeekCutoff({
-    cutoffDay,
-    cutoffHour,
-    cutoffMinute,
-  });
+  if (businessNow.weekday !== cutoffDay) {
+    return businessNow.weekday > cutoffDay;
+  }
+
+  if (businessNow.hour !== cutoffHour) {
+    return businessNow.hour > cutoffHour;
+  }
+
+  if (businessNow.minute !== cutoffMinute) {
+    return businessNow.minute > cutoffMinute;
+  }
+
+  return businessNow.second > 0;
 }
 
 export function calculateLateFeeFromSettings({
@@ -48,16 +75,17 @@ export function calculateLateFeeFromSettings({
   cutoffDay,
   cutoffHour,
   cutoffMinute,
+  timeZone,
+  now,
 }: {
   lateFee: number;
-  cutoffDay: number;
-  cutoffHour: number;
-  cutoffMinute: number;
-}) {
+} & CutoffSettings) {
   return isLateOrder({
     cutoffDay,
     cutoffHour,
     cutoffMinute,
+    timeZone,
+    now,
   })
     ? lateFee
     : 0;

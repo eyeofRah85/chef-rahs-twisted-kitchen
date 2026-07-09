@@ -29,6 +29,43 @@ const orderTypeOptions: {
   { value: "pickup", label: "Pickup" },
 ];
 
+const orderTimeOptions = Array.from({ length: 25 }, (_, index) => {
+  const totalMinutes = 8 * 60 + index * 30;
+  const hour = Math.floor(totalMinutes / 60);
+  const minute = totalMinutes % 60;
+  const value = `${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
+  const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  const period = hour >= 12 ? "PM" : "AM";
+
+  return {
+    value,
+    label: `${hour12}:${minute.toString().padStart(2, "0")} ${period}`,
+  };
+});
+
+function splitRequestedDateTime(value: string) {
+  const [date = "", time = ""] = value.split("T");
+
+  return {
+    date,
+    time: time.slice(0, 5),
+  };
+}
+
+function combineRequestedDateTime(date: string, time: string) {
+  if (date && time) return `${date}T${time}`;
+  if (date) return `${date}T`;
+  if (time) return `T${time}`;
+
+  return "";
+}
+
+function hasRequestedDateAndTime(value: string) {
+  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value);
+}
+
 export default function CheckoutPage() {
   const settings = useBusinessSettings();
   const details = useCheckoutStore((state) => state.details);
@@ -204,6 +241,7 @@ export default function CheckoutPage() {
   const cutoffAmPm = settings.orderCutoffHour >= 12 ? "PM" : "AM";
   const cutoffMinute = settings.orderCutoffMinute.toString().padStart(2, "0");
   const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12}:${cutoffMinute} ${cutoffAmPm}`;
+  const requestedSchedule = splitRequestedDateTime(details.requestedDateTime);
 
   async function submitOrder() {
     if (submitting) return;
@@ -226,7 +264,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (!details.requestedDateTime) {
+      if (!hasRequestedDateAndTime(details.requestedDateTime)) {
         alert("Please choose a requested date and time.");
         return;
       }
@@ -591,17 +629,49 @@ export default function CheckoutPage() {
             <section className={sectionClass}>
               <h2 className="text-2xl font-black">Schedule</h2>
 
-              <label className={`${labelClass} mt-5`}>
-                Requested Date / Time
-                <input
-                  type="datetime-local"
-                  value={details.requestedDateTime}
-                  onChange={(event) =>
-                    updateField("requestedDateTime", event.target.value)
-                  }
-                  className={`${inputClass} mt-2`}
-                />
-              </label>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <label className={labelClass}>
+                  Requested Date
+                  <input
+                    type="date"
+                    value={requestedSchedule.date}
+                    onChange={(event) =>
+                      updateField(
+                        "requestedDateTime",
+                        combineRequestedDateTime(
+                          event.target.value,
+                          requestedSchedule.time,
+                        ),
+                      )
+                    }
+                    className={`${inputClass} mt-2`}
+                  />
+                </label>
+
+                <label className={labelClass}>
+                  Requested Time
+                  <select
+                    value={requestedSchedule.time}
+                    onChange={(event) =>
+                      updateField(
+                        "requestedDateTime",
+                        combineRequestedDateTime(
+                          requestedSchedule.date,
+                          event.target.value,
+                        ),
+                      )
+                    }
+                    className={`${inputClass} mt-2`}
+                  >
+                    <option value="">Select a time</option>
+                    {orderTimeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
 
               <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
                 Orders placed after {cutoffText} may include a $
