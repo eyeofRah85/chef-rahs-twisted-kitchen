@@ -890,7 +890,7 @@ export async function POST(request: NextRequest) {
     );
 
     const deliveryFee = await calculateServerDeliveryFee(checkout.orderType);
-    const lateFee = await calculateServerLateFee(checkout.requestedDateTime);
+    const lateFee = await calculateServerLateFee();
 
     const tipAmount = calculateTip(
       subtotal,

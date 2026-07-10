@@ -212,15 +212,12 @@ export default function CheckoutPage() {
     },
   );
 
-  const lateFee = requestedDateTimeValidation.valid
-    ? calculateLateFeeFromSettings({
-        lateFee: settings.lateFee,
-        cutoffDay: settings.orderCutoffDay,
-        cutoffHour: settings.orderCutoffHour,
-        cutoffMinute: settings.orderCutoffMinute,
-        requestedDateTime: details.requestedDateTime,
-      })
-    : 0;
+  const lateFee = calculateLateFeeFromSettings({
+    lateFee: settings.lateFee,
+    cutoffDay: settings.orderCutoffDay,
+    cutoffHour: settings.orderCutoffHour,
+    cutoffMinute: settings.orderCutoffMinute,
+  });
 
   const tipAmount = calculateTip(
     subtotal,
