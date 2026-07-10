@@ -11,7 +11,6 @@ type CutoffSettings = {
   cutoffMinute: number;
   timeZone?: string;
   now?: Date;
-  requestedDateTime?: string;
 };
 
 type BusinessDateTimeParts = {
@@ -135,15 +134,8 @@ export function isLateOrder({
   cutoffMinute,
   timeZone,
   now = new Date(),
-  requestedDateTime,
 }: CutoffSettings) {
-  const businessDateTime = requestedDateTime
-    ? parseRequestedDateTimeParts(requestedDateTime)
-    : getBusinessDateTimeParts(now, timeZone);
-
-  if (!businessDateTime) {
-    return false;
-  }
+  const businessDateTime = getBusinessDateTimeParts(now, timeZone);
 
   return isAfterOrAtCutoff(businessDateTime, {
     cutoffDay,
@@ -159,7 +151,6 @@ export function calculateLateFeeFromSettings({
   cutoffMinute,
   timeZone,
   now,
-  requestedDateTime,
 }: {
   lateFee: number;
 } & CutoffSettings) {
@@ -169,7 +160,6 @@ export function calculateLateFeeFromSettings({
     cutoffMinute,
     timeZone,
     now,
-    requestedDateTime,
   })
     ? lateFee
     : 0;

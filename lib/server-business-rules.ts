@@ -16,7 +16,7 @@ export async function calculateServerDeliveryFee(orderType: string) {
   return orderType === "delivery" ? settings.deliveryFee : 0;
 }
 
-export async function calculateServerLateFee(requestedDateTime: string) {
+export async function calculateServerLateFee() {
   const settings = await getBusinessSettings();
 
   return calculateLateFeeFromSettings({
@@ -25,7 +25,6 @@ export async function calculateServerLateFee(requestedDateTime: string) {
     cutoffHour: settings.orderCutoffHour,
     cutoffMinute: settings.orderCutoffMinute,
     timeZone: weeklyMenuTimeZone,
-    requestedDateTime,
   });
 }
 
