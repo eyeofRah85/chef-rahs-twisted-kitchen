@@ -1,7 +1,17 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
-import type { AdminAuditLog } from "@prisma/client";
+
+type AuditLogRow = {
+  id: string;
+  createdAt: Date;
+  actorEmail: string | null;
+  actorUserId: string | null;
+  action: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  metadata?: unknown;
+};
 
 function formatMetadata(metadata: unknown) {
   if (!metadata || typeof metadata !== "object") {
@@ -14,12 +24,22 @@ function formatMetadata(metadata: unknown) {
 export default async function AdminAuditLogPage() {
   await requireAdminPage();
 
-  const logs:AdminAuditLog[] = await prisma.adminAuditLog.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 100,
-  });
+const logs = (await prisma.adminAuditLog.findMany({
+  select: {
+    id: true,
+    createdAt: true,
+    actorEmail: true,
+    actorUserId: true,
+    action: true,
+    entityType: true,
+    entityId: true,
+    metadata: true,
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+  take: 100,
+})) as AuditLogRow[];
 
   return (
     <main className="admin-page">
