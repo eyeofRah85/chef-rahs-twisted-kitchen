@@ -7,7 +7,7 @@ type Props = {
   orderId: string;
   approved: boolean;
   approvalNote?: string | null;
-  orderUrl: string;
+  orderUrl?: string | null;
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -51,12 +51,16 @@ export function OrderApprovalEmail({
         </Section>
       )}
 
-      <Button href={orderUrl} style={emailStyles.button}>
-        View Order Details
-      </Button>
+      {orderUrl && (
+        <Button href={orderUrl} style={emailStyles.button}>
+          View Order Details
+        </Button>
+      )}
 
       <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
-        You can log into your account to view order details and updates.
+        {orderUrl
+          ? "You can log into your account to view order details and updates."
+          : "Keep this email for your records. Chef Rah's Twisted Kitchen will contact you with any next steps."}
       </Text>
     </BrandedEmailLayout>
   );

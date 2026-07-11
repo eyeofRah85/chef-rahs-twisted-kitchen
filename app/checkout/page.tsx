@@ -68,6 +68,12 @@ function hasRequestedDateAndTime(value: string) {
   return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value);
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+type CheckoutMode = "loading" | "account" | "guest";
+
 export default function CheckoutPage() {
   const settings = useBusinessSettings();
   const details = useCheckoutStore((state) => state.details);
@@ -86,6 +92,8 @@ export default function CheckoutPage() {
 
   const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checkoutMode, setCheckoutMode] =
+    useState<CheckoutMode>("loading");
   const router = useRouter();
   const checkoutAllergenConflicts = items.flatMap((item) =>
     (item.allergens ?? []).filter((allergen) =>
@@ -115,24 +123,39 @@ export default function CheckoutPage() {
 
     async function loadProfile() {
       resetContactDetails();
+      setCheckoutMode("loading");
 
       const response = await fetch("/api/account/profile", {
         cache: "no-store",
       });
 
-      if (!response.ok || cancelled) return;
+      if (cancelled) return;
+
+      if (response.status === 401) {
+        setCheckoutMode("guest");
+        return;
+      }
+
+      if (!response.ok) {
+        setCheckoutMode("guest");
+        return;
+      }
 
       const profile = await response.json();
 
+      if (cancelled) return;
+
+      setCheckoutMode("account");
       updateContactDetails({
-        name: profile.name ?? "",
-        phone: profile.phone ?? "",
-        addressLine1: profile.addressLine1 ?? "",
-        addressLine2: profile.addressLine2 ?? "",
-        city: profile.city ?? "",
-        state: profile.state ?? "",
-        postalCode: profile.postalCode ?? "",
-        deliveryNotes: profile.deliveryNotes ?? "",
+        name: profile?.name ?? "",
+        email: profile?.email ?? "",
+        phone: profile?.phone ?? "",
+        addressLine1: profile?.addressLine1 ?? "",
+        addressLine2: profile?.addressLine2 ?? "",
+        city: profile?.city ?? "",
+        state: profile?.state ?? "",
+        postalCode: profile?.postalCode ?? "",
+        deliveryNotes: profile?.deliveryNotes ?? "",
         saveContactInfo: false,
       });
     }
@@ -140,6 +163,7 @@ export default function CheckoutPage() {
     loadProfile().catch(() => {
       if (!cancelled) {
         resetContactDetails();
+        setCheckoutMode("guest");
       }
     });
 
@@ -255,6 +279,8 @@ export default function CheckoutPage() {
   const cutoffMinute = settings.orderCutoffMinute.toString().padStart(2, "0");
   const cutoffText = `${cutoffDayNames[settings.orderCutoffDay]} at ${cutoffHour12}:${cutoffMinute} ${cutoffAmPm}`;
   const requestedSchedule = splitRequestedDateTime(details.requestedDateTime);
+  const isGuestCheckout = checkoutMode === "guest";
+  const isCheckoutModeLoading = checkoutMode === "loading";
 
   async function submitOrder() {
     if (submitting) return;
@@ -264,6 +290,11 @@ export default function CheckoutPage() {
     try {
       if (items.length === 0) {
         alert("Your cart is empty.");
+        return;
+      }
+
+      if (isCheckoutModeLoading) {
+        alert("Please wait while checkout finishes loading.");
         return;
       }
 
@@ -292,6 +323,18 @@ export default function CheckoutPage() {
       if (!requestedDateTimeValidation.valid) {
         alert(requestedDateTimeValidation.error);
         return;
+      }
+
+      if (isGuestCheckout) {
+        if (!details.email.trim()) {
+          alert("Guest checkout requires an email address.");
+          return;
+        }
+
+        if (!isValidEmail(details.email)) {
+          alert("Please enter a valid email address.");
+          return;
+        }
       }
 
       if (details.orderType === "delivery") {
@@ -350,7 +393,14 @@ export default function CheckoutPage() {
       clearCart();
       resetCheckout();
 
-      router.push(`/orders/${order.id}`);
+      if (order.orderUrl) {
+        router.push(order.orderUrl);
+        return;
+      }
+
+      router.push(
+        `/checkout/thank-you?order=${encodeURIComponent(String(order.id ?? ""))}`,
+      );
     } finally {
       setSubmitting(false);
     }
@@ -539,9 +589,20 @@ export default function CheckoutPage() {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-[#6b5a50]">
-                Prefilled from your account profile when available. Check the
-                box below to save changes back to your profile after ordering.
+                {isGuestCheckout
+                  ? "You can check out as a guest. We will use these details for this order only."
+                  : "Prefilled from your account profile when available. Check the box below to save changes back to your profile after ordering."}
               </p>
+
+              {isGuestCheckout && (
+                <p className="mt-3 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-3 text-sm leading-6 text-[#6b5a50]">
+                  Already have an account?{" "}
+                  <Link href="/login" className="font-bold text-[#9f2f18]">
+                    Sign in
+                  </Link>{" "}
+                  for order history. Signing in is optional.
+                </p>
+              )}
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 <label className={labelClass}>
@@ -554,6 +615,32 @@ export default function CheckoutPage() {
                     className={`${inputClass} mt-2`}
                   />
                 </label>
+
+                {isGuestCheckout ? (
+                  <label className={labelClass}>
+                    Email
+                    <input
+                      type="email"
+                      value={details.email}
+                      onChange={(event) =>
+                        updateField("email", event.target.value)
+                      }
+                      autoComplete="email"
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
+                ) : (
+                  details.email && (
+                    <label className={labelClass}>
+                      Account Email
+                      <input
+                        value={details.email}
+                        readOnly
+                        className={`${inputClass} mt-2 bg-[#f8f1e8] text-[#6b5a50]`}
+                      />
+                    </label>
+                  )
+                )}
 
                 <label className={labelClass}>
                   Phone
@@ -637,17 +724,19 @@ export default function CheckoutPage() {
                   </>
                 )}
 
-                <label className="flex items-center gap-3 text-sm font-medium text-[#3b241b] md:col-span-2">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(details.saveContactInfo)}
-                    onChange={(event) =>
-                      updateField("saveContactInfo", event.target.checked)
-                    }
-                    className="h-4 w-4 accent-[#9f2f18]"
-                  />
-                  Save this contact and delivery information to my account
-                </label>
+                {!isGuestCheckout && (
+                  <label className="flex items-center gap-3 text-sm font-medium text-[#3b241b] md:col-span-2">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(details.saveContactInfo)}
+                      onChange={(event) =>
+                        updateField("saveContactInfo", event.target.checked)
+                      }
+                      className="h-4 w-4 accent-[#9f2f18]"
+                    />
+                    Save this contact and delivery information to my account
+                  </label>
+                )}
               </div>
 
               {details.orderType === "delivery" && settings.deliveryArea && (
@@ -979,17 +1068,22 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={
-                  submitting || !hasCartItems || requiresAllergenAcknowledgement
+                  submitting ||
+                  isCheckoutModeLoading ||
+                  !hasCartItems ||
+                  requiresAllergenAcknowledgement
                 }
                 className="brand-button-primary mt-6 w-full px-5 py-3 disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:text-neutral-700 disabled:shadow-none"
               >
                 {submitting
                   ? "Submitting..."
-                  : !hasCartItems
-                    ? "Cart Is Empty"
-                    : requiresAllergenAcknowledgement
-                      ? "Acknowledge Allergen Warning"
-                      : "Submit Order"}
+                  : isCheckoutModeLoading
+                    ? "Loading Checkout..."
+                    : !hasCartItems
+                      ? "Cart Is Empty"
+                      : requiresAllergenAcknowledgement
+                        ? "Acknowledge Allergen Warning"
+                        : "Submit Order"}
               </button>
             </section>
           </aside>

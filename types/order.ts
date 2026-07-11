@@ -18,7 +18,8 @@ export type CheckoutDetails = {
   customTipAmount?: number;
   saveContactInfo: boolean;
   allergenAcknowledged: boolean;
-  name:string;
+  name: string;
+  email: string;
   phone: string;
   addressLine1: string;
   addressLine2: string;

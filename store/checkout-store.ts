@@ -20,6 +20,7 @@ type CheckoutState = {
 type CheckoutContactDetails = Pick<
   CheckoutDetails,
   | "name"
+  | "email"
   | "phone"
   | "addressLine1"
   | "addressLine2"
@@ -32,6 +33,7 @@ type CheckoutContactDetails = Pick<
 
 const emptyContactDetails: CheckoutContactDetails = {
   name: "",
+  email: "",
   phone: "",
   addressLine1: "",
   addressLine2: "",

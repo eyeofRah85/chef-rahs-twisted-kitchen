@@ -116,7 +116,7 @@ export async function PATCH(request: Request, context: RouteContext) {
             customerName: updated.customerName,
             orderId: updated.id,
             approved: approvalStatus === "APPROVED",
-            orderUrl: `${appUrl}/orders/${updated.id}`,
+            orderUrl: updated.userId ? `${appUrl}/orders/${updated.id}` : null,
             approvalNote,
           }),
         });

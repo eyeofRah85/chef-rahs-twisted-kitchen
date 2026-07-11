@@ -103,7 +103,9 @@ export async function PATCH(request: Request, context: RouteContext) {
         paidAt: updatedOrder.paidAt
           ? updatedOrder.paidAt.toLocaleString()
           : paidAt.toLocaleString(),
-        orderUrl: `${appUrl}/orders/${updatedOrder.id}`,
+        orderUrl: updatedOrder.userId
+          ? `${appUrl}/orders/${updatedOrder.id}`
+          : null,
       }),
     });
 

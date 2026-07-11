@@ -100,7 +100,9 @@ export async function PATCH(request: Request, context: RouteContext) {
         customerName: updatedOrder.customerName,
         orderId: updatedOrder.id,
         total: Number(updatedOrder.total),
-        orderUrl: `${appUrl}/orders/${updatedOrder.id}`,
+        orderUrl: updatedOrder.userId
+          ? `${appUrl}/orders/${updatedOrder.id}`
+          : null,
         paidAt: updatedOrder.paidAt
           ? updatedOrder.paidAt.toLocaleString()
           : paidAt.toLocaleString(),

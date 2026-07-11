@@ -24,6 +24,7 @@ type PageProps = {
 
 type AdminOrderRow = {
   id: string;
+  userId: string | null;
   customerName: string;
   customerEmail: string;
   orderType: string;
@@ -227,7 +228,16 @@ export default async function AdminOrdersPage({ searchParams }: PageProps) {
                 return (
                   <tr key={order.id}>
                     <td>
-                      <div className="font-black">{order.customerName}</div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-black">
+                          {order.customerName}
+                        </span>
+                        {!order.userId && (
+                          <span className="admin-badge admin-badge-neutral">
+                            Guest
+                          </span>
+                        )}
+                      </div>
                       <div className="mt-1 text-xs text-[#6b5a50]">
                         {order.customerEmail}
                       </div>
