@@ -7,7 +7,7 @@ type Props = {
   orderId: string;
   total: number;
   paidAt: string;
-  orderUrl: string;
+  orderUrl?: string | null;
 };
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -45,9 +45,18 @@ export function PaymentReceivedEmail({
         <Text style={emailStyles.totalText}>${total.toFixed(2)}</Text>
       </Section>
 
-      <Button href={orderUrl} style={emailStyles.button}>
-        View Order Details
-      </Button>
+      {orderUrl && (
+        <Button href={orderUrl} style={emailStyles.button}>
+          View Order Details
+        </Button>
+      )}
+
+      {!orderUrl && (
+        <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
+          Keep this email for your records. Chef Rah&apos;s Twisted Kitchen will
+          contact you if anything else is needed.
+        </Text>
+      )}
     </BrandedEmailLayout>
   );
 }

@@ -25,6 +25,7 @@ type PageProps = {
 
 type AdminOrderDetail = {
   id: string;
+  userId: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string | null;
@@ -139,7 +140,14 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <section className="space-y-6">
             <div className="admin-card p-6">
-              <h2 className="text-2xl font-black">Customer</h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <h2 className="text-2xl font-black">Customer</h2>
+                {!order.userId && (
+                  <span className="admin-badge admin-badge-neutral">
+                    Guest
+                  </span>
+                )}
+              </div>
               <div className="mt-4 space-y-2 text-sm">
                 <p>
                   <strong>Name:</strong> {order.customerName}

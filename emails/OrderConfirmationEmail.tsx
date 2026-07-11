@@ -31,7 +31,7 @@ type Props = {
   orderType: string;
   paymentStatus?: string | null;
   approvalStatus?: string | null;
-  orderUrl: string;
+  orderUrl?: string | null;
   items: OrderEmailItem[];
   allergenAcknowledged?: boolean;
   allergenAcknowledgedAt?: Date | string | null;
@@ -199,13 +199,16 @@ export function OrderConfirmationEmail({
         <Text style={emailStyles.totalText}>${total.toFixed(2)}</Text>
       </Section>
 
-      <Button href={orderUrl} style={emailStyles.button}>
-        View Order Details
-      </Button>
+      {orderUrl && (
+        <Button href={orderUrl} style={emailStyles.button}>
+          View Order Details
+        </Button>
+      )}
 
       <Text style={{ ...emailStyles.mutedText, marginTop: "18px" }}>
-        You can log into your account to track status updates and payment
-        information.
+        {orderUrl
+          ? "You can log into your account to track status updates and payment information."
+          : "Keep this email for your records. Chef Rah's Twisted Kitchen will contact you with status and payment updates."}
       </Text>
     </BrandedEmailLayout>
   );

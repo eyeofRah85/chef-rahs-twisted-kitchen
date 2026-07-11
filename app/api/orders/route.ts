@@ -164,6 +164,14 @@ function hasRequestedDateAndTime(value: string) {
   return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value);
 }
 
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 class OrderSubmissionError extends Error {
   status: number;
 
@@ -185,16 +193,10 @@ export async function POST(request: NextRequest) {
   }
   try {
     const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 },
-      );
-    }
-
-    const customerEmail = session.user.email;
     const { items, checkout } = (await request.json()) as CreateOrderRequest;
+    const authenticatedEmail = session?.user?.email?.trim() ?? "";
+    const authenticatedUserName = session?.user?.name?.trim() ?? "";
+    const isAuthenticated = Boolean(authenticatedEmail);
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
@@ -229,6 +231,24 @@ export async function POST(request: NextRequest) {
       postalCode: String(checkout.postalCode ?? "").trim(),
       deliveryNotes: String(checkout.deliveryNotes ?? "").trim(),
     };
+    const guestEmail = normalizeEmail(String(checkout.email ?? ""));
+    const customerEmail = isAuthenticated ? authenticatedEmail : guestEmail;
+
+    if (!isAuthenticated) {
+      if (!guestEmail) {
+        return NextResponse.json(
+          { error: "Guest checkout requires an email address." },
+          { status: 400 },
+        );
+      }
+
+      if (!isValidEmail(guestEmail)) {
+        return NextResponse.json(
+          { error: "Please enter a valid email address." },
+          { status: 400 },
+        );
+      }
+    }
 
     if (!hasRequestedDateAndTime(checkout.requestedDateTime ?? "")) {
       return NextResponse.json(
@@ -381,36 +401,40 @@ export async function POST(request: NextRequest) {
       ),
     );
 
-    const recoveredOrderItems = (await prisma.orderItem.findMany({
-      where: {
-        id: {
-          in: recoveredOrderItemIds,
-        },
-        order: {
-          customerEmail,
-        },
-      },
-      select: {
-        id: true,
-        menuItemId: true,
-        name: true,
-        unitPrice: true,
-        notes: true,
-        weeklyMealPlanSelection: {
+    const recoveredOrderItems = isAuthenticated
+      ? ((await prisma.orderItem.findMany({
+          where: {
+            id: {
+              in: recoveredOrderItemIds,
+            },
+            order: {
+              user: {
+                email: customerEmail,
+              },
+            },
+          },
           select: {
             id: true,
+            menuItemId: true,
+            name: true,
+            unitPrice: true,
+            notes: true,
+            weeklyMealPlanSelection: {
+              select: {
+                id: true,
+              },
+            },
+            menuItem: {
+              select: {
+                type: true,
+                available: true,
+                archived: true,
+                requiresApproval: true,
+              },
+            },
           },
-        },
-        menuItem: {
-          select: {
-            type: true,
-            available: true,
-            archived: true,
-            requiresApproval: true,
-          },
-        },
-      },
-    })) as ServerRecoveredOrderItem[];
+        })) as ServerRecoveredOrderItem[])
+      : [];
 
     const recoveredOrderItemById = new Map(
       recoveredOrderItems.map((item) => [item.id, item]),
@@ -786,6 +810,13 @@ export async function POST(request: NextRequest) {
       }
 
       if (item.category === "Reorder") {
+        if (!isAuthenticated) {
+          return NextResponse.json(
+            { error: "Please sign in to reorder previous items." },
+            { status: 401 },
+          );
+        }
+
         if (!item.recoveredOrderItemId) {
           return NextResponse.json(
             { error: "Reorder items must include a valid previous order item." },
@@ -1002,16 +1033,18 @@ export async function POST(request: NextRequest) {
         allergenConflicts: [],
       });
     }
-    const userAllergens = await prisma.userAllergen.findMany({
-      where: {
-        user: {
-          email: customerEmail,
-        },
-      },
-      select: {
-        allergenId: true,
-      },
-    });
+    const userAllergens = isAuthenticated
+      ? await prisma.userAllergen.findMany({
+          where: {
+            user: {
+              email: customerEmail,
+            },
+          },
+          select: {
+            allergenId: true,
+          },
+        })
+      : [];
 
     const userAllergenIds = new Set(
       userAllergens.map((entry) => entry.allergenId),
@@ -1135,13 +1168,17 @@ export async function POST(request: NextRequest) {
 
       return tx.order.create({
         data: {
-          user: {
-            connect: {
-              email: customerEmail,
-            },
-          },
+          ...(isAuthenticated
+            ? {
+                user: {
+                  connect: {
+                    email: customerEmail,
+                  },
+                },
+              }
+            : {}),
 
-          customerName: contact.name || session.user.name || "Customer",
+          customerName: contact.name || authenticatedUserName || "Customer",
           customerEmail,
           customerPhone: contact.phone || null,
 
@@ -1170,7 +1207,7 @@ export async function POST(request: NextRequest) {
           tipAmount,
           total,
 
-          deliveryName: contact.name || session.user.name || null,
+          deliveryName: contact.name || authenticatedUserName || null,
           deliveryPhone: contact.phone || null,
           deliveryAddressLine1: contact.addressLine1 || null,
           deliveryAddressLine2: contact.addressLine2 || null,
@@ -1308,13 +1345,13 @@ export async function POST(request: NextRequest) {
     });
 
     try {
-      if (checkout.saveContactInfo) {
+      if (isAuthenticated && checkout.saveContactInfo) {
         await prisma.user.update({
           where: {
             email: customerEmail,
           },
           data: {
-            name: contact.name || session.user.name || null,
+            name: contact.name || authenticatedUserName || null,
             phone: contact.phone || null,
             addressLine1: contact.addressLine1 || null,
             addressLine2: contact.addressLine2 || null,
@@ -1343,7 +1380,7 @@ export async function POST(request: NextRequest) {
         tipAmount: Number(order.tipAmount),
         paymentStatus: order.paymentStatus,
         approvalStatus: order.approvalStatus,
-        orderUrl: `${appUrl}/orders/${order.id}`,
+        orderUrl: isAuthenticated ? `${appUrl}/orders/${order.id}` : null,
 
         deliveryName: order.deliveryName,
         deliveryPhone: order.deliveryPhone,
@@ -1402,7 +1439,11 @@ export async function POST(request: NextRequest) {
       }),
     });
 
-    return NextResponse.json(order);
+    return NextResponse.json({
+      ...order,
+      guestCheckout: !isAuthenticated,
+      orderUrl: isAuthenticated ? `/orders/${order.id}` : null,
+    });
   } catch (error) {
     if (error instanceof OrderSubmissionError) {
       return NextResponse.json(
