@@ -379,6 +379,8 @@ model WeeklyMealPlanAllowedOption {
   available        Boolean @default(true)
   displayOrder     Int @default(0)
 
+  orderSlotOptionSelections OrderWeeklyMealPlanSlotOptionSelection[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -505,10 +507,35 @@ model OrderWeeklyMealPlanSlotSelection {
   offeringDescription String?
   dietaryInfo         String?
 
+  selectedOptions OrderWeeklyMealPlanSlotOptionSelection[]
+
   createdAt DateTime @default(now())
 
   @@unique([orderWeeklyMealPlanSelectionId, dayNumber, mealNumber])
   @@index([weeklyMealPlanOfferingId])
+}
+
+model OrderWeeklyMealPlanSlotOptionSelection {
+  id String @id @default(cuid())
+
+  orderWeeklyMealPlanSlotSelectionId String
+  orderWeeklyMealPlanSlotSelection   OrderWeeklyMealPlanSlotSelection @relation(fields: [orderWeeklyMealPlanSlotSelectionId], references: [id], onDelete: Cascade)
+
+  weeklyMealPlanAllowedOptionId String?
+  weeklyMealPlanAllowedOption   WeeklyMealPlanAllowedOption? @relation(fields: [weeklyMealPlanAllowedOptionId], references: [id], onDelete: SetNull)
+
+  optionType        WeeklyMealPlanOptionType
+  optionName        String
+  optionDescription String?
+  dietaryInfo       String?
+  priceDelta        Decimal @db.Decimal(10, 2) @default(0)
+  requestOnly       Boolean @default(false)
+  requiresApproval  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@unique([orderWeeklyMealPlanSlotSelectionId, optionType])
+  @@index([weeklyMealPlanAllowedOptionId])
 }
 
 model OrderStatusHistory {

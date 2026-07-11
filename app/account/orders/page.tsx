@@ -72,6 +72,14 @@ export default async function AccountOrdersPage() {
                       { dayNumber: "asc" },
                       { mealNumber: "asc" },
                     ],
+                    include: {
+                      selectedOptions: {
+                        orderBy: [
+                          { optionType: "asc" },
+                          { createdAt: "asc" },
+                        ],
+                      },
+                    },
                   },
                 },
               },

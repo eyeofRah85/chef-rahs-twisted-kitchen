@@ -1,4 +1,5 @@
 import type { DecimalLike } from "@/types/display";
+import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
 
 export type WeeklyOrderSelectionDisplay = {
   periodLabel: string;
@@ -20,6 +21,15 @@ export type WeeklyOrderMealSlotDisplay = {
   mealNumber: number;
   offeringName: string;
   dietaryInfo?: string | null;
+  selectedOptions?: WeeklyOrderMealSlotOptionDisplay[];
+};
+
+export type WeeklyOrderMealSlotOptionDisplay = {
+  optionType: string;
+  optionName: string;
+  priceDelta: DecimalLike;
+  requestOnly: boolean;
+  requiresApproval: boolean;
 };
 
 export type WeeklyOrderSelectionDetail = {
@@ -33,6 +43,19 @@ function formatCurrency(value: DecimalLike) {
 
 function pluralizeMeal(count: number) {
   return count === 1 ? "meal" : "meals";
+}
+
+function formatSlotOption(option: WeeklyOrderMealSlotOptionDisplay) {
+  const badges = [
+    Number(option.priceDelta) > 0 ? `+${formatCurrency(option.priceDelta)}` : "",
+    option.requestOnly ? "Request Only" : "",
+    option.requiresApproval ? "Approval Required" : "",
+  ].filter(Boolean);
+  const suffix = badges.length ? ` (${badges.join(", ")})` : "";
+
+  return `${formatWeeklyMealPlanOptionType(option.optionType)}: ${
+    option.optionName
+  }${suffix}`;
 }
 
 export function getWeeklyMealPlanSelectionDetails(
@@ -65,11 +88,19 @@ export function getWeeklyMealPlanSelectionDetails(
           : a.dayNumber - b.dayNumber,
       )
       .forEach((slot) => {
-        details.push({
-          label: `Day ${slot.dayNumber}, Meal ${slot.mealNumber}`,
-          value: slot.dietaryInfo
+        const slotOptions = [...(slot.selectedOptions ?? [])]
+          .sort((a, b) => a.optionType.localeCompare(b.optionType))
+          .map(formatSlotOption);
+        const valueParts = [
+          slot.dietaryInfo
             ? `${slot.offeringName} (${slot.dietaryInfo})`
             : slot.offeringName,
+          ...slotOptions,
+        ];
+
+        details.push({
+          label: `Day ${slot.dayNumber}, Meal ${slot.mealNumber}`,
+          value: valueParts.join(" - "),
         });
       });
   } else if (selection.offeringName) {

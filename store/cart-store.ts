@@ -23,6 +23,16 @@ export type WeeklyMealPlanSlotCartSelection = {
   offeringName: string;
   dietaryInfo?: string | null;
   allergens?: CartItemAllergen[];
+  selectedOptions?: WeeklyMealPlanSlotOptionCartSelection[];
+};
+
+export type WeeklyMealPlanSlotOptionCartSelection = {
+  weeklyMealPlanAllowedOptionId: string;
+  optionType: string;
+  optionName: string;
+  priceDelta: number;
+  requestOnly: boolean;
+  requiresApproval: boolean;
 };
 
 export type WeeklyMealPlanCartSelection = {
@@ -95,7 +105,23 @@ type CartState = {
 
 type PersistedCartState = Pick<CartState, "items">;
 
-const cartStorageVersion = 4;
+const cartStorageVersion = 5;
+
+function formatWeeklyOptionType(optionType: string) {
+  switch (optionType) {
+    case "SPICE_LEVEL":
+      return "Spice Level";
+
+    case "PROTEIN_SUBSTITUTION":
+      return "Protein Substitution";
+
+    default:
+      return optionType
+        .toLowerCase()
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+}
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -185,6 +211,17 @@ export const useCartStore = create<CartState>()(
                 groupName: `Day ${slot.dayNumber}`,
                 choiceName: `Meal ${slot.mealNumber}: ${slot.offeringName}`,
                 priceDelta: 0,
+              });
+
+              (slot.selectedOptions ?? []).forEach((option) => {
+                selectedOptions.push({
+                  groupName: `Day ${slot.dayNumber}, Meal ${
+                    slot.mealNumber
+                  } ${formatWeeklyOptionType(option.optionType)}`,
+                  choiceName: option.optionName,
+                  priceDelta: option.priceDelta,
+                  requestOnly: option.requestOnly,
+                });
               });
             });
         } else if (selection.offeringName) {

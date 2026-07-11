@@ -10,8 +10,8 @@ const baseUrl = "https://example.test";
 const orderProps = {
   customerName: "Jordan Taylor",
   orderId: "preview-order-1042",
-  total: 86.75,
-  subtotal: 72,
+  total: 93.25,
+  subtotal: 78.5,
   deliveryFee: 8,
   lateFee: 0,
   tipAmount: 6.75,
@@ -40,8 +40,8 @@ const orderProps = {
     {
       name: "Weekly Meal Prep Pack",
       quantity: 1,
-      unitPrice: 36,
-      lineTotal: 36,
+      unitPrice: 42.5,
+      lineTotal: 42.5,
       weeklyMealPlanSelection: {
         periodLabel: "Week of July 13, 2026",
         packageName: "Balanced Meal Prep",
@@ -53,31 +53,81 @@ const orderProps = {
         proteinSubstitution: null,
         requestOnly: false,
         requiresApproval: false,
-        priceDelta: 0,
+        priceDelta: 6.5,
         mealSlots: [
           {
             dayNumber: 1,
             mealNumber: 1,
             offeringName: "Jerk chicken with coconut rice",
             dietaryInfo: "High protein",
+            selectedOptions: [
+              {
+                optionType: "SPICE_LEVEL",
+                optionName: "Medium",
+                priceDelta: 0,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+              {
+                optionType: "PROTEIN_SUBSTITUTION",
+                optionName: "Extra 3oz Protein",
+                priceDelta: 2,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+            ],
           },
           {
             dayNumber: 1,
             mealNumber: 2,
             offeringName: "Salmon wellness bowl",
             dietaryInfo: "Pescatarian",
+            selectedOptions: [
+              {
+                optionType: "SPICE_LEVEL",
+                optionName: "Mild",
+                priceDelta: 0,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+              {
+                optionType: "PROTEIN_SUBSTITUTION",
+                optionName: "Extra 5oz Seafood",
+                priceDelta: 4.5,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+            ],
           },
           {
             dayNumber: 2,
             mealNumber: 1,
             offeringName: "Turkey power bowl",
             dietaryInfo: "Balanced",
+            selectedOptions: [
+              {
+                optionType: "SPICE_LEVEL",
+                optionName: "Hot",
+                priceDelta: 0,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+            ],
           },
           {
             dayNumber: 2,
             mealNumber: 2,
             offeringName: "Island chicken meal prep",
             dietaryInfo: null,
+            selectedOptions: [
+              {
+                optionType: "SPICE_LEVEL",
+                optionName: "Medium",
+                priceDelta: 0,
+                requestOnly: false,
+                requiresApproval: false,
+              },
+            ],
           },
         ],
       },

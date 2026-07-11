@@ -83,14 +83,22 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
         include: {
           weeklyMealPlanSelection: {
             include: {
-              mealSlots: {
-                orderBy: [
-                  { dayNumber: "asc" },
-                  { mealNumber: "asc" },
-                ],
+                  mealSlots: {
+                    orderBy: [
+                      { dayNumber: "asc" },
+                      { mealNumber: "asc" },
+                    ],
+                    include: {
+                      selectedOptions: {
+                        orderBy: [
+                          { optionType: "asc" },
+                          { createdAt: "asc" },
+                        ],
+                      },
+                    },
+                  },
+                },
               },
-            },
-          },
         },
       },
       statusHistory: {

@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
+import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
 import {
   useCartStore,
   type CartItemAllergen,
   type WeeklyMealPlanCartSelection,
 } from "@/store/cart-store";
-import type { PublicWeeklyMenu } from "@/types/weekly-menu";
+import type { PublicWeeklyMenu, PublicWeeklyOption } from "@/types/weekly-menu";
 
 type Props = {
   weeklyMenu: PublicWeeklyMenu;
@@ -19,6 +20,8 @@ type MealSlotDefinition = {
   dayNumber: number;
   mealNumber: number;
 };
+
+type SlotOptionSelections = Record<string, Record<string, string>>;
 
 function buildSlotKey(dayNumber: number, mealNumber: number) {
   return `${dayNumber}:${mealNumber}`;
@@ -46,6 +49,24 @@ function uniqueAllergens(allergens: CartItemAllergen[]) {
   );
 }
 
+function groupOptionsByType(options: PublicWeeklyOption[]) {
+  return options.reduce<Record<string, PublicWeeklyOption[]>>(
+    (groups, option) => {
+      groups[option.optionType] = [
+        ...(groups[option.optionType] ?? []),
+        option,
+      ];
+
+      return groups;
+    },
+    {},
+  );
+}
+
+function optionTypeRequiresSelection(optionType: string) {
+  return optionType === "SPICE_LEVEL";
+}
+
 export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   const addWeeklyMealPlan = useCartStore((state) => state.addWeeklyMealPlan);
   const { selectedAllergenIdSet } = useCustomerAllergens();
@@ -53,6 +74,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   const [slotSelections, setSlotSelections] = useState<Record<string, string>>(
     {},
   );
+  const [slotOptionSelections, setSlotOptionSelections] =
+    useState<SlotOptionSelections>({});
   const [added, setAdded] = useState(false);
 
   const selectedPackage = weeklyMenu.packages.find(
@@ -94,13 +117,79 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
     orderSlotsRemaining < 1 ||
     weeklyMenu.packages.length === 0 ||
     weeklyMenu.offerings.length === 0;
-  const displayTotal = selectedPackage ? selectedPackage.price : 0;
+  const selectedOptionDelta = mealSlots.reduce((total, slot) => {
+    const offering = offeringById.get(slotSelections[slot.key]);
+
+    if (!offering) return total;
+
+    return (
+      total +
+      getSelectedOptionsForSlot(slot.key, offering).reduce(
+        (slotTotal, option) => slotTotal + option.priceDelta,
+        0,
+      )
+    );
+  }, 0);
+  const displayTotal = selectedPackage
+    ? selectedPackage.price + selectedOptionDelta
+    : 0;
+
+  function getSelectedOptionsForSlot(
+    slotKey: string,
+    offering: PublicWeeklyMenu["offerings"][number],
+  ) {
+    const selectedByType = slotOptionSelections[slotKey] ?? {};
+
+    return Object.entries(groupOptionsByType(offering.options)).flatMap(
+      ([optionType, options]) => {
+        const selectedOptionId =
+          selectedByType[optionType] ??
+          (optionTypeRequiresSelection(optionType) ? options[0]?.id : "");
+
+        if (!selectedOptionId) return [];
+
+        const selectedOption = options.find(
+          (option) => option.id === selectedOptionId,
+        );
+
+        return selectedOption ? [selectedOption] : [];
+      },
+    );
+  }
 
   function updateSlot(slotKey: string, offeringId: string) {
     setSlotSelections((current) => ({
       ...current,
       [slotKey]: offeringId,
     }));
+    setSlotOptionSelections((current) => {
+      const next = { ...current };
+      delete next[slotKey];
+
+      return next;
+    });
+    setAdded(false);
+  }
+
+  function updateSlotOption(
+    slotKey: string,
+    optionType: string,
+    optionId: string,
+  ) {
+    setSlotOptionSelections((current) => {
+      const nextForSlot = { ...(current[slotKey] ?? {}) };
+
+      if (optionId) {
+        nextForSlot[optionType] = optionId;
+      } else {
+        delete nextForSlot[optionType];
+      }
+
+      return {
+        ...current,
+        [slotKey]: nextForSlot,
+      };
+    });
     setAdded(false);
   }
 
@@ -126,6 +215,16 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         offeringName: offering.name,
         dietaryInfo: offering.dietaryInfo,
         allergens: offering.allergens,
+        selectedOptions: getSelectedOptionsForSlot(slot.key, offering).map(
+          (option) => ({
+            weeklyMealPlanAllowedOptionId: option.id,
+            optionType: option.optionType,
+            optionName: option.name,
+            priceDelta: option.priceDelta,
+            requestOnly: option.requestOnly,
+            requiresApproval: option.requiresApproval,
+          }),
+        ),
       };
     });
 
@@ -154,9 +253,15 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       spicePriceDelta: 0,
       proteinSubstitution: null,
       proteinSubstitutionPriceDelta: 0,
-      requestOnly: false,
-      requiresApproval: false,
-      priceDelta: 0,
+      requestOnly: selectedMealSlots.some((slot) =>
+        slot?.selectedOptions.some((option) => option.requestOnly),
+      ),
+      requiresApproval: selectedMealSlots.some((slot) =>
+        slot?.selectedOptions.some(
+          (option) => option.requestOnly || option.requiresApproval,
+        ),
+      ),
+      priceDelta: selectedOptionDelta,
     };
 
     addWeeklyMealPlan(selection, selectedAllergens);
@@ -254,32 +359,105 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
                   </h5>
 
                   <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    {daySlots.map((slot) => (
-                      <label
-                        key={slot.key}
-                        className="grid min-w-0 gap-2 text-sm font-bold"
-                      >
-                        Meal {slot.mealNumber}
-                        <select
-                          value={slotSelections[slot.key] ?? ""}
-                          onChange={(event) =>
-                            updateSlot(slot.key, event.target.value)
-                          }
-                          className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
-                          disabled={unavailable}
-                        >
-                          <option value="">Choose a weekly offering</option>
-                          {weeklyMenu.offerings.map((offering) => (
-                            <option key={offering.id} value={offering.id}>
-                              {offering.name}
-                              {offering.dietaryInfo
-                                ? ` - ${offering.dietaryInfo}`
-                                : ""}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ))}
+                    {daySlots.map((slot) => {
+                      const selectedOffering = offeringById.get(
+                        slotSelections[slot.key],
+                      );
+                      const groupedOptions = selectedOffering
+                        ? groupOptionsByType(selectedOffering.options)
+                        : {};
+
+                      return (
+                        <div key={slot.key} className="grid min-w-0 gap-3">
+                          <label className="grid min-w-0 gap-2 text-sm font-bold">
+                            Meal {slot.mealNumber}
+                            <select
+                              value={slotSelections[slot.key] ?? ""}
+                              onChange={(event) =>
+                                updateSlot(slot.key, event.target.value)
+                              }
+                              className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+                              disabled={unavailable}
+                            >
+                              <option value="">Choose a weekly offering</option>
+                              {weeklyMenu.offerings.map((offering) => (
+                                <option key={offering.id} value={offering.id}>
+                                  {offering.name}
+                                  {offering.dietaryInfo
+                                    ? ` - ${offering.dietaryInfo}`
+                                    : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          {selectedOffering &&
+                            Object.keys(groupedOptions).length > 0 && (
+                              <div className="grid gap-3 rounded-lg border border-[#ead8c1] bg-white p-3">
+                                {Object.entries(groupedOptions).map(
+                                  ([optionType, options]) => {
+                                    const label =
+                                      formatWeeklyMealPlanOptionType(
+                                        optionType,
+                                      );
+                                    const required =
+                                      optionTypeRequiresSelection(optionType);
+                                    const selectedByType =
+                                      slotOptionSelections[slot.key] ?? {};
+                                    const selectedValue =
+                                      selectedByType[optionType] ??
+                                      (required ? options[0]?.id ?? "" : "");
+
+                                    return (
+                                      <label
+                                        key={optionType}
+                                        className="grid min-w-0 gap-2 text-xs font-black uppercase tracking-wide text-[#6f1f12]"
+                                      >
+                                        {label}
+                                        <select
+                                          value={selectedValue}
+                                          onChange={(event) =>
+                                            updateSlotOption(
+                                              slot.key,
+                                              optionType,
+                                              event.target.value,
+                                            )
+                                          }
+                                          className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-3 py-2 text-sm font-medium normal-case text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+                                          disabled={unavailable}
+                                        >
+                                          {!required && (
+                                            <option value="">
+                                              No {label.toLowerCase()}
+                                            </option>
+                                          )}
+
+                                          {options.map((option) => (
+                                            <option
+                                              key={option.id}
+                                              value={option.id}
+                                            >
+                                              {option.name}
+                                              {option.priceDelta > 0
+                                                ? ` +$${option.priceDelta.toFixed(
+                                                    2,
+                                                  )}`
+                                                : ""}
+                                              {option.requiresApproval
+                                                ? " - approval required"
+                                                : ""}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </label>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );

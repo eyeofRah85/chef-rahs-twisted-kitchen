@@ -14,7 +14,7 @@ import { getWeeklyMenuQueryDateRange } from "@/lib/weekly-menu-dates";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, WeeklyMealPlanOptionType } from "@prisma/client";
 import { rateLimitRequest, rateLimits } from "@/lib/rate-limit";
 
 type CreateOrderRequest = {
@@ -37,6 +37,18 @@ type CreatedOrderWithItems = Prisma.OrderGetPayload<{
                   mealNumber: "asc";
                 },
               ];
+              include: {
+                selectedOptions: {
+                  orderBy: [
+                    {
+                      optionType: "asc";
+                    },
+                    {
+                      createdAt: "asc";
+                    },
+                  ];
+                };
+              };
             };
           };
         };
@@ -106,6 +118,16 @@ type ValidatedOrderItem = {
       offeringName: string;
       offeringDescription: string | null;
       dietaryInfo: string | null;
+      selectedOptions: {
+        weeklyMealPlanAllowedOptionId: string;
+        optionType: WeeklyMealPlanOptionType;
+        optionName: string;
+        optionDescription: string | null;
+        dietaryInfo: string | null;
+        priceDelta: number;
+        requestOnly: boolean;
+        requiresApproval: boolean;
+      }[];
     }[];
   };
 };
@@ -448,6 +470,22 @@ export async function POST(request: NextRequest) {
                     allergen: true,
                   },
                 },
+                options: {
+                  where: {
+                    available: true,
+                  },
+                  orderBy: [
+                    {
+                      optionType: "asc",
+                    },
+                    {
+                      displayOrder: "asc",
+                    },
+                    {
+                      createdAt: "asc",
+                    },
+                  ],
+                },
               },
             },
           },
@@ -506,6 +544,9 @@ export async function POST(request: NextRequest) {
           ValidatedOrderItem["weeklySelection"]
         >["mealSlots"] = [];
         const slotAllergensById = new Map<string, { id: string; name: string }>();
+        let optionPriceDelta = 0;
+        let hasRequestOnlyOption = false;
+        let hasApprovalRequiredOption = false;
 
         for (const slot of submittedSlots) {
           const dayNumber = Number(slot.dayNumber);
@@ -513,6 +554,9 @@ export async function POST(request: NextRequest) {
           const weeklyMealPlanOfferingId = String(
             slot.weeklyMealPlanOfferingId ?? "",
           ).trim();
+          const selectedSlotOptions = Array.isArray(slot.selectedOptions)
+            ? slot.selectedOptions
+            : [];
           const slotKey = `${dayNumber}:${mealNumber}`;
 
           if (
@@ -557,6 +601,89 @@ export async function POST(request: NextRequest) {
             });
           });
 
+          const optionsById = new Map(
+            selectedOffering.options.map((option) => [option.id, option]),
+          );
+          const optionsByType = selectedOffering.options.reduce<
+            Record<string, typeof selectedOffering.options>
+          >((groups, option) => {
+            groups[option.optionType] = [
+              ...(groups[option.optionType] ?? []),
+              option,
+            ];
+
+            return groups;
+          }, {});
+          const seenOptionTypes = new Set<string>();
+          const validatedSlotOptions: NonNullable<
+            ValidatedOrderItem["weeklySelection"]
+          >["mealSlots"][number]["selectedOptions"] = [];
+
+          if (
+            optionsByType.SPICE_LEVEL?.length &&
+            !selectedSlotOptions.some((option) => {
+              const optionId = String(
+                option.weeklyMealPlanAllowedOptionId ?? "",
+              ).trim();
+
+              return optionsById.get(optionId)?.optionType === "SPICE_LEVEL";
+            })
+          ) {
+            return NextResponse.json(
+              { error: "Please choose a spice level for every weekly meal slot." },
+              { status: 400 },
+            );
+          }
+
+          for (const selectedSlotOption of selectedSlotOptions) {
+            const weeklyMealPlanAllowedOptionId = String(
+              selectedSlotOption.weeklyMealPlanAllowedOptionId ?? "",
+            ).trim();
+            const selectedOption = optionsById.get(
+              weeklyMealPlanAllowedOptionId,
+            );
+
+            if (!selectedOption) {
+              return NextResponse.json(
+                {
+                  error:
+                    "One or more selected weekly meal options are no longer available.",
+                },
+                { status: 400 },
+              );
+            }
+
+            if (seenOptionTypes.has(selectedOption.optionType)) {
+              return NextResponse.json(
+                {
+                  error:
+                    "Only one weekly meal option can be selected for each option type.",
+                },
+                { status: 400 },
+              );
+            }
+
+            seenOptionTypes.add(selectedOption.optionType);
+            optionPriceDelta += Number(selectedOption.priceDelta);
+            hasRequestOnlyOption =
+              hasRequestOnlyOption || selectedOption.requestOnly;
+            hasApprovalRequiredOption =
+              hasApprovalRequiredOption ||
+              selectedOption.requestOnly ||
+              selectedOption.requiresApproval;
+
+            validatedSlotOptions.push({
+              weeklyMealPlanAllowedOptionId: selectedOption.id,
+              optionType: selectedOption.optionType,
+              optionName: selectedOption.name,
+              optionDescription: selectedOption.description,
+              dietaryInfo: selectedOption.dietaryInfo,
+              priceDelta: Number(selectedOption.priceDelta),
+              requestOnly: selectedOption.requestOnly,
+              requiresApproval: selectedOption.requiresApproval,
+            });
+          }
+
           validatedMealSlots.push({
             dayNumber,
             mealNumber,
@@ -564,6 +691,7 @@ export async function POST(request: NextRequest) {
             offeringName: selectedOffering.name,
             offeringDescription: selectedOffering.description,
             dietaryInfo: selectedOffering.dietaryInfo,
+            selectedOptions: validatedSlotOptions,
           });
         }
 
@@ -576,8 +704,8 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const priceDelta = 0;
-        const unitPrice = Number(selectedPackage.price);
+        const priceDelta = optionPriceDelta;
+        const unitPrice = Number(selectedPackage.price) + priceDelta;
 
         if (Math.abs(Number(item.price) - unitPrice) > 0.01) {
           return NextResponse.json(
@@ -589,8 +717,8 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const requiresApproval = false;
-        const requestOnly = false;
+        const requiresApproval = hasApprovalRequiredOption;
+        const requestOnly = hasRequestOnlyOption;
         const weeklySelectionNote = `${requiredSlotCount} weekly meal selections saved.`;
 
         validatedItems.push({
@@ -1077,6 +1205,19 @@ export async function POST(request: NextRequest) {
                           offeringName: slot.offeringName,
                           offeringDescription: slot.offeringDescription,
                           dietaryInfo: slot.dietaryInfo,
+                          selectedOptions: {
+                            create: slot.selectedOptions.map((option) => ({
+                              weeklyMealPlanAllowedOptionId:
+                                option.weeklyMealPlanAllowedOptionId,
+                              optionType: option.optionType,
+                              optionName: option.optionName,
+                              optionDescription: option.optionDescription,
+                              dietaryInfo: option.dietaryInfo,
+                              priceDelta: option.priceDelta,
+                              requestOnly: option.requestOnly,
+                              requiresApproval: option.requiresApproval,
+                            })),
+                          },
                         })),
                       },
                     },
@@ -1109,6 +1250,18 @@ export async function POST(request: NextRequest) {
                         mealNumber: "asc",
                       },
                     ],
+                    include: {
+                      selectedOptions: {
+                        orderBy: [
+                          {
+                            optionType: "asc",
+                          },
+                          {
+                            createdAt: "asc",
+                          },
+                        ],
+                      },
+                    },
                   },
                 },
               },
@@ -1194,6 +1347,13 @@ export async function POST(request: NextRequest) {
                     mealNumber: slot.mealNumber,
                     offeringName: slot.offeringName,
                     dietaryInfo: slot.dietaryInfo,
+                    selectedOptions: slot.selectedOptions.map((option) => ({
+                      optionType: option.optionType,
+                      optionName: option.optionName,
+                      priceDelta: Number(option.priceDelta),
+                      requestOnly: option.requestOnly,
+                      requiresApproval: option.requiresApproval,
+                    })),
                   }),
                 ),
               }
