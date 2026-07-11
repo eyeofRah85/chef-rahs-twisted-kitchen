@@ -54,6 +54,32 @@ const orderProps = {
         requestOnly: false,
         requiresApproval: false,
         priceDelta: 0,
+        mealSlots: [
+          {
+            dayNumber: 1,
+            mealNumber: 1,
+            offeringName: "Jerk chicken with coconut rice",
+            dietaryInfo: "High protein",
+          },
+          {
+            dayNumber: 1,
+            mealNumber: 2,
+            offeringName: "Salmon wellness bowl",
+            dietaryInfo: "Pescatarian",
+          },
+          {
+            dayNumber: 2,
+            mealNumber: 1,
+            offeringName: "Turkey power bowl",
+            dietaryInfo: "Balanced",
+          },
+          {
+            dayNumber: 2,
+            mealNumber: 2,
+            offeringName: "Island chicken meal prep",
+            dietaryInfo: null,
+          },
+        ],
       },
     },
   ],

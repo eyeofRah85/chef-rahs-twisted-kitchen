@@ -52,7 +52,16 @@ export default async function KitchenPage() {
           quantity: true,
           lineTotal: true,
           notes: true,
-          weeklyMealPlanSelection: true,
+          weeklyMealPlanSelection: {
+            include: {
+              mealSlots: {
+                orderBy: [
+                  { dayNumber: "asc" },
+                  { mealNumber: "asc" },
+                ],
+              },
+            },
+          },
         },
       },
     },
@@ -120,6 +129,14 @@ export default async function KitchenPage() {
                         priceDelta: Number(
                           item.weeklyMealPlanSelection.priceDelta,
                         ),
+                        mealSlots: (
+                          item.weeklyMealPlanSelection.mealSlots ?? []
+                        ).map((slot) => ({
+                            dayNumber: slot.dayNumber,
+                            mealNumber: slot.mealNumber,
+                            offeringName: slot.offeringName,
+                            dietaryInfo: slot.dietaryInfo,
+                          })),
                       }
                     : null,
                 })),

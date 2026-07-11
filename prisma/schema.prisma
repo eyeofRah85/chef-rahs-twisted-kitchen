@@ -344,6 +344,7 @@ model WeeklyMealPlanOffering {
   allergens       AllergenWeeklyMealPlanOffering[]
   options         WeeklyMealPlanAllowedOption[]
   orderSelections OrderWeeklyMealPlanSelection[]
+  orderSlotSelections OrderWeeklyMealPlanSlotSelection[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -483,7 +484,31 @@ model OrderWeeklyMealPlanSelection {
   requiresApproval    Boolean @default(false)
   priceDelta          Decimal @db.Decimal(10, 2) @default(0)
 
+  mealSlots OrderWeeklyMealPlanSlotSelection[]
+
   createdAt DateTime @default(now())
+}
+
+model OrderWeeklyMealPlanSlotSelection {
+  id String @id @default(cuid())
+
+  orderWeeklyMealPlanSelectionId String
+  orderWeeklyMealPlanSelection   OrderWeeklyMealPlanSelection @relation(fields: [orderWeeklyMealPlanSelectionId], references: [id], onDelete: Cascade)
+
+  weeklyMealPlanOfferingId String?
+  weeklyMealPlanOffering   WeeklyMealPlanOffering? @relation(fields: [weeklyMealPlanOfferingId], references: [id], onDelete: SetNull)
+
+  dayNumber  Int
+  mealNumber Int
+
+  offeringName        String
+  offeringDescription String?
+  dietaryInfo         String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([orderWeeklyMealPlanSelectionId, dayNumber, mealNumber])
+  @@index([weeklyMealPlanOfferingId])
 }
 
 model OrderStatusHistory {

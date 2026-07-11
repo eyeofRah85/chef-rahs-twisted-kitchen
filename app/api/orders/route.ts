@@ -10,13 +10,10 @@ import {
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
-import {
-  getWeeklyMenuQueryDateRange,
-} from "@/lib/weekly-menu-dates";
+import { getWeeklyMenuQueryDateRange } from "@/lib/weekly-menu-dates";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
-import type { WeeklyOrderSelectionDisplay } from "@/lib/weekly-order-display";
 import type { Prisma } from "@prisma/client";
 import { rateLimitRequest, rateLimits } from "@/lib/rate-limit";
 
@@ -25,24 +22,30 @@ type CreateOrderRequest = {
   checkout?: CheckoutDetails;
 };
 
-type CreatedOrderItem = {
-  name: string;
-  quantity: number;
-  unitPrice: DecimalLike;
-  lineTotal: DecimalLike;
-  notes: string | null;
-  weeklyMealPlanSelection: WeeklyOrderSelectionDisplay | null;
-};
-
 type CreatedOrderWithItems = Prisma.OrderGetPayload<{
   include: {
     items: {
       include: {
-        weeklyMealPlanSelection: true;
+        weeklyMealPlanSelection: {
+          include: {
+            mealSlots: {
+              orderBy: [
+                {
+                  dayNumber: "asc";
+                },
+                {
+                  mealNumber: "asc";
+                },
+              ];
+            };
+          };
+        };
       };
     };
   };
 }>;
+
+type CreatedOrderItem = CreatedOrderWithItems["items"][number];
 
 type ServerMenuItem = {
   id: string;
@@ -84,7 +87,7 @@ type ValidatedOrderItem = {
   weeklySelection?: {
     weeklyMenuPeriodId: string;
     weeklyMealPlanPackageId: string;
-    weeklyMealPlanOfferingId: string;
+    weeklyMealPlanOfferingId: string | null;
     periodLabel: string;
     packageName: string;
     packageDays: number;
@@ -96,6 +99,14 @@ type ValidatedOrderItem = {
     requestOnly: boolean;
     requiresApproval: boolean;
     priceDelta: number;
+    mealSlots: {
+      dayNumber: number;
+      mealNumber: number;
+      weeklyMealPlanOfferingId: string;
+      offeringName: string;
+      offeringDescription: string | null;
+      dietaryInfo: string | null;
+    }[];
   };
 };
 
@@ -396,13 +407,22 @@ export async function POST(request: NextRequest) {
         if (
           !selection.weeklyMenuPeriodId ||
           !selection.weeklyMealPlanPackageId ||
-          !selection.weeklyMealPlanOfferingId
+          !Array.isArray(selection.mealSlots)
         ) {
           return NextResponse.json(
             { error: "Weekly meal plan selections are incomplete." },
             { status: 400 },
           );
         }
+
+        const submittedSlots = selection.mealSlots;
+        const submittedSlotOfferingIds = Array.from(
+          new Set(
+            submittedSlots
+              .map((slot) => String(slot.weeklyMealPlanOfferingId ?? "").trim())
+              .filter(Boolean),
+          ),
+        );
 
         const weeklyPeriod = await prisma.weeklyMenuPeriod.findUnique({
           where: {
@@ -417,18 +437,15 @@ export async function POST(request: NextRequest) {
             },
             offerings: {
               where: {
-                id: selection.weeklyMealPlanOfferingId,
+                id: {
+                  in: submittedSlotOfferingIds,
+                },
                 available: true,
               },
               include: {
                 allergens: {
                   include: {
                     allergen: true,
-                  },
-                },
-                options: {
-                  where: {
-                    available: true,
                   },
                 },
               },
@@ -461,57 +478,106 @@ export async function POST(request: NextRequest) {
         }
 
         const selectedPackage = weeklyPeriod.packages[0];
-        const selectedOffering = weeklyPeriod.offerings[0];
 
-        if (!selectedPackage || !selectedOffering) {
+        if (!selectedPackage) {
           return NextResponse.json(
             { error: "One or more weekly meal plan selections are no longer available." },
             { status: 400 },
           );
         }
 
-        const spiceOptions = selectedOffering.options.filter(
-          (option) => option.optionType === "SPICE_LEVEL",
-        );
-        const proteinOptions = selectedOffering.options.filter(
-          (option) => option.optionType === "PROTEIN_SUBSTITUTION",
-        );
-        const selectedSpiceOption = selection.spiceOptionId
-          ? spiceOptions.find((option) => option.id === selection.spiceOptionId)
-          : null;
-        const selectedProteinOption = selection.proteinSubstitutionOptionId
-          ? proteinOptions.find(
-              (option) => option.id === selection.proteinSubstitutionOptionId,
-            )
-          : null;
+        const requiredSlotCount =
+          selectedPackage.days * selectedPackage.mealsPerDay;
 
-        if (spiceOptions.length > 0 && !selectedSpiceOption) {
+        if (submittedSlots.length !== requiredSlotCount) {
           return NextResponse.json(
-            { error: "Please choose an available spice level for your weekly meal plan." },
+            {
+              error: `Please choose all ${requiredSlotCount} weekly meal selections.`,
+            },
             { status: 400 },
           );
         }
 
-        if (selection.spiceOptionId && !selectedSpiceOption) {
-          return NextResponse.json(
-            { error: "The selected spice level is no longer available." },
-            { status: 400 },
-          );
-        }
-
-        if (selection.proteinSubstitutionOptionId && !selectedProteinOption) {
-          return NextResponse.json(
-            { error: "The selected protein substitution is no longer available." },
-            { status: 400 },
-          );
-        }
-
-        const spicePriceDelta = Number(selectedSpiceOption?.priceDelta ?? 0);
-        const proteinPriceDelta = Number(
-          selectedProteinOption?.priceDelta ?? 0,
+        const offeringById = new Map(
+          weeklyPeriod.offerings.map((offering) => [offering.id, offering]),
         );
-        const priceDelta = spicePriceDelta + proteinPriceDelta;
-        const unitPrice = Number(selectedPackage.price) + priceDelta;
+        const seenSlotKeys = new Set<string>();
+        const validatedMealSlots: NonNullable<
+          ValidatedOrderItem["weeklySelection"]
+        >["mealSlots"] = [];
+        const slotAllergensById = new Map<string, { id: string; name: string }>();
+
+        for (const slot of submittedSlots) {
+          const dayNumber = Number(slot.dayNumber);
+          const mealNumber = Number(slot.mealNumber);
+          const weeklyMealPlanOfferingId = String(
+            slot.weeklyMealPlanOfferingId ?? "",
+          ).trim();
+          const slotKey = `${dayNumber}:${mealNumber}`;
+
+          if (
+            !Number.isInteger(dayNumber) ||
+            !Number.isInteger(mealNumber) ||
+            dayNumber < 1 ||
+            dayNumber > selectedPackage.days ||
+            mealNumber < 1 ||
+            mealNumber > selectedPackage.mealsPerDay
+          ) {
+            return NextResponse.json(
+              { error: "One or more weekly meal slots are invalid." },
+              { status: 400 },
+            );
+          }
+
+          if (seenSlotKeys.has(slotKey)) {
+            return NextResponse.json(
+              { error: "Duplicate weekly meal slots are not allowed." },
+              { status: 400 },
+            );
+          }
+
+          seenSlotKeys.add(slotKey);
+
+          const selectedOffering = offeringById.get(weeklyMealPlanOfferingId);
+
+          if (!selectedOffering) {
+            return NextResponse.json(
+              {
+                error:
+                  "One or more selected weekly meals are no longer available.",
+              },
+              { status: 400 },
+            );
+          }
+
+          selectedOffering.allergens.forEach((entry) => {
+            slotAllergensById.set(entry.allergen.id, {
+              id: entry.allergen.id,
+              name: entry.allergen.name,
+            });
+          });
+
+          validatedMealSlots.push({
+            dayNumber,
+            mealNumber,
+            weeklyMealPlanOfferingId: selectedOffering.id,
+            offeringName: selectedOffering.name,
+            offeringDescription: selectedOffering.description,
+            dietaryInfo: selectedOffering.dietaryInfo,
+          });
+        }
+
+        if (seenSlotKeys.size !== requiredSlotCount) {
+          return NextResponse.json(
+            {
+              error: `Please choose all ${requiredSlotCount} weekly meal selections.`,
+            },
+            { status: 400 },
+          );
+        }
+
+        const priceDelta = 0;
+        const unitPrice = Number(selectedPackage.price);
 
         if (Math.abs(Number(item.price) - unitPrice) > 0.01) {
           return NextResponse.json(
@@ -523,68 +589,36 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const requiresApproval = Boolean(
-          selectedSpiceOption?.requiresApproval ||
-            selectedProteinOption?.requiresApproval ||
-            selectedSpiceOption?.requestOnly ||
-            selectedProteinOption?.requestOnly,
-        );
-        const requestOnly = Boolean(
-          selectedSpiceOption?.requestOnly ||
-            selectedProteinOption?.requestOnly,
-        );
-        const optionNotes = [
-          `Weekly Menu: ${weeklyPeriod.label}`,
-          `Package: ${selectedPackage.name}`,
-          `Offering: ${selectedOffering.name}`,
-          selectedSpiceOption
-            ? `Spice Level: ${selectedSpiceOption.name}${
-                spicePriceDelta > 0
-                  ? ` (+$${spicePriceDelta.toFixed(2)})`
-                  : ""
-              }`
-            : null,
-          selectedProteinOption
-            ? `Protein Substitution: ${
-                selectedProteinOption.requestOnly
-                  ? `${selectedProteinOption.name} (Request Only)`
-                  : selectedProteinOption.name
-              }${
-                proteinPriceDelta > 0
-                  ? ` (+$${proteinPriceDelta.toFixed(2)})`
-                  : ""
-              }`
-            : null,
-        ].filter(Boolean);
+        const requiresApproval = false;
+        const requestOnly = false;
+        const weeklySelectionNote = `${requiredSlotCount} weekly meal selections saved.`;
 
         validatedItems.push({
           menuItemId: null,
-          name: `${selectedPackage.name} - ${selectedOffering.name}`,
+          name: `${selectedPackage.name} - Build Your Weekly Plan`,
           quantity,
           unitPrice,
           lineTotal: unitPrice * quantity,
           requiresApproval,
-          notes: optionNotes.join("\n") || null,
-          allergens: selectedOffering.allergens.map((entry) => ({
-            id: entry.allergen.id,
-            name: entry.allergen.name,
-          })),
+          notes: weeklySelectionNote,
+          allergens: Array.from(slotAllergensById.values()),
           allergenConflicts: [],
           weeklySelection: {
             weeklyMenuPeriodId: weeklyPeriod.id,
             weeklyMealPlanPackageId: selectedPackage.id,
-            weeklyMealPlanOfferingId: selectedOffering.id,
+            weeklyMealPlanOfferingId: null,
             periodLabel: weeklyPeriod.label,
             packageName: selectedPackage.name,
             packageDays: selectedPackage.days,
             packageMealsPerDay: selectedPackage.mealsPerDay,
             packagePrice: Number(selectedPackage.price),
-            offeringName: selectedOffering.name,
-            spiceLevel: selectedSpiceOption?.name ?? null,
-            proteinSubstitution: selectedProteinOption?.name ?? null,
+            offeringName: "Build Your Weekly Plan",
+            spiceLevel: null,
+            proteinSubstitution: null,
             requestOnly,
             requiresApproval,
             priceDelta,
+            mealSlots: validatedMealSlots,
           },
         });
 
@@ -1034,6 +1068,17 @@ export async function POST(request: NextRequest) {
                       requestOnly: item.weeklySelection.requestOnly,
                       requiresApproval: item.weeklySelection.requiresApproval,
                       priceDelta: item.weeklySelection.priceDelta,
+                      mealSlots: {
+                        create: item.weeklySelection.mealSlots.map((slot) => ({
+                          dayNumber: slot.dayNumber,
+                          mealNumber: slot.mealNumber,
+                          weeklyMealPlanOfferingId:
+                            slot.weeklyMealPlanOfferingId,
+                          offeringName: slot.offeringName,
+                          offeringDescription: slot.offeringDescription,
+                          dietaryInfo: slot.dietaryInfo,
+                        })),
+                      },
                     },
                   }
                 : undefined,
@@ -1053,7 +1098,20 @@ export async function POST(request: NextRequest) {
         include: {
           items: {
             include: {
-              weeklyMealPlanSelection: true,
+              weeklyMealPlanSelection: {
+                include: {
+                  mealSlots: {
+                    orderBy: [
+                      {
+                        dayNumber: "asc",
+                      },
+                      {
+                        mealNumber: "asc",
+                      },
+                    ],
+                  },
+                },
+              },
             },
           },
         },
@@ -1130,6 +1188,14 @@ export async function POST(request: NextRequest) {
                 requestOnly: item.weeklyMealPlanSelection.requestOnly,
                 requiresApproval: item.weeklyMealPlanSelection.requiresApproval,
                 priceDelta: Number(item.weeklyMealPlanSelection.priceDelta),
+                mealSlots: item.weeklyMealPlanSelection.mealSlots.map(
+                  (slot) => ({
+                    dayNumber: slot.dayNumber,
+                    mealNumber: slot.mealNumber,
+                    offeringName: slot.offeringName,
+                    dietaryInfo: slot.dietaryInfo,
+                  }),
+                ),
               }
             : null,
         })),

@@ -65,7 +65,16 @@ export default async function AccountOrdersPage() {
         include: {
           items: {
             include: {
-              weeklyMealPlanSelection: true,
+              weeklyMealPlanSelection: {
+                include: {
+                  mealSlots: {
+                    orderBy: [
+                      { dayNumber: "asc" },
+                      { mealNumber: "asc" },
+                    ],
+                  },
+                },
+              },
             },
           },
         },

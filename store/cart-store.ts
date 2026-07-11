@@ -16,10 +16,19 @@ export type CartItemAllergen = {
   name: string;
 };
 
+export type WeeklyMealPlanSlotCartSelection = {
+  dayNumber: number;
+  mealNumber: number;
+  weeklyMealPlanOfferingId: string;
+  offeringName: string;
+  dietaryInfo?: string | null;
+  allergens?: CartItemAllergen[];
+};
+
 export type WeeklyMealPlanCartSelection = {
   weeklyMenuPeriodId: string;
   weeklyMealPlanPackageId: string;
-  weeklyMealPlanOfferingId: string;
+  weeklyMealPlanOfferingId?: string | null;
   spiceOptionId?: string | null;
   proteinSubstitutionOptionId?: string | null;
   periodLabel: string;
@@ -27,7 +36,8 @@ export type WeeklyMealPlanCartSelection = {
   packageDays: number;
   packageMealsPerDay: number;
   packagePrice: number;
-  offeringName: string;
+  offeringName?: string | null;
+  mealSlots: WeeklyMealPlanSlotCartSelection[];
   spiceLevel?: string | null;
   spicePriceDelta?: number;
   proteinSubstitution?: string | null;
@@ -85,7 +95,7 @@ type CartState = {
 
 type PersistedCartState = Pick<CartState, "items">;
 
-const cartStorageVersion = 3;
+const cartStorageVersion = 4;
 
 export const useCartStore = create<CartState>()(
   persist(
@@ -159,12 +169,31 @@ export const useCartStore = create<CartState>()(
             choiceName: selection.packageName,
             priceDelta: 0,
           },
-          {
+        ];
+
+        const mealSlots = selection.mealSlots ?? [];
+
+        if (mealSlots.length > 0) {
+          [...mealSlots]
+            .sort((a, b) =>
+              a.dayNumber === b.dayNumber
+                ? a.mealNumber - b.mealNumber
+                : a.dayNumber - b.dayNumber,
+            )
+            .forEach((slot) => {
+              selectedOptions.push({
+                groupName: `Day ${slot.dayNumber}`,
+                choiceName: `Meal ${slot.mealNumber}: ${slot.offeringName}`,
+                priceDelta: 0,
+              });
+            });
+        } else if (selection.offeringName) {
+          selectedOptions.push({
             groupName: "Offering",
             choiceName: selection.offeringName,
             priceDelta: 0,
-          },
-        ];
+          });
+        }
 
         if (selection.spiceLevel) {
           selectedOptions.push({
@@ -189,7 +218,7 @@ export const useCartStore = create<CartState>()(
           cartId: crypto.randomUUID(),
           menuItemId: "",
           weeklyMealPlanSelection: selection,
-          name: `${selection.packageName} - ${selection.offeringName}`,
+          name: `${selection.packageName} - Build Your Weekly Plan`,
           price: selection.packagePrice + selection.priceDelta,
           quantity: 1,
           category: "Weekly Meal Plan",

@@ -71,16 +71,16 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
           </div>
 
           <div className="rounded-lg bg-white/10 p-4">
-            <p className="text-sm font-black text-[#f4c46f]">2. Offering</p>
+            <p className="text-sm font-black text-[#f4c46f]">2. Meal Slots</p>
             <p className="mt-2 text-sm leading-6 text-[#f3dcc4]">
-              Pick the actual meal prep offering for this week.
+              Fill each day and meal slot from this week&apos;s offerings.
             </p>
           </div>
 
           <div className="rounded-lg bg-white/10 p-4">
-            <p className="text-sm font-black text-[#f4c46f]">3. Options</p>
+            <p className="text-sm font-black text-[#f4c46f]">3. Review</p>
             <p className="mt-2 text-sm leading-6 text-[#f3dcc4]">
-              Select spice level and allowed substitutions.
+              Review your selected meals before adding the plan to cart.
             </p>
           </div>
         </div>

@@ -81,7 +81,16 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
     include: {
       items: {
         include: {
-          weeklyMealPlanSelection: true,
+          weeklyMealPlanSelection: {
+            include: {
+              mealSlots: {
+                orderBy: [
+                  { dayNumber: "asc" },
+                  { mealNumber: "asc" },
+                ],
+              },
+            },
+          },
         },
       },
       statusHistory: {

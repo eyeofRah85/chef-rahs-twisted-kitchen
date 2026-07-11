@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo, useState } from "react";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
-import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
 import {
   useCartStore,
+  type CartItemAllergen,
   type WeeklyMealPlanCartSelection,
 } from "@/store/cart-store";
 import type { PublicWeeklyMenu } from "@/types/weekly-menu";
@@ -15,12 +14,35 @@ type Props = {
   weeklyMenu: PublicWeeklyMenu;
 };
 
-function optionsForType(
-  offering: PublicWeeklyMenu["offerings"][number] | undefined,
-  optionType: string,
-) {
-  return (
-    offering?.options.filter((option) => option.optionType === optionType) ?? []
+type MealSlotDefinition = {
+  key: string;
+  dayNumber: number;
+  mealNumber: number;
+};
+
+function buildSlotKey(dayNumber: number, mealNumber: number) {
+  return `${dayNumber}:${mealNumber}`;
+}
+
+function buildMealSlots(days: number, mealsPerDay: number) {
+  const slots: MealSlotDefinition[] = [];
+
+  for (let dayNumber = 1; dayNumber <= days; dayNumber += 1) {
+    for (let mealNumber = 1; mealNumber <= mealsPerDay; mealNumber += 1) {
+      slots.push({
+        key: buildSlotKey(dayNumber, mealNumber),
+        dayNumber,
+        mealNumber,
+      });
+    }
+  }
+
+  return slots;
+}
+
+function uniqueAllergens(allergens: CartItemAllergen[]) {
+  return Array.from(
+    new Map(allergens.map((allergen) => [allergen.id, allergen])).values(),
   );
 }
 
@@ -28,38 +50,41 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   const addWeeklyMealPlan = useCartStore((state) => state.addWeeklyMealPlan);
   const { selectedAllergenIdSet } = useCustomerAllergens();
   const [packageId, setPackageId] = useState(weeklyMenu.packages[0]?.id ?? "");
-  const [offeringId, setOfferingId] = useState(
-    weeklyMenu.offerings[0]?.id ?? "",
+  const [slotSelections, setSlotSelections] = useState<Record<string, string>>(
+    {},
   );
-  const [spiceOptionId, setSpiceOptionId] = useState("");
-  const [proteinOptionId, setProteinOptionId] = useState("");
   const [added, setAdded] = useState(false);
 
   const selectedPackage = weeklyMenu.packages.find(
     (pkg) => pkg.id === packageId,
   );
-  const selectedOffering = weeklyMenu.offerings.find(
-    (offering) => offering.id === offeringId,
+  const mealSlots = useMemo(
+    () =>
+      selectedPackage
+        ? buildMealSlots(selectedPackage.days, selectedPackage.mealsPerDay)
+        : [],
+    [selectedPackage],
   );
-  const spiceOptions = useMemo(
-    () => optionsForType(selectedOffering, "SPICE_LEVEL"),
-    [selectedOffering],
+  const offeringById = useMemo(
+    () =>
+      new Map(weeklyMenu.offerings.map((offering) => [offering.id, offering])),
+    [weeklyMenu.offerings],
   );
-  const proteinOptions = useMemo(
-    () => optionsForType(selectedOffering, "PROTEIN_SUBSTITUTION"),
-    [selectedOffering],
+  const selectedSlotOfferings = mealSlots
+    .map((slot) => offeringById.get(slotSelections[slot.key]))
+    .filter((offering): offering is PublicWeeklyMenu["offerings"][number] =>
+      Boolean(offering),
+    );
+  const selectedSlotCount = selectedSlotOfferings.length;
+  const requiredSlotCount = mealSlots.length;
+  const missingRequiredSlots =
+    Boolean(selectedPackage) && selectedSlotCount < requiredSlotCount;
+  const selectedAllergens = uniqueAllergens(
+    selectedSlotOfferings.flatMap((offering) => offering.allergens),
   );
-  const selectedSpiceOption =
-    spiceOptions.find((option) => option.id === spiceOptionId) ??
-    spiceOptions[0] ??
-    null;
-  const selectedProteinOption = proteinOptions.find(
-    (option) => option.id === proteinOptionId,
+  const allergenConflicts = selectedAllergens.filter((allergen) =>
+    selectedAllergenIdSet.has(allergen.id),
   );
-  const allergenConflicts =
-    selectedOffering?.allergens.filter((allergen) =>
-      selectedAllergenIdSet.has(allergen.id),
-    ) ?? [];
   const orderSlotsRemaining = Math.max(
     weeklyMenu.capacity - weeklyMenu.ordersPlaced,
     0,
@@ -69,52 +94,72 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
     orderSlotsRemaining < 1 ||
     weeklyMenu.packages.length === 0 ||
     weeklyMenu.offerings.length === 0;
-  const spiceRequired = spiceOptions.length > 0;
-  const missingRequiredSpice = spiceRequired && !selectedSpiceOption;
-  const optionDelta =
-    Number(selectedSpiceOption?.priceDelta ?? 0) +
-    Number(selectedProteinOption?.priceDelta ?? 0);
-  const displayTotal = selectedPackage
-    ? selectedPackage.price + optionDelta
-    : 0;
+  const displayTotal = selectedPackage ? selectedPackage.price : 0;
+
+  function updateSlot(slotKey: string, offeringId: string) {
+    setSlotSelections((current) => ({
+      ...current,
+      [slotKey]: offeringId,
+    }));
+    setAdded(false);
+  }
 
   function addSelection() {
-    if (!selectedPackage || !selectedOffering || unavailable) return;
+    if (!selectedPackage || unavailable) return;
 
-    if (missingRequiredSpice) {
-      alert("Please choose a spice level.");
+    if (missingRequiredSlots) {
+      alert("Please choose a weekly meal offering for every meal slot.");
+      return;
+    }
+
+    const selectedMealSlots = mealSlots.map((slot) => {
+      const offering = offeringById.get(slotSelections[slot.key]);
+
+      if (!offering) {
+        return null;
+      }
+
+      return {
+        dayNumber: slot.dayNumber,
+        mealNumber: slot.mealNumber,
+        weeklyMealPlanOfferingId: offering.id,
+        offeringName: offering.name,
+        dietaryInfo: offering.dietaryInfo,
+        allergens: offering.allergens,
+      };
+    });
+
+    if (selectedMealSlots.some((slot) => !slot)) {
+      alert("Please choose a weekly meal offering for every meal slot.");
       return;
     }
 
     const selection: WeeklyMealPlanCartSelection = {
       weeklyMenuPeriodId: weeklyMenu.id,
       weeklyMealPlanPackageId: selectedPackage.id,
-      weeklyMealPlanOfferingId: selectedOffering.id,
-      spiceOptionId: selectedSpiceOption?.id ?? null,
-      proteinSubstitutionOptionId: selectedProteinOption?.id ?? null,
+      weeklyMealPlanOfferingId: null,
+      spiceOptionId: null,
+      proteinSubstitutionOptionId: null,
       periodLabel: weeklyMenu.label,
       packageName: selectedPackage.name,
       packageDays: selectedPackage.days,
       packageMealsPerDay: selectedPackage.mealsPerDay,
       packagePrice: selectedPackage.price,
-      offeringName: selectedOffering.name,
-      spiceLevel: selectedSpiceOption?.name ?? null,
-      spicePriceDelta: selectedSpiceOption?.priceDelta ?? 0,
-      proteinSubstitution: selectedProteinOption?.name ?? null,
-      proteinSubstitutionPriceDelta: selectedProteinOption?.priceDelta ?? 0,
-      requestOnly: Boolean(
-        selectedSpiceOption?.requestOnly || selectedProteinOption?.requestOnly,
+      offeringName: "Build Your Weekly Plan",
+      mealSlots: selectedMealSlots.filter(
+        (slot): slot is NonNullable<(typeof selectedMealSlots)[number]> =>
+          Boolean(slot),
       ),
-      requiresApproval: Boolean(
-        selectedSpiceOption?.requiresApproval ||
-        selectedProteinOption?.requiresApproval ||
-        selectedSpiceOption?.requestOnly ||
-        selectedProteinOption?.requestOnly,
-      ),
-      priceDelta: optionDelta,
+      spiceLevel: null,
+      spicePriceDelta: 0,
+      proteinSubstitution: null,
+      proteinSubstitutionPriceDelta: 0,
+      requestOnly: false,
+      requiresApproval: false,
+      priceDelta: 0,
     };
 
-    addWeeklyMealPlan(selection, selectedOffering.allergens);
+    addWeeklyMealPlan(selection, selectedAllergens);
     setAdded(true);
   }
 
@@ -125,8 +170,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           <h3 className="text-2xl font-black">Build Your Weekly Plan</h3>
 
           <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
-            Choose the package size, then pick the actual weekly meal offering
-            you want prepared.
+            Choose a package size, then fill every day and meal slot with one
+            of this week&apos;s published meal offerings.
           </p>
         </div>
 
@@ -148,13 +193,14 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         </div>
       )}
 
-      <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
+      <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
         <label className="grid min-w-0 gap-2 text-sm font-bold">
           Package
           <select
             value={packageId}
             onChange={(event) => {
               setPackageId(event.target.value);
+              setSlotSelections({});
               setAdded(false);
             }}
             className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
@@ -168,120 +214,76 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
           </select>
         </label>
 
-        <label className="grid min-w-0 gap-2 text-sm font-bold">
-          Offering
-          <select
-            value={offeringId}
-            onChange={(event) => {
-              setOfferingId(event.target.value);
-              setSpiceOptionId("");
-              setProteinOptionId("");
-              setAdded(false);
-            }}
-            className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
-            disabled={unavailable}
-          >
-            {weeklyMenu.offerings.map((offering) => (
-              <option key={offering.id} value={offering.id}>
-                {offering.name}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {spiceOptions.length > 0 && (
-          <label className="grid min-w-0 gap-2 text-sm font-bold">
-            {formatWeeklyMealPlanOptionType("SPICE_LEVEL")}
-            <select
-              value={selectedSpiceOption?.id ?? ""}
-              onChange={(event) => {
-                setSpiceOptionId(event.target.value);
-                setAdded(false);
-              }}
-              className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
-              disabled={unavailable}
-            >
-              {spiceOptions.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                  {option.priceDelta > 0
-                    ? ` +$${option.priceDelta.toFixed(2)}`
-                    : ""}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        <label className="grid min-w-0 gap-2 text-sm font-bold">
-          {formatWeeklyMealPlanOptionType("PROTEIN_SUBSTITUTION")}
-          <select
-            value={proteinOptionId}
-            onChange={(event) => {
-              setProteinOptionId(event.target.value);
-              setAdded(false);
-            }}
-            className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
-            disabled={unavailable}
-          >
-            <option value="">No substitution</option>
-            {proteinOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-                {option.priceDelta > 0
-                  ? ` +$${option.priceDelta.toFixed(2)}`
-                  : ""}
-                {option.requiresApproval ? " - approval required" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="rounded-lg border border-[#ead8c1] bg-white px-4 py-3 text-sm font-bold text-[#6f1f12]">
+          {selectedSlotCount}/{requiredSlotCount} meals selected
+        </div>
       </div>
 
-      {selectedOffering && (
+      {selectedPackage && (
         <section className="mt-5 rounded-lg border border-[#ead8c1] bg-white p-4">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-[#f7ead7] md:w-44 md:shrink-0">
-              <Image
-                src={selectedOffering.imageUrl || "/placeholder.png"}
-                alt={selectedOffering.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 176px"
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-
-            <div className="min-w-0 flex-1">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+            <div>
               <p className="text-xs font-black uppercase text-[#9f2f18]">
-                Selected Offering
+                Required meals
               </p>
-
               <h4 className="mt-1 text-xl font-black">
-                {selectedOffering.name}
+                {requiredSlotCount} meal selections
               </h4>
-
-              <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
-                {selectedOffering.description}
-              </p>
-
-              <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                {selectedOffering.dietaryInfo && (
-                  <span className="rounded-full bg-[#f4eadb] px-3 py-1 font-bold text-[#6f1f12]">
-                    {selectedOffering.dietaryInfo}
-                  </span>
-                )}
-
-                {selectedOffering.allergens.map((allergen) => (
-                  <span
-                    key={allergen.id}
-                    className="rounded-full bg-red-50 px-3 py-1 font-bold text-red-800"
-                  >
-                    {allergen.name}
-                  </span>
-                ))}
-              </div>
             </div>
+
+            <p className="text-sm font-semibold text-[#6b5a50]">
+              {selectedPackage.days} days x {selectedPackage.mealsPerDay} meals
+              per day
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4">
+            {Array.from({ length: selectedPackage.days }, (_, dayIndex) => {
+              const dayNumber = dayIndex + 1;
+              const daySlots = mealSlots.filter(
+                (slot) => slot.dayNumber === dayNumber,
+              );
+
+              return (
+                <div
+                  key={dayNumber}
+                  className="rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4"
+                >
+                  <h5 className="text-sm font-black uppercase text-[#6f1f12]">
+                    Day {dayNumber}
+                  </h5>
+
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    {daySlots.map((slot) => (
+                      <label
+                        key={slot.key}
+                        className="grid min-w-0 gap-2 text-sm font-bold"
+                      >
+                        Meal {slot.mealNumber}
+                        <select
+                          value={slotSelections[slot.key] ?? ""}
+                          onChange={(event) =>
+                            updateSlot(slot.key, event.target.value)
+                          }
+                          className="w-full min-w-0 rounded-lg border border-[#d7bea1] bg-white px-4 py-3 text-sm font-medium text-[#24130f] outline-none transition focus:border-[#9f2f18] focus:ring-2 focus:ring-[#f4c46f]/40"
+                          disabled={unavailable}
+                        >
+                          <option value="">Choose a weekly offering</option>
+                          {weeklyMenu.offerings.map((offering) => (
+                            <option key={offering.id} value={offering.id}>
+                              {offering.name}
+                              {offering.dietaryInfo
+                                ? ` - ${offering.dietaryInfo}`
+                                : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
@@ -295,13 +297,13 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       <button
         type="button"
         onClick={addSelection}
-        disabled={unavailable || missingRequiredSpice}
+        disabled={unavailable || missingRequiredSlots}
         className="brand-button-primary mt-5 w-full px-5 py-3 disabled:cursor-not-allowed disabled:bg-neutral-400 disabled:text-neutral-700 disabled:shadow-none"
       >
-        {missingRequiredSpice
-          ? "Choose Spice Level"
-          : unavailable
-            ? "Unavailable"
+        {unavailable
+          ? "Unavailable"
+          : missingRequiredSlots
+            ? "Choose Every Meal"
             : "Add Weekly Plan to Order"}
       </button>
 

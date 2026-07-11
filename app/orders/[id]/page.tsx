@@ -80,7 +80,16 @@ export default async function OrderPage({ params }: OrderPageProps) {
     include: {
       items: {
         include: {
-          weeklyMealPlanSelection: true,
+          weeklyMealPlanSelection: {
+            include: {
+              mealSlots: {
+                orderBy: [
+                  { dayNumber: "asc" },
+                  { mealNumber: "asc" },
+                ],
+              },
+            },
+          },
         },
       },
       user: true,

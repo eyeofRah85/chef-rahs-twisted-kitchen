@@ -6,12 +6,20 @@ export type WeeklyOrderSelectionDisplay = {
   packageDays: number;
   packageMealsPerDay: number;
   packagePrice: DecimalLike;
-  offeringName: string;
+  offeringName?: string | null;
   spiceLevel?: string | null;
   proteinSubstitution?: string | null;
   requestOnly: boolean;
   requiresApproval: boolean;
   priceDelta: DecimalLike;
+  mealSlots?: WeeklyOrderMealSlotDisplay[];
+};
+
+export type WeeklyOrderMealSlotDisplay = {
+  dayNumber: number;
+  mealNumber: number;
+  offeringName: string;
+  dietaryInfo?: string | null;
 };
 
 export type WeeklyOrderSelectionDetail = {
@@ -45,11 +53,31 @@ export function getWeeklyMealPlanSelectionDetails(
       label: "Package Price",
       value: formatCurrency(selection.packagePrice),
     },
-    {
+  ];
+
+  const mealSlots = selection.mealSlots ?? [];
+
+  if (mealSlots.length > 0) {
+    [...mealSlots]
+      .sort((a, b) =>
+        a.dayNumber === b.dayNumber
+          ? a.mealNumber - b.mealNumber
+          : a.dayNumber - b.dayNumber,
+      )
+      .forEach((slot) => {
+        details.push({
+          label: `Day ${slot.dayNumber}, Meal ${slot.mealNumber}`,
+          value: slot.dietaryInfo
+            ? `${slot.offeringName} (${slot.dietaryInfo})`
+            : slot.offeringName,
+        });
+      });
+  } else if (selection.offeringName) {
+    details.push({
       label: "Offering",
       value: selection.offeringName,
-    },
-  ];
+    });
+  }
 
   if (selection.spiceLevel) {
     details.push({
