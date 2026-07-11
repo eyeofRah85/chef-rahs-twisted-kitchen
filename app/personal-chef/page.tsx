@@ -62,13 +62,13 @@ export default async function PersonalChefPage({ searchParams }: PageProps) {
 
         <div className="brand-container relative z-10 py-16 text-white">
           <p className="text-sm font-bold uppercase text-[#f4c46f]">
-            Personal Chef
+            Personal Chef 
           </p>
           <h1 className="mt-3 max-w-3xl text-5xl font-script font-black leading-tight">
             Plan a private chef experience.
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-[#fff1df]">
-            Request private meals, events, meal prep, or custom dining support.
+            Request private meals, events, or custom dining support.
             Chef Rah&apos;s Twisted Kitchen will follow up with availability,
             pricing, and next steps.
           </p>
