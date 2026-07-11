@@ -5,6 +5,8 @@ export const weeklyMealSlotBaseLabelOptions = [
   "Snack",
 ] as const;
 
+export const breakfastWeeklyMealSlotLabel = "Breakfast";
+
 export function defaultWeeklyMealSlotLabel(mealNumber: number) {
   return `Meal ${mealNumber}`;
 }
@@ -21,6 +23,14 @@ export function isAllowedWeeklyMealSlotLabel(
   mealNumber: number,
 ) {
   return getWeeklyMealSlotLabelOptions(mealNumber).includes(label);
+}
+
+export function isBreakfastWeeklyMealSlotLabel(
+  label: string | null | undefined,
+) {
+  return (
+    label?.trim().toLowerCase() === breakfastWeeklyMealSlotLabel.toLowerCase()
+  );
 }
 
 export function normalizeWeeklyMealSlotLabels(

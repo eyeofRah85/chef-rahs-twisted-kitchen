@@ -10,6 +10,7 @@ export type WeeklyMealPlanOfferingFormData = {
   imageUrl: string | null;
   dietaryInfo: string | null;
   available: boolean;
+  breakfastOnly: boolean;
   displayOrder: number;
 };
 
@@ -133,6 +134,18 @@ export function WeeklyMealPlanOfferingForm({ periodId, offering }: Props) {
           />
         </label>
       </div>
+
+      <label className="admin-label">
+        Meal Type
+        <select
+          name="breakfastOnly"
+          defaultValue={offering?.breakfastOnly ? "true" : "false"}
+          className="admin-input"
+        >
+          <option value="false">General</option>
+          <option value="true">Breakfast</option>
+        </select>
+      </label>
 
       <label className="flex items-center gap-3 text-sm font-bold text-[#3f2a1d]">
         <input

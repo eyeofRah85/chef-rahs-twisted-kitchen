@@ -27,6 +27,7 @@ export type PublicWeeklyOffering = {
   description: string;
   imageUrl: string | null;
   dietaryInfo: string | null;
+  breakfastOnly: boolean;
   allergens: {
     id: string;
     name: string;

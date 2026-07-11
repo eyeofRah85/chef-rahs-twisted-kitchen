@@ -113,6 +113,7 @@ export async function POST(request: Request, context: RouteContext) {
             imageUrl: offering.imageUrl,
             dietaryInfo: offering.dietaryInfo,
             available: offering.available,
+            breakfastOnly: offering.breakfastOnly,
             displayOrder: offering.displayOrder,
           },
           select: {

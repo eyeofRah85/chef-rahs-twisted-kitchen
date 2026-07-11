@@ -1002,6 +1002,7 @@ async function seedWeeklyMealPlans() {
       description:
         "Turkey-based prep bowls with vegetables and balanced starch portions.",
       dietaryInfo: "High-protein option.",
+      breakfastOnly: true,
       displayOrder: 3,
     },
   ];
@@ -1014,6 +1015,7 @@ async function seedWeeklyMealPlans() {
         description: offeringData.description,
         dietaryInfo: offeringData.dietaryInfo,
         available: true,
+        breakfastOnly: offeringData.breakfastOnly ?? false,
         displayOrder: offeringData.displayOrder,
       },
     });

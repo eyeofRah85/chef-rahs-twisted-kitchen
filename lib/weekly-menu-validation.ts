@@ -223,6 +223,14 @@ export function parseWeeklyMealPlanPackageForm(formData: FormData) {
 }
 
 export function parseWeeklyMealPlanOfferingForm(formData: FormData) {
+  const breakfastOnly = String(formData.get("breakfastOnly") ?? "false");
+
+  if (!["false", "true"].includes(breakfastOnly)) {
+    throw new WeeklyMenuValidationError(
+      "Offering meal type must be General or Breakfast.",
+    );
+  }
+
   return {
     name: parseRequiredText(formData.get("name"), "Offering name"),
     description: parseRequiredText(
@@ -232,6 +240,7 @@ export function parseWeeklyMealPlanOfferingForm(formData: FormData) {
     imageUrl: parseOptionalPublicImageUrl(formData.get("imageUrl")),
     dietaryInfo: parseOptionalText(formData.get("dietaryInfo")),
     available: formData.get("available") === "on",
+    breakfastOnly: breakfastOnly === "true",
     displayOrder: parseWholeNumber(
       formData.get("displayOrder"),
       "Display order",

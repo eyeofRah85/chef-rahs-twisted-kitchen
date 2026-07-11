@@ -94,6 +94,7 @@ function toPublicWeeklyMenu(weeklyMenu: {
     description: string;
     imageUrl: string | null;
     dietaryInfo: string | null;
+    breakfastOnly: boolean;
     allergens: {
       allergen: {
         id: string;
@@ -146,6 +147,7 @@ function toPublicWeeklyMenu(weeklyMenu: {
       description: offering.description,
       imageUrl: offering.imageUrl,
       dietaryInfo: offering.dietaryInfo,
+      breakfastOnly: offering.breakfastOnly,
       allergens: offering.allergens.map((entry) => ({
         id: entry.allergen.id,
         name: entry.allergen.name,

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
+import { isBreakfastWeeklyMealSlotLabel } from "@/lib/weekly-package-labels";
 import {
   useCartStore,
   type CartItemAllergen,
@@ -71,6 +72,16 @@ function groupOptionsByType(options: PublicWeeklyOption[]) {
 
 function optionTypeRequiresSelection(optionType: string) {
   return optionType === "SPICE_LEVEL";
+}
+
+function offeringIsAvailableForSlot(
+  offering: PublicWeeklyMenu["offerings"][number],
+  slot: MealSlotDefinition,
+) {
+  return (
+    !offering.breakfastOnly ||
+    isBreakfastWeeklyMealSlotLabel(slot.mealLabel)
+  );
 }
 
 export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
@@ -413,14 +424,21 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
                               disabled={unavailable}
                             >
                               <option value="">Choose a weekly offering</option>
-                              {weeklyMenu.offerings.map((offering) => (
-                                <option key={offering.id} value={offering.id}>
-                                  {offering.name}
-                                  {offering.dietaryInfo
-                                    ? ` - ${offering.dietaryInfo}`
-                                    : ""}
-                                </option>
-                              ))}
+                              {weeklyMenu.offerings
+                                .filter((offering) =>
+                                  offeringIsAvailableForSlot(offering, slot),
+                                )
+                                .map((offering) => (
+                                  <option
+                                    key={offering.id}
+                                    value={offering.id}
+                                  >
+                                    {offering.name}
+                                    {offering.dietaryInfo
+                                      ? ` - ${offering.dietaryInfo}`
+                                      : ""}
+                                  </option>
+                                ))}
                             </select>
                           </label>
 

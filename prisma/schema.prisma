@@ -342,6 +342,7 @@ model WeeklyMealPlanOffering {
   imageUrl     String?
   dietaryInfo  String?
   available    Boolean @default(true)
+  breakfastOnly Boolean @default(false)
   displayOrder Int @default(0)
 
   allergens       AllergenWeeklyMealPlanOffering[]

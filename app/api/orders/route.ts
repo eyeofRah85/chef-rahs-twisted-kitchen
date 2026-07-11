@@ -11,7 +11,10 @@ import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import { getWeeklyMenuQueryDateRange } from "@/lib/weekly-menu-dates";
-import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
+import {
+  isBreakfastWeeklyMealSlotLabel,
+  normalizeWeeklyMealSlotLabels,
+} from "@/lib/weekly-package-labels";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
@@ -609,6 +612,22 @@ export async function POST(request: NextRequest) {
             });
           });
 
+          const trustedMealLabel =
+            trustedMealSlotLabels[mealNumber - 1] ?? `Meal ${mealNumber}`;
+
+          if (
+            selectedOffering.breakfastOnly &&
+            !isBreakfastWeeklyMealSlotLabel(trustedMealLabel)
+          ) {
+            return NextResponse.json(
+              {
+                error:
+                  "One or more selected weekly meals are not available for that meal slot.",
+              },
+              { status: 400 },
+            );
+          }
+
           const optionsById = new Map(
             selectedOffering.options.map((option) => [option.id, option]),
           );
@@ -695,8 +714,7 @@ export async function POST(request: NextRequest) {
           validatedMealSlots.push({
             dayNumber,
             mealNumber,
-            mealLabel:
-              trustedMealSlotLabels[mealNumber - 1] ?? `Meal ${mealNumber}`,
+            mealLabel: trustedMealLabel,
             weeklyMealPlanOfferingId: selectedOffering.id,
             offeringName: selectedOffering.name,
             offeringDescription: selectedOffering.description,

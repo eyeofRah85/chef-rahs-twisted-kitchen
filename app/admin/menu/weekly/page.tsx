@@ -193,6 +193,7 @@ function toOfferingFormData(offering: {
   imageUrl: string | null;
   dietaryInfo: string | null;
   available: boolean;
+  breakfastOnly: boolean;
   displayOrder: number;
 }): WeeklyMealPlanOfferingFormData {
   return {
@@ -202,6 +203,7 @@ function toOfferingFormData(offering: {
     imageUrl: offering.imageUrl,
     dietaryInfo: offering.dietaryInfo,
     available: offering.available,
+    breakfastOnly: offering.breakfastOnly,
     displayOrder: offering.displayOrder,
   };
 }
@@ -967,6 +969,12 @@ export default async function AdminWeeklyMenuPage() {
                                                 ? "Available"
                                                 : "Unavailable"}
                                             </span>
+
+                                            {offering.breakfastOnly && (
+                                              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                                                Breakfast-only
+                                              </span>
+                                            )}
                                           </div>
 
                                           <p className="mt-1 line-clamp-2 text-sm text-[#6b5a50]">
