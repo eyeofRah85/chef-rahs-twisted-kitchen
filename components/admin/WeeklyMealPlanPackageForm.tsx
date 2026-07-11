@@ -3,8 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import {
+  defaultWeeklyMealSlotLabel,
+  getWeeklyMealSlotLabelOptions,
   normalizeWeeklyMealSlotLabels,
-  weeklyMealSlotLabelSuggestions,
 } from "@/lib/weekly-package-labels";
 
 export type WeeklyMealPlanPackageFormData = {
@@ -163,27 +164,33 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
           </p>
         </div>
 
-        <datalist id={`weekly-meal-slot-labels-${pkg?.id ?? periodId}`}>
-          {weeklyMealSlotLabelSuggestions.map((label) => (
-            <option key={label} value={label} />
-          ))}
-        </datalist>
-
         <div className="grid gap-3 md:grid-cols-2">
-          {Array.from({ length: mealsPerDay }, (_, index) => (
-            <label key={index} className="admin-label">
-              Slot {index + 1}
-              <input
-                name={`mealSlotLabel${index + 1}`}
-                defaultValue={mealSlotLabels[index]}
-                list={`weekly-meal-slot-labels-${pkg?.id ?? periodId}`}
-                maxLength={40}
-                className="admin-input"
-                placeholder={`Meal ${index + 1}`}
-                required
-              />
-            </label>
-          ))}
+          {Array.from({ length: mealsPerDay }, (_, index) => {
+            const slotNumber = index + 1;
+            const labelOptions = getWeeklyMealSlotLabelOptions(slotNumber);
+            const savedLabel = mealSlotLabels[index];
+            const selectedLabel = labelOptions.includes(savedLabel)
+              ? savedLabel
+              : defaultWeeklyMealSlotLabel(slotNumber);
+
+            return (
+              <label key={slotNumber} className="admin-label">
+                Slot {slotNumber}
+                <select
+                  name={`mealSlotLabel${slotNumber}`}
+                  defaultValue={selectedLabel}
+                  className="admin-input"
+                  required
+                >
+                  {labelOptions.map((label) => (
+                    <option key={label} value={label}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            );
+          })}
         </div>
       </div>
 

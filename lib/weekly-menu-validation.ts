@@ -1,6 +1,10 @@
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
-import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
+import {
+  getWeeklyMealSlotLabelOptions,
+  isAllowedWeeklyMealSlotLabel,
+  normalizeWeeklyMealSlotLabels,
+} from "@/lib/weekly-package-labels";
 import {
   getWeeklyMenuEndBoundary,
   parseWeeklyMenuDateInput,
@@ -187,9 +191,16 @@ export function parseWeeklyMealPlanPackageForm(formData: FormData) {
     mealsPerDay,
   );
 
-  if (mealSlotLabels.some((label) => label.length > 40)) {
+  const invalidMealSlotLabelIndex = mealSlotLabels.findIndex(
+    (label, index) => !isAllowedWeeklyMealSlotLabel(label, index + 1),
+  );
+
+  if (invalidMealSlotLabelIndex >= 0) {
+    const slotNumber = invalidMealSlotLabelIndex + 1;
+    const validLabels = getWeeklyMealSlotLabelOptions(slotNumber).join(", ");
+
     throw new WeeklyMenuValidationError(
-      "Meal slot labels must be 40 characters or fewer.",
+      `Slot ${slotNumber} label must be one of: ${validLabels}.`,
     );
   }
 
