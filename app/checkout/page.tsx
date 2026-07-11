@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   calculateLateFeeFromSettings,
+  formatBusinessDateTimeInputValue,
   validateRequestedDateTime,
 } from "@/lib/business-rules";
 import { useBusinessSettings } from "@/hooks/useBusinessSettings";
@@ -211,6 +212,10 @@ export default function CheckoutPage() {
     {
       noWeekendOrdering: settings.noWeekendOrdering,
     },
+  );
+  const minimumRequestedDateTime = formatBusinessDateTimeInputValue();
+  const minimumRequestedSchedule = splitRequestedDateTime(
+    minimumRequestedDateTime,
   );
 
   const lateFee = calculateLateFeeFromSettings({
@@ -661,15 +666,23 @@ export default function CheckoutPage() {
                   <input
                     type="date"
                     value={requestedSchedule.date}
-                    onChange={(event) =>
+                    min={minimumRequestedSchedule.date}
+                    onChange={(event) => {
+                      const nextDate = event.target.value;
+                      const nextTime =
+                        nextDate === minimumRequestedSchedule.date &&
+                        requestedSchedule.time < minimumRequestedSchedule.time
+                          ? ""
+                          : requestedSchedule.time;
+
                       updateField(
                         "requestedDateTime",
                         combineRequestedDateTime(
-                          event.target.value,
-                          requestedSchedule.time,
+                          nextDate,
+                          nextTime,
                         ),
-                      )
-                    }
+                      );
+                    }}
                     className={`${inputClass} mt-2`}
                   />
                 </label>
@@ -690,11 +703,22 @@ export default function CheckoutPage() {
                     className={`${inputClass} mt-2`}
                   >
                     <option value="">Select a time</option>
-                    {orderTimeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
+                    {orderTimeOptions.map((option) => {
+                      const optionIsPast =
+                        requestedSchedule.date ===
+                          minimumRequestedSchedule.date &&
+                        option.value < minimumRequestedSchedule.time;
+
+                      return (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                          disabled={optionIsPast}
+                        >
+                          {option.label}
+                        </option>
+                      );
+                    })}
                   </select>
                 </label>
               </div>
@@ -713,6 +737,13 @@ export default function CheckoutPage() {
                   {settings.lateFee.toFixed(2)} late-order fee.
                 </div>
               )}
+
+              {hasRequestedDateAndTime(details.requestedDateTime) &&
+                !requestedDateTimeValidation.valid && (
+                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                    {requestedDateTimeValidation.error}
+                  </div>
+                )}
             </section>
 
             <section className={sectionClass}>

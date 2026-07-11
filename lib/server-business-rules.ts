@@ -33,6 +33,7 @@ export async function validateServerRequestedDateTime(requestedDateTime: string)
 
   return validateRequestedDateTime(requestedDateTime, {
     noWeekendOrdering: settings.noWeekendOrdering,
+    timeZone: weeklyMenuTimeZone,
   });
 }
 

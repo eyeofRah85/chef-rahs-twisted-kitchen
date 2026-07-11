@@ -14,6 +14,9 @@ type CutoffSettings = {
 };
 
 type BusinessDateTimeParts = {
+  year: number;
+  month: number;
+  day: number;
   weekday: number;
   hour: number;
   minute: number;
@@ -69,6 +72,9 @@ function parseRequestedDateTimeParts(
   }
 
   return {
+    year,
+    month,
+    day,
     weekday,
     hour,
     minute,
@@ -82,6 +88,9 @@ function getBusinessDateTimeParts(
 ): BusinessDateTimeParts {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
@@ -102,11 +111,53 @@ function getBusinessDateTimeParts(
   }
 
   return {
+    year: Number(valueFor("year") ?? 0),
+    month: Number(valueFor("month") ?? 0),
+    day: Number(valueFor("day") ?? 0),
     weekday: weekdayIndex,
     hour: Number(valueFor("hour") ?? 0),
     minute: Number(valueFor("minute") ?? 0),
     second: Number(valueFor("second") ?? 0),
   };
+}
+
+function compareBusinessDateTimeParts(
+  left: BusinessDateTimeParts,
+  right: BusinessDateTimeParts,
+) {
+  const keys = [
+    "year",
+    "month",
+    "day",
+    "hour",
+    "minute",
+  ] as const;
+
+  for (const key of keys) {
+    if (left[key] !== right[key]) {
+      return left[key] - right[key];
+    }
+  }
+
+  return 0;
+}
+
+export function formatBusinessDateTimeInputValue({
+  now = new Date(),
+  timeZone = DEFAULT_BUSINESS_TIME_ZONE,
+}: {
+  now?: Date;
+  timeZone?: string;
+} = {}) {
+  const parts = getBusinessDateTimeParts(now, timeZone);
+
+  return `${parts.year.toString().padStart(4, "0")}-${parts.month
+    .toString()
+    .padStart(2, "0")}-${parts.day
+    .toString()
+    .padStart(2, "0")}T${parts.hour
+    .toString()
+    .padStart(2, "0")}:${parts.minute.toString().padStart(2, "0")}`;
 }
 
 function isAfterOrAtCutoff(
@@ -169,6 +220,9 @@ export function validateRequestedDateTime(
   requestedDateTime: string,
   options?: {
     noWeekendOrdering?: boolean;
+    allowPastDateTime?: boolean;
+    now?: Date;
+    timeZone?: string;
   },
 ) {
   const requestedDateTimeParts = parseRequestedDateTimeParts(requestedDateTime);
@@ -178,6 +232,25 @@ export function validateRequestedDateTime(
       valid: false,
       error: "Please choose a valid requested date and time.",
     };
+  }
+
+  if (!options?.allowPastDateTime) {
+    const businessDateTimeParts = getBusinessDateTimeParts(
+      options?.now ?? new Date(),
+      options?.timeZone,
+    );
+
+    if (
+      compareBusinessDateTimeParts(
+        requestedDateTimeParts,
+        businessDateTimeParts,
+      ) < 0
+    ) {
+      return {
+        valid: false,
+        error: "Requested date and time cannot be in the past.",
+      };
+    }
   }
 
   if (
