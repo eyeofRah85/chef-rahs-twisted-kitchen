@@ -19,6 +19,7 @@ type MealSlotDefinition = {
   key: string;
   dayNumber: number;
   mealNumber: number;
+  mealLabel: string;
 };
 
 type SlotOptionSelections = Record<string, Record<string, string>>;
@@ -27,7 +28,11 @@ function buildSlotKey(dayNumber: number, mealNumber: number) {
   return `${dayNumber}:${mealNumber}`;
 }
 
-function buildMealSlots(days: number, mealsPerDay: number) {
+function buildMealSlots(
+  days: number,
+  mealsPerDay: number,
+  mealSlotLabels: string[],
+) {
   const slots: MealSlotDefinition[] = [];
 
   for (let dayNumber = 1; dayNumber <= days; dayNumber += 1) {
@@ -36,6 +41,7 @@ function buildMealSlots(days: number, mealsPerDay: number) {
         key: buildSlotKey(dayNumber, mealNumber),
         dayNumber,
         mealNumber,
+        mealLabel: mealSlotLabels[mealNumber - 1] ?? `Meal ${mealNumber}`,
       });
     }
   }
@@ -84,7 +90,11 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
   const mealSlots = useMemo(
     () =>
       selectedPackage
-        ? buildMealSlots(selectedPackage.days, selectedPackage.mealsPerDay)
+        ? buildMealSlots(
+            selectedPackage.days,
+            selectedPackage.mealsPerDay,
+            selectedPackage.mealSlotLabels,
+          )
         : [],
     [selectedPackage],
   );
@@ -211,6 +221,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       return {
         dayNumber: slot.dayNumber,
         mealNumber: slot.mealNumber,
+        mealLabel: slot.mealLabel,
         weeklyMealPlanOfferingId: offering.id,
         offeringName: offering.name,
         dietaryInfo: offering.dietaryInfo,
@@ -244,6 +255,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       packageDays: selectedPackage.days,
       packageMealsPerDay: selectedPackage.mealsPerDay,
       packagePrice: selectedPackage.price,
+      packageRequiresChefApproval: selectedPackage.requiresChefApproval,
+      packageIsSeasonal: selectedPackage.isSeasonal,
       offeringName: "Build Your Weekly Plan",
       mealSlots: selectedMealSlots.filter(
         (slot): slot is NonNullable<(typeof selectedMealSlots)[number]> =>
@@ -253,14 +266,18 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       spicePriceDelta: 0,
       proteinSubstitution: null,
       proteinSubstitutionPriceDelta: 0,
-      requestOnly: selectedMealSlots.some((slot) =>
-        slot?.selectedOptions.some((option) => option.requestOnly),
-      ),
-      requiresApproval: selectedMealSlots.some((slot) =>
-        slot?.selectedOptions.some(
-          (option) => option.requestOnly || option.requiresApproval,
+      requestOnly:
+        selectedPackage.requiresChefApproval ||
+        selectedMealSlots.some((slot) =>
+          slot?.selectedOptions.some((option) => option.requestOnly),
         ),
-      ),
+      requiresApproval:
+        selectedPackage.requiresChefApproval ||
+        selectedMealSlots.some((slot) =>
+          slot?.selectedOptions.some(
+            (option) => option.requestOnly || option.requiresApproval,
+          ),
+        ),
       priceDelta: selectedOptionDelta,
     };
 
@@ -314,6 +331,8 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
             {weeklyMenu.packages.map((pkg) => (
               <option key={pkg.id} value={pkg.id}>
                 {pkg.name} - ${pkg.price.toFixed(2)}
+                {pkg.requiresChefApproval ? " - By request" : ""}
+                {pkg.isSeasonal ? " - Seasonal" : ""}
               </option>
             ))}
           </select>
@@ -340,6 +359,20 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
               {selectedPackage.days} days x {selectedPackage.mealsPerDay} meals
               per day
             </p>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            {selectedPackage.requiresChefApproval && (
+              <span className="rounded-full bg-[#fff0bd] px-3 py-1 text-xs font-bold text-[#6f1f12]">
+                By request
+              </span>
+            )}
+
+            {selectedPackage.isSeasonal && (
+              <span className="rounded-full bg-[#f4eadb] px-3 py-1 text-xs font-bold text-[#6f1f12]">
+                Seasonal
+              </span>
+            )}
           </div>
 
           <div className="mt-5 grid gap-4">
@@ -370,7 +403,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
                       return (
                         <div key={slot.key} className="grid min-w-0 gap-3">
                           <label className="grid min-w-0 gap-2 text-sm font-bold">
-                            Meal {slot.mealNumber}
+                            {slot.mealLabel}
                             <select
                               value={slotSelections[slot.key] ?? ""}
                               onChange={(event) =>

@@ -14,6 +14,7 @@ import { useBusinessSettings } from "@/hooks/useBusinessSettings";
 import type { CheckoutDetails } from "@/types/order";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
+import { getWeeklyMealPlanSelectionDetails } from "@/lib/weekly-order-display";
 
 const sectionClass =
   "rounded-lg border border-[#ead8c1] bg-white/95 p-5 shadow-[0_18px_45px_rgba(76,36,18,0.08)] sm:p-6";
@@ -445,7 +446,29 @@ export default function CheckoutPage() {
                           </div>
                         )}
 
-                        {item.selectedOptions &&
+                        {item.weeklyMealPlanSelection && (
+                          <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+                            <p className="font-black">
+                              Weekly Plan Selections
+                            </p>
+
+                            <dl className="mt-2 space-y-1">
+                              {getWeeklyMealPlanSelectionDetails(
+                                item.weeklyMealPlanSelection,
+                              ).map((detail) => (
+                                <div key={detail.label}>
+                                  <dt className="inline font-bold">
+                                    {detail.label}:{" "}
+                                  </dt>
+                                  <dd className="inline">{detail.value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          </div>
+                        )}
+
+                        {!item.weeklyMealPlanSelection &&
+                          item.selectedOptions &&
                           item.selectedOptions.length > 0 && (
                             <ul className="mt-3 space-y-1 text-sm text-[#6b5a50]">
                               {item.selectedOptions.map((option, index) => (

@@ -317,6 +317,9 @@ model WeeklyMealPlanPackage {
   mealsPerDay  Int
   price        Decimal @db.Decimal(10, 2)
   available    Boolean @default(true)
+  requiresChefApproval Boolean @default(false)
+  isSeasonal   Boolean @default(false)
+  mealSlotLabels Json?
   displayOrder Int @default(0)
   notes        String?
 
@@ -479,6 +482,8 @@ model OrderWeeklyMealPlanSelection {
   packageDays         Int
   packageMealsPerDay  Int
   packagePrice        Decimal @db.Decimal(10, 2)
+  packageRequiresChefApproval Boolean @default(false)
+  packageIsSeasonal   Boolean @default(false)
   offeringName        String
   spiceLevel          String?
   proteinSubstitution String?
@@ -502,6 +507,7 @@ model OrderWeeklyMealPlanSlotSelection {
 
   dayNumber  Int
   mealNumber Int
+  mealLabel  String?
 
   offeringName        String
   offeringDescription String?

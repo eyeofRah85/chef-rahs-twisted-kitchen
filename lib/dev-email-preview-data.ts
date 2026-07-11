@@ -48,6 +48,8 @@ const orderProps = {
         packageDays: 3,
         packageMealsPerDay: 2,
         packagePrice: 36,
+        packageRequiresChefApproval: true,
+        packageIsSeasonal: true,
         offeringName: "Jerk chicken with coconut rice",
         spiceLevel: "Medium",
         proteinSubstitution: null,
@@ -58,6 +60,7 @@ const orderProps = {
           {
             dayNumber: 1,
             mealNumber: 1,
+            mealLabel: "Breakfast",
             offeringName: "Jerk chicken with coconut rice",
             dietaryInfo: "High protein",
             selectedOptions: [
@@ -80,6 +83,7 @@ const orderProps = {
           {
             dayNumber: 1,
             mealNumber: 2,
+            mealLabel: "Lunch",
             offeringName: "Salmon wellness bowl",
             dietaryInfo: "Pescatarian",
             selectedOptions: [
@@ -102,6 +106,7 @@ const orderProps = {
           {
             dayNumber: 2,
             mealNumber: 1,
+            mealLabel: "Breakfast",
             offeringName: "Turkey power bowl",
             dietaryInfo: "Balanced",
             selectedOptions: [
@@ -117,6 +122,7 @@ const orderProps = {
           {
             dayNumber: 2,
             mealNumber: 2,
+            mealLabel: "Lunch",
             offeringName: "Island chicken meal prep",
             dietaryInfo: null,
             selectedOptions: [

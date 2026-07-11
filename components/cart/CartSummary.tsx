@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCartStore } from "@/store/cart-store";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
+import { getWeeklyMealPlanSelectionDetails } from "@/lib/weekly-order-display";
 
 export function CartSummary() {
   const items = useCartStore((state) => state.items);
@@ -57,6 +58,9 @@ export function CartSummary() {
           const itemAllergenConflicts = (item.allergens ?? []).filter(
             (allergen) => selectedAllergenIdSet.has(allergen.id),
           );
+          const weeklyDetails = item.weeklyMealPlanSelection
+            ? getWeeklyMealPlanSelectionDetails(item.weeklyMealPlanSelection)
+            : [];
 
           return (
             <div
@@ -84,7 +88,25 @@ export function CartSummary() {
                     </div>
                   )}
 
-                  {item.selectedOptions?.length ? (
+                  {weeklyDetails.length > 0 && (
+                    <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+                      <p className="font-black">Weekly Plan Selections</p>
+
+                      <dl className="mt-2 space-y-1">
+                        {weeklyDetails.map((detail) => (
+                          <div key={detail.label}>
+                            <dt className="inline font-bold">
+                              {detail.label}:{" "}
+                            </dt>
+                            <dd className="inline">{detail.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
+
+                  {!item.weeklyMealPlanSelection &&
+                  item.selectedOptions?.length ? (
                     <ul className="mt-3 space-y-2 text-sm text-[#6b5a50]">
                       {item.selectedOptions.map((option, index) => (
                         <li

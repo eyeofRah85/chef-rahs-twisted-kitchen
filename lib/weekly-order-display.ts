@@ -7,11 +7,13 @@ export type WeeklyOrderSelectionDisplay = {
   packageDays: number;
   packageMealsPerDay: number;
   packagePrice: DecimalLike;
+  packageRequiresChefApproval?: boolean;
+  packageIsSeasonal?: boolean;
   offeringName?: string | null;
   spiceLevel?: string | null;
   proteinSubstitution?: string | null;
-  requestOnly: boolean;
-  requiresApproval: boolean;
+  requestOnly?: boolean;
+  requiresApproval?: boolean;
   priceDelta: DecimalLike;
   mealSlots?: WeeklyOrderMealSlotDisplay[];
 };
@@ -19,6 +21,7 @@ export type WeeklyOrderSelectionDisplay = {
 export type WeeklyOrderMealSlotDisplay = {
   dayNumber: number;
   mealNumber: number;
+  mealLabel?: string | null;
   offeringName: string;
   dietaryInfo?: string | null;
   selectedOptions?: WeeklyOrderMealSlotOptionDisplay[];
@@ -28,8 +31,8 @@ export type WeeklyOrderMealSlotOptionDisplay = {
   optionType: string;
   optionName: string;
   priceDelta: DecimalLike;
-  requestOnly: boolean;
-  requiresApproval: boolean;
+  requestOnly?: boolean;
+  requiresApproval?: boolean;
 };
 
 export type WeeklyOrderSelectionDetail = {
@@ -99,7 +102,9 @@ export function getWeeklyMealPlanSelectionDetails(
         ];
 
         details.push({
-          label: `Day ${slot.dayNumber}, Meal ${slot.mealNumber}`,
+          label: `Day ${slot.dayNumber} - ${
+            slot.mealLabel ?? `Meal ${slot.mealNumber}`
+          }`,
           value: valueParts.join(" - "),
         });
       });
@@ -134,6 +139,13 @@ export function getWeeklyMealPlanSelectionDetails(
   if (selection.requestOnly) {
     details.push({
       label: "Request Only",
+      value: selection.packageRequiresChefApproval ? "By request" : "Yes",
+    });
+  }
+
+  if (selection.packageIsSeasonal) {
+    details.push({
+      label: "Seasonal",
       value: "Yes",
     });
   }

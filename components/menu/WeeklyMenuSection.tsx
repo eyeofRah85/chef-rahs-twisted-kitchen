@@ -98,11 +98,29 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h4 className="text-lg font-black">{pkg.name}</h4>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-lg font-black">{pkg.name}</h4>
+
+                      {pkg.requiresChefApproval && (
+                        <span className="rounded-full bg-[#fff0bd] px-3 py-1 text-xs font-bold text-[#6f1f12]">
+                          By request
+                        </span>
+                      )}
+
+                      {pkg.isSeasonal && (
+                        <span className="rounded-full bg-[#f4eadb] px-3 py-1 text-xs font-bold text-[#6f1f12]">
+                          Seasonal
+                        </span>
+                      )}
+                    </div>
 
                     <p className="mt-1 text-sm text-[#f3dcc4]">
                       {pkg.days} days, {pkg.mealsPerDay} meal
                       {pkg.mealsPerDay === 1 ? "" : "s"} per day
+                    </p>
+
+                    <p className="mt-2 text-xs font-semibold text-[#f3dcc4]">
+                      {pkg.mealSlotLabels.join(" / ")}
                     </p>
                   </div>
 

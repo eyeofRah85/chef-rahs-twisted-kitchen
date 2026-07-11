@@ -4,6 +4,9 @@ export type PublicWeeklyPackage = {
   days: number;
   mealsPerDay: number;
   price: number;
+  requiresChefApproval: boolean;
+  isSeasonal: boolean;
+  mealSlotLabels: string[];
   notes: string | null;
 };
 

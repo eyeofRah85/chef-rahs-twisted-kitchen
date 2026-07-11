@@ -34,6 +34,7 @@ import {
   formatWeeklyMenuDateInput,
   formatWeeklyMenuDisplayDate,
 } from "@/lib/weekly-menu-dates";
+import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
 
 type AdminAllergen = {
   id: string;
@@ -161,6 +162,9 @@ function toPackageFormData(pkg: {
   mealsPerDay: number;
   price: unknown;
   available: boolean;
+  requiresChefApproval: boolean;
+  isSeasonal: boolean;
+  mealSlotLabels: unknown;
   displayOrder: number;
   notes: string | null;
 }): WeeklyMealPlanPackageFormData {
@@ -171,6 +175,12 @@ function toPackageFormData(pkg: {
     mealsPerDay: pkg.mealsPerDay,
     price: Number(pkg.price),
     available: pkg.available,
+    requiresChefApproval: pkg.requiresChefApproval,
+    isSeasonal: pkg.isSeasonal,
+    mealSlotLabels: normalizeWeeklyMealSlotLabels(
+      pkg.mealSlotLabels,
+      pkg.mealsPerDay,
+    ),
     displayOrder: pkg.displayOrder,
     notes: pkg.notes,
   };
@@ -808,8 +818,9 @@ export default async function AdminWeeklyMenuPage() {
                           </h3>
 
                           <p className="mt-1 text-sm text-[#6b5a50]">
-                            Packages are fixed price and limited to 5- or 7-day
-                            options with 1 or 2 meals per day.
+                            Packages are fixed price. Set approval flags,
+                            seasonal badges, and customer-facing meal slot
+                            labels for each package.
                           </p>
                         </div>
 
@@ -844,6 +855,18 @@ export default async function AdminWeeklyMenuPage() {
                                               ? "Available"
                                               : "Unavailable"}
                                           </span>
+
+                                          {pkg.requiresChefApproval && (
+                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                                              Requires chef approval
+                                            </span>
+                                          )}
+
+                                          {pkg.isSeasonal && (
+                                            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                                              Seasonal
+                                            </span>
+                                          )}
                                         </div>
 
                                         <p className="mt-1 text-sm text-[#6b5a50]">
@@ -851,6 +874,14 @@ export default async function AdminWeeklyMenuPage() {
                                           meal
                                           {pkg.mealsPerDay === 1 ? "" : "s"} per
                                           day - ${Number(pkg.price).toFixed(2)}
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-[#6b5a50]">
+                                          Slots:{" "}
+                                          {normalizeWeeklyMealSlotLabels(
+                                            pkg.mealSlotLabels,
+                                            pkg.mealsPerDay,
+                                          ).join(", ")}
                                         </p>
                                       </div>
 

@@ -127,6 +127,11 @@ export default async function KitchenPage() {
                         packagePrice: Number(
                           item.weeklyMealPlanSelection.packagePrice,
                         ),
+                        packageRequiresChefApproval:
+                          item.weeklyMealPlanSelection
+                            .packageRequiresChefApproval,
+                        packageIsSeasonal:
+                          item.weeklyMealPlanSelection.packageIsSeasonal,
                         offeringName: item.weeklyMealPlanSelection.offeringName,
                         spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
                         proteinSubstitution:
@@ -142,6 +147,7 @@ export default async function KitchenPage() {
                         ).map((slot) => ({
                           dayNumber: slot.dayNumber,
                           mealNumber: slot.mealNumber,
+                          mealLabel: slot.mealLabel,
                           offeringName: slot.offeringName,
                           dietaryInfo: slot.dietaryInfo,
                           selectedOptions: (slot.selectedOptions ?? []).map(

@@ -1,5 +1,6 @@
 import { parseEnumValue } from "@/lib/enum-values";
 import { parsePublicImageUrl } from "@/lib/image-urls";
+import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
 import {
   getWeeklyMenuEndBoundary,
   parseWeeklyMenuDateInput,
@@ -173,9 +174,22 @@ export function parseWeeklyMealPlanPackageForm(formData: FormData) {
     );
   }
 
-  if (![1, 2].includes(mealsPerDay)) {
+  if (mealsPerDay < 1 || mealsPerDay > 4) {
     throw new WeeklyMenuValidationError(
-      "Weekly packages must offer 1 or 2 meals per day.",
+      "Weekly packages must offer between 1 and 4 meals per day.",
+    );
+  }
+
+  const mealSlotLabels = normalizeWeeklyMealSlotLabels(
+    Array.from({ length: mealsPerDay }, (_, index) =>
+      formData.get(`mealSlotLabel${index + 1}`),
+    ),
+    mealsPerDay,
+  );
+
+  if (mealSlotLabels.some((label) => label.length > 40)) {
+    throw new WeeklyMenuValidationError(
+      "Meal slot labels must be 40 characters or fewer.",
     );
   }
 
@@ -185,6 +199,9 @@ export function parseWeeklyMealPlanPackageForm(formData: FormData) {
     mealsPerDay,
     price: parseMoney(formData.get("price"), "Package price"),
     available: formData.get("available") === "on",
+    requiresChefApproval: formData.get("requiresChefApproval") === "on",
+    isSeasonal: formData.get("isSeasonal") === "on",
+    mealSlotLabels,
     displayOrder: parseWholeNumber(
       formData.get("displayOrder"),
       "Display order",

@@ -19,6 +19,7 @@ export type CartItemAllergen = {
 export type WeeklyMealPlanSlotCartSelection = {
   dayNumber: number;
   mealNumber: number;
+  mealLabel?: string | null;
   weeklyMealPlanOfferingId: string;
   offeringName: string;
   dietaryInfo?: string | null;
@@ -46,6 +47,8 @@ export type WeeklyMealPlanCartSelection = {
   packageDays: number;
   packageMealsPerDay: number;
   packagePrice: number;
+  packageRequiresChefApproval?: boolean;
+  packageIsSeasonal?: boolean;
   offeringName?: string | null;
   mealSlots: WeeklyMealPlanSlotCartSelection[];
   spiceLevel?: string | null;
@@ -209,15 +212,19 @@ export const useCartStore = create<CartState>()(
             .forEach((slot) => {
               selectedOptions.push({
                 groupName: `Day ${slot.dayNumber}`,
-                choiceName: `Meal ${slot.mealNumber}: ${slot.offeringName}`,
+                choiceName: `${slot.mealLabel ?? `Meal ${
+                  slot.mealNumber
+                }`}: ${slot.offeringName}`,
                 priceDelta: 0,
               });
 
               (slot.selectedOptions ?? []).forEach((option) => {
+                const slotLabel = slot.mealLabel ?? `Meal ${slot.mealNumber}`;
+
                 selectedOptions.push({
-                  groupName: `Day ${slot.dayNumber}, Meal ${
-                    slot.mealNumber
-                  } ${formatWeeklyOptionType(option.optionType)}`,
+                  groupName: `Day ${slot.dayNumber}, ${slotLabel} ${formatWeeklyOptionType(
+                    option.optionType,
+                  )}`,
                   choiceName: option.optionName,
                   priceDelta: option.priceDelta,
                   requestOnly: option.requestOnly,

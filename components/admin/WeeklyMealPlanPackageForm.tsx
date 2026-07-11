@@ -2,6 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import {
+  normalizeWeeklyMealSlotLabels,
+  weeklyMealSlotLabelSuggestions,
+} from "@/lib/weekly-package-labels";
 
 export type WeeklyMealPlanPackageFormData = {
   id: string;
@@ -10,6 +14,9 @@ export type WeeklyMealPlanPackageFormData = {
   mealsPerDay: number;
   price: number;
   available: boolean;
+  requiresChefApproval: boolean;
+  isSeasonal: boolean;
+  mealSlotLabels: string[];
   displayOrder: number;
   notes: string | null;
 };
@@ -30,8 +37,13 @@ async function readError(response: Response, fallback: string) {
 export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [mealsPerDay, setMealsPerDay] = useState(pkg?.mealsPerDay ?? 1);
   const [saving, setSaving] = useState(false);
   const isEditing = Boolean(pkg);
+  const mealSlotLabels = normalizeWeeklyMealSlotLabels(
+    pkg?.mealSlotLabels,
+    mealsPerDay,
+  );
 
   async function handleSubmit(formData: FormData) {
     setSaving(true);
@@ -56,6 +68,7 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
 
       if (!pkg) {
         formRef.current?.reset();
+        setMealsPerDay(1);
       }
 
       router.refresh();
@@ -115,11 +128,14 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
           Meals Per Day
           <select
             name="mealsPerDay"
-            defaultValue={String(pkg?.mealsPerDay ?? 1)}
+            value={String(mealsPerDay)}
+            onChange={(event) => setMealsPerDay(Number(event.target.value))}
             className="admin-input"
           >
             <option value="1">1 meal</option>
             <option value="2">2 meals</option>
+            <option value="3">3 meals</option>
+            <option value="4">4 meals</option>
           </select>
         </label>
 
@@ -135,6 +151,40 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
             required
           />
         </label>
+      </div>
+
+      <div className="grid gap-3 rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4">
+        <div>
+          <p className="text-sm font-black text-[#24130f]">
+            Meal Slot Labels
+          </p>
+          <p className="mt-1 text-xs text-[#6b5a50]">
+            These labels appear for customers while building their weekly plan.
+          </p>
+        </div>
+
+        <datalist id={`weekly-meal-slot-labels-${pkg?.id ?? periodId}`}>
+          {weeklyMealSlotLabelSuggestions.map((label) => (
+            <option key={label} value={label} />
+          ))}
+        </datalist>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {Array.from({ length: mealsPerDay }, (_, index) => (
+            <label key={index} className="admin-label">
+              Slot {index + 1}
+              <input
+                name={`mealSlotLabel${index + 1}`}
+                defaultValue={mealSlotLabels[index]}
+                list={`weekly-meal-slot-labels-${pkg?.id ?? periodId}`}
+                maxLength={40}
+                className="admin-input"
+                placeholder={`Meal ${index + 1}`}
+                required
+              />
+            </label>
+          ))}
+        </div>
       </div>
 
       <label className="admin-label">
@@ -156,6 +206,26 @@ export function WeeklyMealPlanPackageForm({ periodId, pkg }: Props) {
           className="h-4 w-4"
         />
         Available for this weekly menu
+      </label>
+
+      <label className="flex items-center gap-3 text-sm font-bold text-[#3f2a1d]">
+        <input
+          name="requiresChefApproval"
+          type="checkbox"
+          defaultChecked={pkg?.requiresChefApproval ?? false}
+          className="h-4 w-4"
+        />
+        Requires chef approval
+      </label>
+
+      <label className="flex items-center gap-3 text-sm font-bold text-[#3f2a1d]">
+        <input
+          name="isSeasonal"
+          type="checkbox"
+          defaultChecked={pkg?.isSeasonal ?? false}
+          className="h-4 w-4"
+        />
+        Seasonal package
       </label>
 
       <button disabled={saving} className="admin-button-primary">

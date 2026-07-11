@@ -11,6 +11,7 @@ import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
 import { getWeeklyMenuQueryDateRange } from "@/lib/weekly-menu-dates";
+import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
@@ -105,6 +106,8 @@ type ValidatedOrderItem = {
     packageDays: number;
     packageMealsPerDay: number;
     packagePrice: number;
+    packageRequiresChefApproval: boolean;
+    packageIsSeasonal: boolean;
     offeringName: string;
     spiceLevel: string | null;
     proteinSubstitution: string | null;
@@ -114,6 +117,7 @@ type ValidatedOrderItem = {
     mealSlots: {
       dayNumber: number;
       mealNumber: number;
+      mealLabel: string;
       weeklyMealPlanOfferingId: string;
       offeringName: string;
       offeringDescription: string | null;
@@ -526,6 +530,10 @@ export async function POST(request: NextRequest) {
 
         const requiredSlotCount =
           selectedPackage.days * selectedPackage.mealsPerDay;
+        const trustedMealSlotLabels = normalizeWeeklyMealSlotLabels(
+          selectedPackage.mealSlotLabels,
+          selectedPackage.mealsPerDay,
+        );
 
         if (submittedSlots.length !== requiredSlotCount) {
           return NextResponse.json(
@@ -687,6 +695,8 @@ export async function POST(request: NextRequest) {
           validatedMealSlots.push({
             dayNumber,
             mealNumber,
+            mealLabel:
+              trustedMealSlotLabels[mealNumber - 1] ?? `Meal ${mealNumber}`,
             weeklyMealPlanOfferingId: selectedOffering.id,
             offeringName: selectedOffering.name,
             offeringDescription: selectedOffering.description,
@@ -717,8 +727,10 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const requiresApproval = hasApprovalRequiredOption;
-        const requestOnly = hasRequestOnlyOption;
+        const requiresApproval =
+          selectedPackage.requiresChefApproval || hasApprovalRequiredOption;
+        const requestOnly =
+          selectedPackage.requiresChefApproval || hasRequestOnlyOption;
         const weeklySelectionNote = `${requiredSlotCount} weekly meal selections saved.`;
 
         validatedItems.push({
@@ -740,6 +752,8 @@ export async function POST(request: NextRequest) {
             packageDays: selectedPackage.days,
             packageMealsPerDay: selectedPackage.mealsPerDay,
             packagePrice: Number(selectedPackage.price),
+            packageRequiresChefApproval: selectedPackage.requiresChefApproval,
+            packageIsSeasonal: selectedPackage.isSeasonal,
             offeringName: "Build Your Weekly Plan",
             spiceLevel: null,
             proteinSubstitution: null,
@@ -1189,6 +1203,9 @@ export async function POST(request: NextRequest) {
                       packageMealsPerDay:
                         item.weeklySelection.packageMealsPerDay,
                       packagePrice: item.weeklySelection.packagePrice,
+                      packageRequiresChefApproval:
+                        item.weeklySelection.packageRequiresChefApproval,
+                      packageIsSeasonal: item.weeklySelection.packageIsSeasonal,
                       offeringName: item.weeklySelection.offeringName,
                       spiceLevel: item.weeklySelection.spiceLevel,
                       proteinSubstitution:
@@ -1200,6 +1217,7 @@ export async function POST(request: NextRequest) {
                         create: item.weeklySelection.mealSlots.map((slot) => ({
                           dayNumber: slot.dayNumber,
                           mealNumber: slot.mealNumber,
+                          mealLabel: slot.mealLabel,
                           weeklyMealPlanOfferingId:
                             slot.weeklyMealPlanOfferingId,
                           offeringName: slot.offeringName,
@@ -1334,6 +1352,9 @@ export async function POST(request: NextRequest) {
                 packageMealsPerDay:
                   item.weeklyMealPlanSelection.packageMealsPerDay,
                 packagePrice: Number(item.weeklyMealPlanSelection.packagePrice),
+                packageRequiresChefApproval:
+                  item.weeklyMealPlanSelection.packageRequiresChefApproval,
+                packageIsSeasonal: item.weeklyMealPlanSelection.packageIsSeasonal,
                 offeringName: item.weeklyMealPlanSelection.offeringName,
                 spiceLevel: item.weeklyMealPlanSelection.spiceLevel,
                 proteinSubstitution:
@@ -1345,6 +1366,7 @@ export async function POST(request: NextRequest) {
                   (slot) => ({
                     dayNumber: slot.dayNumber,
                     mealNumber: slot.mealNumber,
+                    mealLabel: slot.mealLabel,
                     offeringName: slot.offeringName,
                     dietaryInfo: slot.dietaryInfo,
                     selectedOptions: slot.selectedOptions.map((option) => ({

@@ -8,6 +8,7 @@ import {
   formatWeeklyMenuDisplayDate,
   getWeeklyMenuQueryDateRange,
 } from "@/lib/weekly-menu-dates";
+import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
 import type { DecimalLike } from "@/types/display";
 import type { PublicWeeklyMenu } from "@/types/weekly-menu";
 
@@ -82,6 +83,9 @@ function toPublicWeeklyMenu(weeklyMenu: {
     days: number;
     mealsPerDay: number;
     price: DecimalLike;
+    requiresChefApproval: boolean;
+    isSeasonal: boolean;
+    mealSlotLabels: unknown;
     notes: string | null;
   }[];
   offerings: {
@@ -128,6 +132,12 @@ function toPublicWeeklyMenu(weeklyMenu: {
       days: pkg.days,
       mealsPerDay: pkg.mealsPerDay,
       price: Number(pkg.price),
+      requiresChefApproval: pkg.requiresChefApproval,
+      isSeasonal: pkg.isSeasonal,
+      mealSlotLabels: normalizeWeeklyMealSlotLabels(
+        pkg.mealSlotLabels,
+        pkg.mealsPerDay,
+      ),
       notes: pkg.notes,
     })),
     offerings: weeklyMenu.offerings.map((offering) => ({
