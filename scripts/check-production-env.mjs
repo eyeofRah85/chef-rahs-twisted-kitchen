@@ -76,15 +76,33 @@ function requireProductionUrl(name) {
   return parsed;
 }
 
-const databaseUrl = requireValue("DATABASE_URL", "production PostgreSQL URL");
+const databaseUrl = requireValue(
+  "DATABASE_URL",
+  "production MySQL/MariaDB URL",
+);
 
 if (databaseUrl) {
-  if (!databaseUrl.startsWith("postgresql://") && !databaseUrl.startsWith("postgres://")) {
-    addError("DATABASE_URL must use a PostgreSQL connection string.");
-  }
-
   try {
     const parsedDatabaseUrl = new URL(databaseUrl);
+    const supportedDatabaseProtocols = new Set(["mysql:"]);
+    const unsupportedDatabaseProtocols = new Set([
+      "postgresql:",
+      "postgres:",
+      "sqlite:",
+      "file:",
+    ]);
+
+    if (unsupportedDatabaseProtocols.has(parsedDatabaseUrl.protocol)) {
+      addError(
+        "DATABASE_URL must use a MySQL/MariaDB-compatible mysql:// connection string, not PostgreSQL, SQLite, or file storage.",
+      );
+    } else if (!supportedDatabaseProtocols.has(parsedDatabaseUrl.protocol)) {
+      addError(
+        "DATABASE_URL must use a MySQL/MariaDB-compatible mysql:// connection string.",
+      );
+    } else {
+      addPass("DATABASE_URL uses a MySQL/MariaDB-compatible scheme.");
+    }
 
     if (hostnameLooksLocal(parsedDatabaseUrl.hostname)) {
       addError("DATABASE_URL must not point at localhost for production.");
