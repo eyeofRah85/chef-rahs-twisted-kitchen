@@ -1,5 +1,8 @@
 Chef Rah’s Twisted Kitchen
 Custom ordering website + customer accounts + admin dashboard
+
+Current production database guidance supersedes the early stack notes below: production uses MySQL/MariaDB for Hostinger compatibility, with Prisma migrations deployed by `npx prisma migrate deploy`.
+
 Core MVP features
 
 For launch, I would recommend:
@@ -57,14 +60,14 @@ I would still use:
 Next.js
 TypeScript
 Tailwind CSS
-PostgreSQL
+MySQL/MariaDB
 Prisma
 NextAuth/Auth.js or Clerk
 Square and PayPal in a future payment phase
 Resend for email
 Twilio later for SMS
 Hostinger for domain/hosting
-Supabase or Neon for database
+Hostinger-compatible MySQL/MariaDB for production database
 GitHub for version control/project tracking
 
 For accounts, you have two routes:

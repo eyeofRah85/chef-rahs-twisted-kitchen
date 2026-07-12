@@ -12,12 +12,12 @@ This is a documentation/review pass. No application behavior, Prisma schema, pay
 
 The customer order flow is close to launch-ready from code review and recent local QA. Guest checkout, logged-in checkout, weekly meal plan slot persistence, weekly slot option upcharges, breakfast-only validation, account ownership checks, and transactional email link behavior are all implemented in the expected direction.
 
-The main launch readiness concern is not checkout behavior. It is production documentation/tooling alignment:
+The main launch readiness concern found in this review was production documentation/tooling alignment. That follow-up has since been resolved by the MySQL/MariaDB production readiness cleanup:
 
 - `docs/production-runbook.md` correctly describes MySQL/MariaDB, Hostinger, Resend, manual Square/PayPal payment posture, disabled local production uploads, and `prisma migrate deploy`.
-- `.env.example`, `scripts/check-production-env.mjs`, `docs/launch-readiness-checklist.md`, and `docs/client-launch-information-needed.md` still contain PostgreSQL assumptions. These should be corrected before using those files as production launch gates.
+- `.env.example`, `scripts/check-production-env.mjs`, `docs/launch-readiness-checklist.md`, and `docs/client-launch-information-needed.md` now align with the MySQL/MariaDB production path.
 
-Recommended next action: fix the stale PostgreSQL references/env guard alignment in a small documentation/tooling branch, then run a final production-like smoke test with `EMAIL_DRY_RUN=true` before enabling live Resend delivery.
+Recommended next action: run the final release-candidate validation and a production-like smoke test with `EMAIL_DRY_RUN=true` before enabling live Resend delivery.
 
 ## 2. What Is Launch-Ready
 
@@ -95,30 +95,25 @@ Run these in a production-like environment after migrations and seed/setup:
 
 ## 4. Launch Blockers Found
 
-### Blocker: Production Env Guard Still Assumes PostgreSQL
+No unresolved launch blockers remain from this review.
 
-`scripts/check-production-env.mjs` still describes `DATABASE_URL` as a production PostgreSQL URL and rejects non-PostgreSQL connection strings. The app now uses Prisma `provider = "mysql"` with the MariaDB adapter, and the production runbook correctly targets MySQL/MariaDB for Hostinger compatibility.
+### Resolved: Production Env Guard Assumed PostgreSQL
 
-Impact:
+At review time, `scripts/check-production-env.mjs` described `DATABASE_URL` as a production PostgreSQL URL and rejected non-PostgreSQL connection strings. The app uses Prisma `provider = "mysql"` with the MariaDB adapter, and the production runbook targets MySQL/MariaDB for Hostinger compatibility.
 
-- `npm run env:check` can fail a correct MySQL/MariaDB production configuration.
-- Operators may be pushed back toward old PostgreSQL assumptions.
+Resolution:
 
-Recommended fix:
+- `scripts/check-production-env.mjs` now accepts MySQL/MariaDB-compatible `mysql://` URLs.
+- The script rejects PostgreSQL, SQLite, and file-based production database URLs with MySQL/MariaDB-specific guidance.
 
-- Update `scripts/check-production-env.mjs` to accept `mysql://` / MariaDB-compatible URLs and update its messages.
+### Resolved: Stale PostgreSQL References Outside Production Runbook
 
-### Blocker: Stale PostgreSQL References Outside Production Runbook
+At review time, `.env.example`, `docs/launch-readiness-checklist.md`, and `docs/client-launch-information-needed.md` still mentioned PostgreSQL connection strings. That conflicted with the current MySQL/MariaDB deployment posture.
 
-`.env.example`, `docs/launch-readiness-checklist.md`, and `docs/client-launch-information-needed.md` still mention PostgreSQL connection strings. This conflicts with the current MySQL/MariaDB deployment posture.
+Resolution:
 
-Impact:
-
-- Production setup could use the wrong database provider if someone follows the older docs instead of `docs/production-runbook.md`.
-
-Recommended fix:
-
-- Update stale documentation/env examples to MySQL/MariaDB and cross-reference `docs/production-runbook.md`.
+- The production env example and launch docs now document MySQL/MariaDB `DATABASE_URL` values.
+- Production migration guidance remains `npx prisma migrate deploy` or the Windows equivalent.
 
 ## 5. Non-Blocking Polish Items
 
@@ -256,15 +251,8 @@ Validation:
 
 ## 13. Recommended Next Branch Or Action
 
-Recommended next branch:
+Recommended next action:
 
-`launch/mysql-env-docs-and-env-check`
-
-Recommended scope:
-
-- Update `.env.example` to MySQL/MariaDB.
-- Update `scripts/check-production-env.mjs` to validate MySQL/MariaDB production URLs.
-- Update stale PostgreSQL references in `docs/launch-readiness-checklist.md` and `docs/client-launch-information-needed.md`.
-- Keep this as documentation/tooling only; do not change checkout or payment behavior.
-
-After that branch lands, run the full production-like smoke test from this review with dry-run email enabled.
+- Complete release-candidate validation.
+- Run the full production-like smoke test from this review with dry-run email enabled.
+- Enable live Resend delivery only after internal order/email smoke tests pass.
