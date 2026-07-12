@@ -23,6 +23,13 @@ export async function getBusinessSettings() {
     orderCutoffMinute: settings.orderCutoffMinute,
     noWeekendOrdering: settings.noWeekendOrdering,
     deliveryArea: settings.deliveryArea,
+    checkoutCustomerSchedulingEnabled:
+      settings.checkoutCustomerSchedulingEnabled,
+    checkoutFixedFulfillmentDay: settings.checkoutFixedFulfillmentDay,
+    checkoutFixedFulfillmentHour: settings.checkoutFixedFulfillmentHour,
+    checkoutFixedFulfillmentMinute: settings.checkoutFixedFulfillmentMinute,
+    checkoutFixedFulfillmentMessage:
+      settings.checkoutFixedFulfillmentMessage,
     weeklyCustomerSchedulingEnabled: settings.weeklyCustomerSchedulingEnabled,
     weeklyOrderingOpenDay: settings.weeklyOrderingOpenDay,
     weeklyOrderingOpenHour: settings.weeklyOrderingOpenHour,

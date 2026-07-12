@@ -9,5 +9,5 @@ export function formatOrderScheduleDateTime(
 }
 
 export function getOrderScheduleLabel(hasWeeklyMealPlan: boolean) {
-  return hasWeeklyMealPlan ? "Weekly fulfillment" : "Requested";
+  return hasWeeklyMealPlan ? "Weekly fulfillment" : "Fulfillment";
 }

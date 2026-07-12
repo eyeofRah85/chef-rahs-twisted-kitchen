@@ -14,6 +14,11 @@ type Props = {
     orderCutoffMinute: number;
     noWeekendOrdering: boolean;
     deliveryArea: string | null;
+    checkoutCustomerSchedulingEnabled: boolean;
+    checkoutFixedFulfillmentDay: number;
+    checkoutFixedFulfillmentHour: number;
+    checkoutFixedFulfillmentMinute: number;
+    checkoutFixedFulfillmentMessage: string | null;
     weeklyCustomerSchedulingEnabled: boolean;
     weeklyOrderingOpenDay: number;
     weeklyOrderingOpenHour: number;
@@ -168,6 +173,68 @@ export function BusinessSettingsForm({ settings }: Props) {
           />
           Disable weekend ordering
         </label>
+      </div>
+
+      <div className="mt-8 border-t border-[#ead8c1] pt-8">
+        <div>
+          <h3 className="text-xl font-black">Checkout Fulfillment Schedule</h3>
+          <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
+            Controls whether customers choose fulfillment date/time during
+            checkout. When disabled, checkout uses the fixed fulfillment
+            schedule below for regular menu orders.
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm font-bold md:col-span-2">
+            <input
+              name="checkoutCustomerSchedulingEnabled"
+              type="checkbox"
+              defaultChecked={settings.checkoutCustomerSchedulingEnabled}
+            />
+            Allow customers to choose checkout fulfillment date/time
+          </label>
+
+          <div>
+            <label className="block text-sm font-bold">
+              Fixed Checkout Fulfillment
+            </label>
+            <div className="mt-2 grid gap-3 sm:grid-cols-[1fr_140px]">
+              <select
+                name="checkoutFixedFulfillmentDay"
+                defaultValue={settings.checkoutFixedFulfillmentDay}
+                className="admin-input"
+              >
+                {dayOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <input
+                name="checkoutFixedFulfillmentTime"
+                type="time"
+                defaultValue={formatTimeInput(
+                  settings.checkoutFixedFulfillmentHour,
+                  settings.checkoutFixedFulfillmentMinute,
+                )}
+                className="admin-input"
+              />
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-bold">
+              Customer-Facing Checkout Fulfillment Message
+            </label>
+            <input
+              name="checkoutFixedFulfillmentMessage"
+              defaultValue={settings.checkoutFixedFulfillmentMessage ?? ""}
+              className="admin-input mt-2"
+              placeholder="Orders are fulfilled on Sunday."
+            />
+          </div>
+        </div>
       </div>
 
       <div className="mt-8 border-t border-[#ead8c1] pt-8">

@@ -25,6 +25,7 @@ import {
   resolveWeeklyPeriodSchedule,
   type ResolvedWeeklyPeriodSchedule,
 } from "@/lib/weekly-ordering-window";
+import { resolveCheckoutFixedFulfillment } from "@/lib/checkout-fulfillment";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
@@ -548,7 +549,11 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        if (hasNonWeeklyItems && !resolvedSchedule.customerSchedulingEnabled) {
+        if (
+          hasNonWeeklyItems &&
+          (!resolvedSchedule.customerSchedulingEnabled ||
+            !businessSettings.checkoutCustomerSchedulingEnabled)
+        ) {
           return NextResponse.json(
             {
               error:
@@ -1051,12 +1056,23 @@ export async function POST(request: NextRequest) {
     const fixedWeeklySchedule =
       hasWeeklyMealPlanItems &&
       weeklySchedule &&
-      !weeklySchedule.customerSchedulingEnabled
+      (!weeklySchedule.customerSchedulingEnabled ||
+        !businessSettings.checkoutCustomerSchedulingEnabled)
         ? weeklySchedule
+        : null;
+    const fixedCheckoutFulfillment =
+      !businessSettings.checkoutCustomerSchedulingEnabled
+        ? resolveCheckoutFixedFulfillment({
+            settings: businessSettings,
+            now: orderSubmissionTime,
+            timeZone: weeklyMenuTimeZone,
+          })
         : null;
 
     if (fixedWeeklySchedule) {
       requestedDate = fixedWeeklySchedule.fixedFulfillmentAt;
+    } else if (fixedCheckoutFulfillment) {
+      requestedDate = fixedCheckoutFulfillment.fixedFulfillmentAt;
     } else {
       if (!hasRequestedDateAndTime(checkout.requestedDateTime ?? "")) {
         return NextResponse.json(

@@ -11,6 +11,11 @@ type BusinessSettings = {
   orderCutoffMinute: number;
   noWeekendOrdering: boolean;
   deliveryArea: string | null;
+  checkoutCustomerSchedulingEnabled: boolean;
+  checkoutFixedFulfillmentDay: number;
+  checkoutFixedFulfillmentHour: number;
+  checkoutFixedFulfillmentMinute: number;
+  checkoutFixedFulfillmentMessage: string | null;
   weeklyCustomerSchedulingEnabled: boolean;
   weeklyOrderingOpenDay: number;
   weeklyOrderingOpenHour: number;
@@ -36,6 +41,11 @@ const defaultSettings: BusinessSettings = {
   orderCutoffMinute: 0,
   noWeekendOrdering: true,
   deliveryArea: "Greater Atlanta area",
+  checkoutCustomerSchedulingEnabled: false,
+  checkoutFixedFulfillmentDay: 0,
+  checkoutFixedFulfillmentHour: 12,
+  checkoutFixedFulfillmentMinute: 0,
+  checkoutFixedFulfillmentMessage: "Orders are fulfilled on Sunday.",
   weeklyCustomerSchedulingEnabled: false,
   weeklyOrderingOpenDay: 3,
   weeklyOrderingOpenHour: 0,

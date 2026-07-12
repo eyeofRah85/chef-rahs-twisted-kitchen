@@ -577,6 +577,12 @@ model BusinessSettings {
   noWeekendOrdering        Boolean  @default(true)
   deliveryArea             String?  @default("Greater Atlanta area")
 
+  checkoutCustomerSchedulingEnabled Boolean @default(false)
+  checkoutFixedFulfillmentDay       Int     @default(0)
+  checkoutFixedFulfillmentHour      Int     @default(12)
+  checkoutFixedFulfillmentMinute    Int     @default(0)
+  checkoutFixedFulfillmentMessage   String? @default("Orders are fulfilled on Sunday.")
+
   weeklyCustomerSchedulingEnabled Boolean @default(false)
   weeklyOrderingOpenDay           Int     @default(3)
   weeklyOrderingOpenHour          Int     @default(0)

@@ -68,6 +68,13 @@ export async function PATCH(request: Request) {
     );
     const deliveryArea = String(formData.get("deliveryArea") ?? "").trim();
     const noWeekendOrdering = formData.get("noWeekendOrdering") === "on";
+    const checkoutFixedFulfillmentTime = parseTime(
+      formData.get("checkoutFixedFulfillmentTime"),
+      12,
+    );
+    const checkoutFixedFulfillmentMessage = String(
+      formData.get("checkoutFixedFulfillmentMessage") ?? "",
+    ).trim();
     const weeklyOrderingOpenTime = parseTime(
       formData.get("weeklyOrderingOpenTime"),
       0,
@@ -96,6 +103,17 @@ export async function PATCH(request: Request) {
       orderCutoffMinute,
       deliveryArea: deliveryArea || null,
       noWeekendOrdering,
+      checkoutCustomerSchedulingEnabled:
+        formData.get("checkoutCustomerSchedulingEnabled") === "on",
+      checkoutFixedFulfillmentDay: clampWholeNumber(
+        parseNumber(formData.get("checkoutFixedFulfillmentDay"), 0),
+        0,
+        6,
+      ),
+      checkoutFixedFulfillmentHour: checkoutFixedFulfillmentTime.hour,
+      checkoutFixedFulfillmentMinute: checkoutFixedFulfillmentTime.minute,
+      checkoutFixedFulfillmentMessage:
+        checkoutFixedFulfillmentMessage || "Orders are fulfilled on Sunday.",
       weeklyCustomerSchedulingEnabled:
         formData.get("weeklyCustomerSchedulingEnabled") === "on",
       weeklyOrderingOpenDay: clampWholeNumber(
@@ -152,6 +170,12 @@ export async function PATCH(request: Request) {
         lateFee: Number(updated.lateFee),
         cateringDepositPercent: updated.cateringDepositPercent,
         noWeekendOrdering: updated.noWeekendOrdering,
+        checkoutCustomerSchedulingEnabled:
+          updated.checkoutCustomerSchedulingEnabled,
+        checkoutFixedFulfillmentTime: formatTime(
+          updated.checkoutFixedFulfillmentHour,
+          updated.checkoutFixedFulfillmentMinute,
+        ),
         weeklyCustomerSchedulingEnabled:
           updated.weeklyCustomerSchedulingEnabled,
         weeklyOrderingOpenTime: formatTime(

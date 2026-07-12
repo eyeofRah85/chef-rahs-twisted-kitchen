@@ -17,6 +17,7 @@ import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { getWeeklyMealPlanSelectionDetails } from "@/lib/weekly-order-display";
 import { getWeeklyOrderingWindowState } from "@/lib/weekly-ordering-window";
+import { resolveCheckoutFixedFulfillment } from "@/lib/checkout-fulfillment";
 
 const sectionClass =
   "rounded-lg border border-[#ead8c1] bg-white/95 p-5 shadow-[0_18px_45px_rgba(76,36,18,0.08)] sm:p-6";
@@ -238,14 +239,20 @@ export default function CheckoutPage() {
     );
   const hasWeeklyMealPlanItems = weeklySelections.length > 0;
   const hasNonWeeklyItems = items.some((item) => !item.weeklyMealPlanSelection);
-  const fixedWeeklySelection = weeklySelections.find(
-    (selection) =>
-      selection.customerSchedulingEnabled === false ||
-      (selection.customerSchedulingEnabled === undefined &&
-        !settings.weeklyCustomerSchedulingEnabled),
-  );
+  const primaryWeeklySelection = weeklySelections[0] ?? null;
+  const fixedWeeklySelection =
+    weeklySelections.find(
+      (selection) =>
+        selection.customerSchedulingEnabled === false ||
+        (selection.customerSchedulingEnabled === undefined &&
+          !settings.weeklyCustomerSchedulingEnabled),
+    ) ??
+    (!settings.checkoutCustomerSchedulingEnabled
+      ? primaryWeeklySelection
+      : null);
   const hasFixedWeeklyScheduling = Boolean(fixedWeeklySelection);
-  const showScheduleSection = !hasFixedWeeklyScheduling;
+  const showScheduleSection =
+    settings.checkoutCustomerSchedulingEnabled && !hasFixedWeeklyScheduling;
   const hasMixedFixedWeeklyCart =
     hasFixedWeeklyScheduling && hasNonWeeklyItems;
   const fixedWeeklySchedule =
@@ -264,8 +271,21 @@ export default function CheckoutPage() {
         lateFee: settings.lateFee,
       })
     : null;
+  const fixedCheckoutFulfillment = !settings.checkoutCustomerSchedulingEnabled
+    ? resolveCheckoutFixedFulfillment({
+        settings,
+      })
+    : null;
+  const fixedFulfillmentMessage = hasFixedWeeklyScheduling
+    ? fixedWeeklySelection?.deliveryWindowLabel ??
+      fixedWeeklySelection?.fixedFulfillmentLabel ??
+      "Weekly meal plan orders are delivered on Sunday."
+    : fixedCheckoutFulfillment?.message;
+  const fixedFulfillmentLabel = hasFixedWeeklyScheduling
+    ? fixedWeeklySelection?.fixedFulfillmentLabel
+    : fixedCheckoutFulfillment?.label;
 
-  const requestedDateTimeValidation = hasFixedWeeklyScheduling
+  const requestedDateTimeValidation = !showScheduleSection
     ? { valid: true as const }
     : validateRequestedDateTime(details.requestedDateTime, {
         noWeekendOrdering: settings.noWeekendOrdering,
@@ -351,7 +371,7 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (hasFixedWeeklyScheduling) {
+      if (!showScheduleSection) {
         if (fixedWeeklyWindowState && !fixedWeeklyWindowState.allowed) {
           alert(fixedWeeklyWindowState.message);
           return;
@@ -627,6 +647,22 @@ export default function CheckoutPage() {
                   <p className="text-sm text-neutral-600">
                     Your cart is empty.
                   </p>
+                )}
+
+                {!showScheduleSection && fixedFulfillmentMessage && (
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
+                    <p className="font-black">
+                      {hasFixedWeeklyScheduling
+                        ? "Weekly meal plan fulfillment"
+                        : "Fulfillment"}
+                    </p>
+                    <p className="mt-1">{fixedFulfillmentMessage}</p>
+                    {fixedFulfillmentLabel && (
+                      <p className="mt-1 font-semibold">
+                        Fulfillment: {fixedFulfillmentLabel}
+                      </p>
+                    )}
+                  </div>
                 )}
 
                 {hasMixedFixedWeeklyCart && (
