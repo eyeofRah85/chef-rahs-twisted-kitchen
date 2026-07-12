@@ -142,6 +142,10 @@ function compareBusinessDateTimeParts(
   return 0;
 }
 
+function toBusinessWeekIndex(weekday: number) {
+  return (weekday + 6) % 7;
+}
+
 export function formatBusinessDateTimeInputValue({
   now = new Date(),
   timeZone = DEFAULT_BUSINESS_TIME_ZONE,
@@ -168,8 +172,11 @@ function isAfterOrAtCutoff(
     cutoffMinute,
   }: Pick<CutoffSettings, "cutoffDay" | "cutoffHour" | "cutoffMinute">,
 ) {
-  if (businessDateTime.weekday !== cutoffDay) {
-    return businessDateTime.weekday > cutoffDay;
+  const businessWeekday = toBusinessWeekIndex(businessDateTime.weekday);
+  const businessCutoffDay = toBusinessWeekIndex(cutoffDay);
+
+  if (businessWeekday !== businessCutoffDay) {
+    return businessWeekday > businessCutoffDay;
   }
 
   if (businessDateTime.hour !== cutoffHour) {
