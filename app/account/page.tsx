@@ -9,6 +9,10 @@ import {
   formatOrderType,
   formatPaymentStatus,
 } from "@/lib/format-labels";
+import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
 import type { DecimalLike } from "@/types/display";
 import { AccountAllergenPreferencesForm } from "@/components/account/AccountAllergenPreferencesForm";
 
@@ -293,10 +297,8 @@ export default async function AccountPage() {
                       )}
 
                       <p className="mt-1 text-xs text-neutral-500">
-                        Requested:{" "}
-                        {order.requestedDateTime
-                          ? order.requestedDateTime.toLocaleString()
-                          : "Not provided"}
+                        {getOrderScheduleLabel(weeklyItemCount > 0)}:{" "}
+                        {formatOrderScheduleDateTime(order.requestedDateTime)}
                       </p>
 
                       {order.paymentStatus && (

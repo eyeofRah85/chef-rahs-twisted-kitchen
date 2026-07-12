@@ -134,6 +134,7 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
     0,
   );
   const unavailable =
+    weeklyMenu.orderingStatus === "not_open" ||
     weeklyMenu.orderingClosed ||
     orderSlotsRemaining < 1 ||
     weeklyMenu.packages.length === 0 ||
@@ -268,6 +269,16 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
       packagePrice: selectedPackage.price,
       packageRequiresChefApproval: selectedPackage.requiresChefApproval,
       packageIsSeasonal: selectedPackage.isSeasonal,
+      customerSchedulingEnabled: weeklyMenu.customerSchedulingEnabled,
+      fixedFulfillmentAt: weeklyMenu.fixedFulfillmentAt,
+      fixedFulfillmentLabel: weeklyMenu.fixedFulfillmentLabel,
+      deliveryWindowLabel: weeklyMenu.deliveryWindowLabel,
+      orderingOpenAt: weeklyMenu.orderingOpenAt,
+      lateFeeStartsAt: weeklyMenu.lateFeeStartsAt,
+      orderingClosesAt: weeklyMenu.orderingClosesAt,
+      orderingOpenLabel: weeklyMenu.orderingOpenLabel,
+      lateFeeStartsLabel: weeklyMenu.lateFeeStartsLabel,
+      orderingClosesLabel: weeklyMenu.orderingClosesLabel,
       offeringName: "Build Your Weekly Plan",
       mealSlots: selectedMealSlots.filter(
         (slot): slot is NonNullable<(typeof selectedMealSlots)[number]> =>
@@ -320,9 +331,11 @@ export function WeeklyMenuOrderForm({ weeklyMenu }: Props) {
         <div className="mt-5 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
           {orderSlotsRemaining < 1
             ? "This weekly menu has reached its weekly order limit."
-            : weeklyMenu.orderingClosed
-              ? "Ordering for this weekly menu has closed."
-              : "This weekly menu is not ready for ordering yet."}
+            : weeklyMenu.orderingStatus === "not_open"
+              ? "Ordering for this weekly menu has not opened yet."
+              : weeklyMenu.orderingClosed
+                ? "Ordering for this weekly menu has closed."
+                : "This weekly menu is not ready for ordering yet."}
         </div>
       )}
 

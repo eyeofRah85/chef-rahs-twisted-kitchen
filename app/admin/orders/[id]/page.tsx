@@ -15,6 +15,10 @@ import {
   getWeeklyMealPlanSelectionDetails,
   type WeeklyOrderSelectionDisplay,
 } from "@/lib/weekly-order-display";
+import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
 import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
@@ -117,6 +121,9 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
   const paymentDue = ["PAY_BY_DATE", "OFFLINE_PAYMENT_DUE"].includes(
     order.paymentStatus ?? "",
   );
+  const hasWeeklyMealPlan = order.items.some((item) =>
+    Boolean(item.weeklyMealPlanSelection),
+  );
 
   return (
     <main className="admin-page print:bg-white print:px-0 print:py-0">
@@ -164,10 +171,8 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                   {formatOrderType(order.orderType)}
                 </p>
                 <p>
-                  <strong>Requested:</strong>{" "}
-                  {order.requestedDateTime
-                    ? order.requestedDateTime.toLocaleString()
-                    : "Not provided"}
+                  <strong>{getOrderScheduleLabel(hasWeeklyMealPlan)}:</strong>{" "}
+                  {formatOrderScheduleDateTime(order.requestedDateTime)}
                 </p>
               </div>
             </div>

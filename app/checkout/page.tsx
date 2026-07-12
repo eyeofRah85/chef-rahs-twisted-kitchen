@@ -16,6 +16,7 @@ import type { CheckoutDetails } from "@/types/order";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { getWeeklyMealPlanSelectionDetails } from "@/lib/weekly-order-display";
+import { getWeeklyOrderingWindowState } from "@/lib/weekly-ordering-window";
 
 const sectionClass =
   "rounded-lg border border-[#ead8c1] bg-white/95 p-5 shadow-[0_18px_45px_rgba(76,36,18,0.08)] sm:p-6";
@@ -230,24 +231,58 @@ export default function CheckoutPage() {
 
   const deliveryFee =
     details.orderType === "delivery" ? settings.deliveryFee : 0;
-
-  const requestedDateTimeValidation = validateRequestedDateTime(
-    details.requestedDateTime,
-    {
-      noWeekendOrdering: settings.noWeekendOrdering,
-    },
+  const weeklySelections = items
+    .map((item) => item.weeklyMealPlanSelection)
+    .filter((selection): selection is NonNullable<typeof selection> =>
+      Boolean(selection),
+    );
+  const hasWeeklyMealPlanItems = weeklySelections.length > 0;
+  const hasNonWeeklyItems = items.some((item) => !item.weeklyMealPlanSelection);
+  const fixedWeeklySelection = weeklySelections.find(
+    (selection) =>
+      selection.customerSchedulingEnabled === false ||
+      (selection.customerSchedulingEnabled === undefined &&
+        !settings.weeklyCustomerSchedulingEnabled),
   );
+  const hasFixedWeeklyScheduling = Boolean(fixedWeeklySelection);
+  const hasMixedFixedWeeklyCart =
+    hasFixedWeeklyScheduling && hasNonWeeklyItems;
+  const fixedWeeklySchedule =
+    fixedWeeklySelection?.orderingOpenAt &&
+    fixedWeeklySelection.lateFeeStartsAt &&
+    fixedWeeklySelection.orderingClosesAt
+      ? {
+          orderingOpenAt: new Date(fixedWeeklySelection.orderingOpenAt),
+          lateFeeStartsAt: new Date(fixedWeeklySelection.lateFeeStartsAt),
+          orderingClosesAt: new Date(fixedWeeklySelection.orderingClosesAt),
+        }
+      : null;
+  const fixedWeeklyWindowState = fixedWeeklySchedule
+    ? getWeeklyOrderingWindowState({
+        schedule: fixedWeeklySchedule,
+        lateFee: settings.lateFee,
+      })
+    : null;
+
+  const requestedDateTimeValidation = hasFixedWeeklyScheduling
+    ? { valid: true as const }
+    : validateRequestedDateTime(details.requestedDateTime, {
+        noWeekendOrdering: settings.noWeekendOrdering,
+      });
   const minimumRequestedDateTime = formatBusinessDateTimeInputValue();
   const minimumRequestedSchedule = splitRequestedDateTime(
     minimumRequestedDateTime,
   );
 
-  const lateFee = calculateLateFeeFromSettings({
-    lateFee: settings.lateFee,
-    cutoffDay: settings.orderCutoffDay,
-    cutoffHour: settings.orderCutoffHour,
-    cutoffMinute: settings.orderCutoffMinute,
-  });
+  const lateFee =
+    hasWeeklyMealPlanItems && fixedWeeklyWindowState
+      ? fixedWeeklyWindowState.lateFeeAmount
+      : calculateLateFeeFromSettings({
+          lateFee: settings.lateFee,
+          cutoffDay: settings.orderCutoffDay,
+          cutoffHour: settings.orderCutoffHour,
+          cutoffMinute: settings.orderCutoffMinute,
+        });
 
   const tipAmount = calculateTip(
     subtotal,
@@ -308,21 +343,35 @@ export default function CheckoutPage() {
         return;
       }
 
-      if (!hasRequestedDateAndTime(details.requestedDateTime)) {
-        alert("Please choose a requested date and time.");
+      if (hasMixedFixedWeeklyCart) {
+        alert(
+          "Please check out weekly meal plans separately from regular menu items during fixed Sunday fulfillment.",
+        );
         return;
       }
 
-      const requestedDate = new Date(details.requestedDateTime);
+      if (hasFixedWeeklyScheduling) {
+        if (fixedWeeklyWindowState && !fixedWeeklyWindowState.allowed) {
+          alert(fixedWeeklyWindowState.message);
+          return;
+        }
+      } else {
+        if (!hasRequestedDateAndTime(details.requestedDateTime)) {
+          alert("Please choose a requested date and time.");
+          return;
+        }
 
-      if (Number.isNaN(requestedDate.getTime())) {
-        alert("Please choose a valid requested date and time.");
-        return;
-      }
+        const requestedDate = new Date(details.requestedDateTime);
 
-      if (!requestedDateTimeValidation.valid) {
-        alert(requestedDateTimeValidation.error);
-        return;
+        if (Number.isNaN(requestedDate.getTime())) {
+          alert("Please choose a valid requested date and time.");
+          return;
+        }
+
+        if (!requestedDateTimeValidation.valid) {
+          alert(requestedDateTimeValidation.error);
+          return;
+        }
       }
 
       if (isGuestCheckout) {
@@ -749,90 +798,137 @@ export default function CheckoutPage() {
             <section className={sectionClass}>
               <h2 className="text-2xl font-black">Schedule</h2>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <label className={labelClass}>
-                  Requested Date
-                  <input
-                    type="date"
-                    value={requestedSchedule.date}
-                    min={minimumRequestedSchedule.date}
-                    onChange={(event) => {
-                      const nextDate = event.target.value;
-                      const nextTime =
-                        nextDate === minimumRequestedSchedule.date &&
-                        requestedSchedule.time < minimumRequestedSchedule.time
-                          ? ""
-                          : requestedSchedule.time;
-
-                      updateField(
-                        "requestedDateTime",
-                        combineRequestedDateTime(
-                          nextDate,
-                          nextTime,
-                        ),
-                      );
-                    }}
-                    className={`${inputClass} mt-2`}
-                  />
-                </label>
-
-                <label className={labelClass}>
-                  Requested Time
-                  <select
-                    value={requestedSchedule.time}
-                    onChange={(event) =>
-                      updateField(
-                        "requestedDateTime",
-                        combineRequestedDateTime(
-                          requestedSchedule.date,
-                          event.target.value,
-                        ),
-                      )
-                    }
-                    className={`${inputClass} mt-2`}
-                  >
-                    <option value="">Select a time</option>
-                    {orderTimeOptions.map((option) => {
-                      const optionIsPast =
-                        requestedSchedule.date ===
-                          minimumRequestedSchedule.date &&
-                        option.value < minimumRequestedSchedule.time;
-
-                      return (
-                        <option
-                          key={option.value}
-                          value={option.value}
-                          disabled={optionIsPast}
-                        >
-                          {option.label}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              </div>
-
-              <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
-                Orders placed after {cutoffText} may include a $
-                {settings.lateFee.toFixed(2)} late-order fee.
-                {settings.noWeekendOrdering
-                  ? " Weekend ordering is currently unavailable."
-                  : ""}
-              </p>
-
-              {lateFee > 0 && (
-                <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
-                  Orders placed after {cutoffText} include a $
-                  {settings.lateFee.toFixed(2)} late-order fee.
-                </div>
-              )}
-
-              {hasRequestedDateAndTime(details.requestedDateTime) &&
-                !requestedDateTimeValidation.valid && (
-                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
-                    {requestedDateTimeValidation.error}
+              {hasFixedWeeklyScheduling ? (
+                <div className="mt-5 space-y-4">
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
+                    <p className="font-black">Weekly meal plan fulfillment</p>
+                    <p className="mt-1">
+                      {fixedWeeklySelection?.deliveryWindowLabel ??
+                        fixedWeeklySelection?.fixedFulfillmentLabel ??
+                        "Weekly meal plan orders are delivered on Sunday."}
+                    </p>
+                    {fixedWeeklySelection?.fixedFulfillmentLabel && (
+                      <p className="mt-1 font-semibold">
+                        Fulfillment: {fixedWeeklySelection.fixedFulfillmentLabel}
+                      </p>
+                    )}
                   </div>
-                )}
+
+                  {hasMixedFixedWeeklyCart && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                      Weekly meal plan items must be checked out separately from
+                      regular menu items during fixed Sunday fulfillment.
+                    </div>
+                  )}
+
+                  {fixedWeeklyWindowState &&
+                    !fixedWeeklyWindowState.allowed && (
+                      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                        {fixedWeeklyWindowState.message}
+                      </div>
+                    )}
+
+                  {fixedWeeklyWindowState?.state === "late" && (
+                    <div className="rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
+                      Weekly meal plan orders are in the late-order window and
+                      include a ${settings.lateFee.toFixed(2)} late fee.
+                    </div>
+                  )}
+
+                  <p className="text-xs leading-5 text-[#6b5a50]">
+                    Weekly ordering opens{" "}
+                    {fixedWeeklySelection?.orderingOpenLabel ?? "Wednesday"} and
+                    closes {fixedWeeklySelection?.orderingClosesLabel ?? "Friday"}.
+                    Late fees begin{" "}
+                    {fixedWeeklySelection?.lateFeeStartsLabel ?? "Friday at 5 PM"}.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                    <label className={labelClass}>
+                      Requested Date
+                      <input
+                        type="date"
+                        value={requestedSchedule.date}
+                        min={minimumRequestedSchedule.date}
+                        onChange={(event) => {
+                          const nextDate = event.target.value;
+                          const nextTime =
+                            nextDate === minimumRequestedSchedule.date &&
+                            requestedSchedule.time <
+                              minimumRequestedSchedule.time
+                              ? ""
+                              : requestedSchedule.time;
+
+                          updateField(
+                            "requestedDateTime",
+                            combineRequestedDateTime(nextDate, nextTime),
+                          );
+                        }}
+                        className={`${inputClass} mt-2`}
+                      />
+                    </label>
+
+                    <label className={labelClass}>
+                      Requested Time
+                      <select
+                        value={requestedSchedule.time}
+                        onChange={(event) =>
+                          updateField(
+                            "requestedDateTime",
+                            combineRequestedDateTime(
+                              requestedSchedule.date,
+                              event.target.value,
+                            ),
+                          )
+                        }
+                        className={`${inputClass} mt-2`}
+                      >
+                        <option value="">Select a time</option>
+                        {orderTimeOptions.map((option) => {
+                          const optionIsPast =
+                            requestedSchedule.date ===
+                              minimumRequestedSchedule.date &&
+                            option.value < minimumRequestedSchedule.time;
+
+                          return (
+                            <option
+                              key={option.value}
+                              value={option.value}
+                              disabled={optionIsPast}
+                            >
+                              {option.label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </label>
+                  </div>
+
+                  <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
+                    Orders placed after {cutoffText} may include a $
+                    {settings.lateFee.toFixed(2)} late-order fee.
+                    {settings.noWeekendOrdering
+                      ? " Weekend ordering is currently unavailable."
+                      : ""}
+                  </p>
+
+                  {lateFee > 0 && (
+                    <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
+                      Orders placed after {cutoffText} include a $
+                      {settings.lateFee.toFixed(2)} late-order fee.
+                    </div>
+                  )}
+
+                  {hasRequestedDateAndTime(details.requestedDateTime) &&
+                    !requestedDateTimeValidation.valid && (
+                      <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                        {requestedDateTimeValidation.error}
+                      </div>
+                    )}
+                </>
+              )}
             </section>
 
             <section className={sectionClass}>

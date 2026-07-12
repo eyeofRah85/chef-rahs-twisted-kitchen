@@ -287,6 +287,12 @@ model WeeklyMenuPeriod {
   startDate        DateTime
   endDate          DateTime
   orderCutoffAt    DateTime?
+  orderingOpenAt   DateTime?
+  lateFeeStartsAt  DateTime?
+  orderingClosesAt DateTime?
+  fixedFulfillmentAt DateTime?
+  customerSchedulingEnabled Boolean?
+  deliveryWindowLabel String?
   fulfillmentNotes String?
   status           WeeklyMenuStatus @default(DRAFT)
 
@@ -570,6 +576,21 @@ model BusinessSettings {
 
   noWeekendOrdering        Boolean  @default(true)
   deliveryArea             String?  @default("Greater Atlanta area")
+
+  weeklyCustomerSchedulingEnabled Boolean @default(false)
+  weeklyOrderingOpenDay           Int     @default(3)
+  weeklyOrderingOpenHour          Int     @default(0)
+  weeklyOrderingOpenMinute        Int     @default(0)
+  weeklyLateFeeStartDay           Int     @default(5)
+  weeklyLateFeeStartHour          Int     @default(17)
+  weeklyLateFeeStartMinute        Int     @default(0)
+  weeklyOrderingCloseDay          Int     @default(5)
+  weeklyOrderingCloseHour         Int     @default(22)
+  weeklyOrderingCloseMinute       Int     @default(0)
+  weeklyFixedFulfillmentDay       Int     @default(0)
+  weeklyFixedFulfillmentHour      Int     @default(12)
+  weeklyFixedFulfillmentMinute    Int     @default(0)
+  weeklyFixedFulfillmentMessage   String? @default("Weekly meal plan orders are delivered on Sunday.")
 
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt

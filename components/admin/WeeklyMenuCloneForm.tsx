@@ -10,6 +10,12 @@ export type WeeklyMenuCloneSource = {
   suggestedStartDate: string;
   suggestedEndDate: string;
   suggestedOrderCutoffAt: string | null;
+  suggestedOrderingOpenAt: string | null;
+  suggestedLateFeeStartsAt: string | null;
+  suggestedOrderingClosesAt: string | null;
+  suggestedFixedFulfillmentAt: string | null;
+  customerSchedulingEnabled: boolean | null;
+  deliveryWindowLabel: string | null;
   fulfillmentNotes: string | null;
   capacity: number;
   packageCount: number;
@@ -112,7 +118,7 @@ export function WeeklyMenuCloneForm({ source }: Props) {
 
         <div className="grid gap-4">
           <label className="admin-label">
-            Ordering Cutoff
+            Legacy Ordering Cutoff
             <input
               name="orderCutoffAt"
               type="datetime-local"
@@ -138,6 +144,82 @@ export function WeeklyMenuCloneForm({ source }: Props) {
             </span>
           </label>
         </div>
+
+        <section className="rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4">
+          <h3 className="text-sm font-black uppercase text-[#9f2f18]">
+            Weekly Ordering Window
+          </h3>
+
+          <div className="mt-4 grid gap-4">
+            <label className="admin-label">
+              Weekly Customer Scheduling
+              <select
+                name="customerSchedulingEnabled"
+                defaultValue={
+                  source.customerSchedulingEnabled === true
+                    ? "enabled"
+                    : source.customerSchedulingEnabled === false
+                      ? "disabled"
+                      : "inherit"
+                }
+                className="admin-input"
+              >
+                <option value="inherit">Use business setting</option>
+                <option value="disabled">Fixed weekly fulfillment</option>
+                <option value="enabled">Customer selects date/time</option>
+              </select>
+            </label>
+
+            <label className="admin-label">
+              Ordering Opens
+              <input
+                name="orderingOpenAt"
+                type="datetime-local"
+                defaultValue={source.suggestedOrderingOpenAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Late Fee Starts
+              <input
+                name="lateFeeStartsAt"
+                type="datetime-local"
+                defaultValue={source.suggestedLateFeeStartsAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Ordering Closes
+              <input
+                name="orderingClosesAt"
+                type="datetime-local"
+                defaultValue={source.suggestedOrderingClosesAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Fixed Fulfillment
+              <input
+                name="fixedFulfillmentAt"
+                type="datetime-local"
+                defaultValue={source.suggestedFixedFulfillmentAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Customer Delivery Message
+              <input
+                name="deliveryWindowLabel"
+                defaultValue={source.deliveryWindowLabel ?? ""}
+                className="admin-input"
+              />
+            </label>
+          </div>
+        </section>
 
         <label className="admin-label">
           Fulfillment Notes

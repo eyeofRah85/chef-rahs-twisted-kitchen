@@ -2,6 +2,42 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
+
+function parseNumber(value: FormDataEntryValue | null, fallback: number) {
+  const parsed = Number(value ?? fallback);
+
+  return Number.isNaN(parsed) ? fallback : parsed;
+}
+
+function clampWholeNumber(value: number, minimum: number, maximum: number) {
+  if (!Number.isFinite(value)) return minimum;
+
+  return Math.min(Math.max(Math.trunc(value), minimum), maximum);
+}
+
+function parseTime(value: FormDataEntryValue | null, fallbackHour: number) {
+  const text = String(value ?? "").trim();
+  const match = /^(\d{2}):(\d{2})$/.exec(text);
+
+  if (!match) {
+    return {
+      hour: fallbackHour,
+      minute: 0,
+    };
+  }
+
+  return {
+    hour: clampWholeNumber(Number(match[1]), 0, 23),
+    minute: clampWholeNumber(Number(match[2]), 0, 59),
+  };
+}
+
+function formatTime(hour: number, minute: number) {
+  return `${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 export async function PATCH(request: Request) {
   try {
     const { session, response } = await requireAdminApi();
@@ -9,49 +45,100 @@ export async function PATCH(request: Request) {
 
     const formData = await request.formData();
 
-    const deliveryFee = Number(formData.get("deliveryFee") ?? 10);
-    const lateFee = Number(formData.get("lateFee") ?? 10);
-    const cateringDepositPercent = Number(
-      formData.get("cateringDepositPercent") ?? 50,
+    const deliveryFee = parseNumber(formData.get("deliveryFee"), 10);
+    const lateFee = parseNumber(formData.get("lateFee"), 10);
+    const cateringDepositPercent = parseNumber(
+      formData.get("cateringDepositPercent"),
+      50,
     );
-    const orderCutoffDay = Number(formData.get("orderCutoffDay") ?? 4);
-    const orderCutoffHour = Number(formData.get("orderCutoffHour") ?? 17);
-    const orderCutoffMinute = Number(formData.get("orderCutoffMinute") ?? 0);
+    const orderCutoffDay = clampWholeNumber(
+      parseNumber(formData.get("orderCutoffDay"), 4),
+      0,
+      6,
+    );
+    const orderCutoffHour = clampWholeNumber(
+      parseNumber(formData.get("orderCutoffHour"), 17),
+      0,
+      23,
+    );
+    const orderCutoffMinute = clampWholeNumber(
+      parseNumber(formData.get("orderCutoffMinute"), 0),
+      0,
+      59,
+    );
     const deliveryArea = String(formData.get("deliveryArea") ?? "").trim();
     const noWeekendOrdering = formData.get("noWeekendOrdering") === "on";
+    const weeklyOrderingOpenTime = parseTime(
+      formData.get("weeklyOrderingOpenTime"),
+      0,
+    );
+    const weeklyLateFeeStartTime = parseTime(
+      formData.get("weeklyLateFeeStartTime"),
+      17,
+    );
+    const weeklyOrderingCloseTime = parseTime(
+      formData.get("weeklyOrderingCloseTime"),
+      22,
+    );
+    const weeklyFixedFulfillmentTime = parseTime(
+      formData.get("weeklyFixedFulfillmentTime"),
+      12,
+    );
+    const weeklyFixedFulfillmentMessage = String(
+      formData.get("weeklyFixedFulfillmentMessage") ?? "",
+    ).trim();
+    const data = {
+      deliveryFee,
+      lateFee,
+      cateringDepositPercent: clampWholeNumber(cateringDepositPercent, 0, 100),
+      orderCutoffDay,
+      orderCutoffHour,
+      orderCutoffMinute,
+      deliveryArea: deliveryArea || null,
+      noWeekendOrdering,
+      weeklyCustomerSchedulingEnabled:
+        formData.get("weeklyCustomerSchedulingEnabled") === "on",
+      weeklyOrderingOpenDay: clampWholeNumber(
+        parseNumber(formData.get("weeklyOrderingOpenDay"), 3),
+        0,
+        6,
+      ),
+      weeklyOrderingOpenHour: weeklyOrderingOpenTime.hour,
+      weeklyOrderingOpenMinute: weeklyOrderingOpenTime.minute,
+      weeklyLateFeeStartDay: clampWholeNumber(
+        parseNumber(formData.get("weeklyLateFeeStartDay"), 5),
+        0,
+        6,
+      ),
+      weeklyLateFeeStartHour: weeklyLateFeeStartTime.hour,
+      weeklyLateFeeStartMinute: weeklyLateFeeStartTime.minute,
+      weeklyOrderingCloseDay: clampWholeNumber(
+        parseNumber(formData.get("weeklyOrderingCloseDay"), 5),
+        0,
+        6,
+      ),
+      weeklyOrderingCloseHour: weeklyOrderingCloseTime.hour,
+      weeklyOrderingCloseMinute: weeklyOrderingCloseTime.minute,
+      weeklyFixedFulfillmentDay: clampWholeNumber(
+        parseNumber(formData.get("weeklyFixedFulfillmentDay"), 0),
+        0,
+        6,
+      ),
+      weeklyFixedFulfillmentHour: weeklyFixedFulfillmentTime.hour,
+      weeklyFixedFulfillmentMinute: weeklyFixedFulfillmentTime.minute,
+      weeklyFixedFulfillmentMessage:
+        weeklyFixedFulfillmentMessage ||
+        "Weekly meal plan orders are delivered on Sunday.",
+    };
 
     const updated = await prisma.businessSettings.upsert({
       where: {
         id: "business-settings",
       },
-      update: {
-        deliveryFee: Number.isNaN(deliveryFee) ? 10 : deliveryFee,
-        lateFee: Number.isNaN(lateFee) ? 10 : lateFee,
-        cateringDepositPercent: Number.isNaN(cateringDepositPercent)
-          ? 50
-          : cateringDepositPercent,
-        orderCutoffDay: Number.isNaN(orderCutoffDay) ? 4 : orderCutoffDay,
-        orderCutoffHour: Number.isNaN(orderCutoffHour) ? 17 : orderCutoffHour,
-        orderCutoffMinute: Number.isNaN(orderCutoffMinute)
-          ? 0
-          : orderCutoffMinute,
-        deliveryArea: deliveryArea || null,
-        noWeekendOrdering,
-      },
+      update: data,
       create: {
         id: "business-settings",
-        deliveryFee: Number.isNaN(deliveryFee) ? 10 : deliveryFee,
-        lateFee: Number.isNaN(lateFee) ? 10 : lateFee,
-        cateringDepositPercent: Number.isNaN(cateringDepositPercent)
-          ? 50
-          : cateringDepositPercent,
-        orderCutoffDay: Number.isNaN(orderCutoffDay) ? 4 : orderCutoffDay,
-        orderCutoffHour: Number.isNaN(orderCutoffHour) ? 17 : orderCutoffHour,
-        orderCutoffMinute: Number.isNaN(orderCutoffMinute)
-          ? 0
-          : orderCutoffMinute,
-        deliveryArea: deliveryArea || null,
-        noWeekendOrdering,
+        ...data,
       },
     });
 
@@ -65,6 +152,20 @@ export async function PATCH(request: Request) {
         lateFee: Number(updated.lateFee),
         cateringDepositPercent: updated.cateringDepositPercent,
         noWeekendOrdering: updated.noWeekendOrdering,
+        weeklyCustomerSchedulingEnabled:
+          updated.weeklyCustomerSchedulingEnabled,
+        weeklyOrderingOpenTime: formatTime(
+          updated.weeklyOrderingOpenHour,
+          updated.weeklyOrderingOpenMinute,
+        ),
+        weeklyLateFeeStartTime: formatTime(
+          updated.weeklyLateFeeStartHour,
+          updated.weeklyLateFeeStartMinute,
+        ),
+        weeklyOrderingCloseTime: formatTime(
+          updated.weeklyOrderingCloseHour,
+          updated.weeklyOrderingCloseMinute,
+        ),
       },
     });
 

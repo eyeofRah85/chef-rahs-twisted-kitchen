@@ -2,13 +2,20 @@ import { prisma } from "@/lib/prisma";
 import { MenuCard } from "@/components/menu/MenuCard";
 import { MenuCategoryFilter } from "@/components/menu/MenuCategoryFilter";
 import { WeeklyMenuSection } from "@/components/menu/WeeklyMenuSection";
+import { getBusinessSettings } from "@/lib/business-settings";
 import Image from "next/image";
 import Link from "next/link";
 import {
   formatWeeklyMenuDisplayDate,
   getWeeklyMenuQueryDateRange,
+  weeklyMenuTimeZone,
 } from "@/lib/weekly-menu-dates";
 import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
+import {
+  formatWeeklyScheduleSummary,
+  getWeeklyOrderingWindowState,
+  resolveWeeklyPeriodSchedule,
+} from "@/lib/weekly-ordering-window";
 import type { DecimalLike } from "@/types/display";
 import type { PublicWeeklyMenu } from "@/types/weekly-menu";
 
@@ -56,15 +63,6 @@ function formatMenuDate(date: Date) {
   return formatWeeklyMenuDisplayDate(date);
 }
 
-function formatMenuDateTime(date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(date);
-}
-
 function toCategoryId(category: string) {
   return category.toLowerCase().replace(/\s+/g, "-");
 }
@@ -75,6 +73,12 @@ function toPublicWeeklyMenu(weeklyMenu: {
   startDate: Date;
   endDate: Date;
   orderCutoffAt: Date | null;
+  orderingOpenAt: Date | null;
+  lateFeeStartsAt: Date | null;
+  orderingClosesAt: Date | null;
+  fixedFulfillmentAt: Date | null;
+  customerSchedulingEnabled: boolean | null;
+  deliveryWindowLabel: string | null;
   capacity: number;
   ordersPlaced: number;
   packages: {
@@ -112,19 +116,40 @@ function toPublicWeeklyMenu(weeklyMenu: {
       requiresApproval: boolean;
     }[];
   }[];
-}): PublicWeeklyMenu {
+}, settings: Awaited<ReturnType<typeof getBusinessSettings>>): PublicWeeklyMenu {
+  const schedule = resolveWeeklyPeriodSchedule({
+    period: weeklyMenu,
+    settings,
+    timeZone: weeklyMenuTimeZone,
+  });
+  const scheduleSummary = formatWeeklyScheduleSummary(
+    schedule,
+    weeklyMenuTimeZone,
+  );
+  const orderingWindowState = getWeeklyOrderingWindowState({
+    schedule,
+    lateFee: settings.lateFee,
+  });
+
   return {
     id: weeklyMenu.id,
     label: weeklyMenu.label,
     dateRange: `${formatMenuDate(weeklyMenu.startDate)} - ${formatMenuDate(
       weeklyMenu.endDate,
     )}`,
-    orderCutoffLabel: weeklyMenu.orderCutoffAt
-      ? formatMenuDateTime(weeklyMenu.orderCutoffAt)
-      : null,
-    orderingClosed: weeklyMenu.orderCutoffAt
-      ? weeklyMenu.orderCutoffAt < new Date()
-      : false,
+    orderCutoffLabel: scheduleSummary.orderingClosesLabel,
+    orderingOpenAt: schedule.orderingOpenAt.toISOString(),
+    lateFeeStartsAt: schedule.lateFeeStartsAt.toISOString(),
+    orderingClosesAt: schedule.orderingClosesAt.toISOString(),
+    orderingOpenLabel: scheduleSummary.orderingOpenLabel,
+    lateFeeStartsLabel: scheduleSummary.lateFeeStartsLabel,
+    orderingClosesLabel: scheduleSummary.orderingClosesLabel,
+    fixedFulfillmentAt: schedule.fixedFulfillmentAt.toISOString(),
+    fixedFulfillmentLabel: scheduleSummary.fixedFulfillmentLabel,
+    deliveryWindowLabel: scheduleSummary.deliveryWindowLabel,
+    customerSchedulingEnabled: schedule.customerSchedulingEnabled,
+    orderingStatus: orderingWindowState.state,
+    orderingClosed: orderingWindowState.state === "closed",
     capacity: weeklyMenu.capacity,
     ordersPlaced: weeklyMenu.ordersPlaced,
     packages: weeklyMenu.packages.map((pkg) => ({
@@ -170,7 +195,7 @@ export default async function MenuPage() {
   const today = new Date();
   const { dayStart } = getWeeklyMenuQueryDateRange(today);
 
-  const [categories, weeklyMenu] = await Promise.all([
+  const [categories, weeklyMenu, settings] = await Promise.all([
     prisma.menuCategory.findMany({
       orderBy: {
         sortOrder: "asc",
@@ -261,12 +286,15 @@ export default async function MenuPage() {
         },
       },
     }),
+    getBusinessSettings(),
   ]);
 
   const visibleCategories = categories.filter(
     (category) => category.items.length > 0,
   );
-  const publicWeeklyMenu = weeklyMenu ? toPublicWeeklyMenu(weeklyMenu) : null;
+  const publicWeeklyMenu = weeklyMenu
+    ? toPublicWeeklyMenu(weeklyMenu, settings)
+    : null;
   const filterCategories = [
     ...(publicWeeklyMenu ? ["Weekly Meal Plans"] : []),
     ...visibleCategories.map((category) => category.name),

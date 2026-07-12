@@ -2,19 +2,29 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { calculateTip } from "@/lib/order-calculations";
-import {
-  calculateServerDeliveryFee,
-  calculateServerLateFee,
-  validateServerRequestedDateTime,
-} from "@/lib/server-business-rules";
+import { validateServerRequestedDateTime } from "@/lib/server-business-rules";
 import { filterMealPlanCustomerOptionGroups } from "@/lib/meal-plan-options";
 import { sendAppEmail, appUrl } from "@/lib/email";
 import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
-import { getWeeklyMenuQueryDateRange } from "@/lib/weekly-menu-dates";
+import {
+  getWeeklyMenuQueryDateRange,
+  weeklyMenuTimeZone,
+} from "@/lib/weekly-menu-dates";
 import {
   isBreakfastWeeklyMealSlotLabel,
   normalizeWeeklyMealSlotLabels,
 } from "@/lib/weekly-package-labels";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { calculateLateFeeFromSettings } from "@/lib/business-rules";
+import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
+import {
+  getWeeklyOrderingWindowState,
+  resolveWeeklyPeriodSchedule,
+  type ResolvedWeeklyPeriodSchedule,
+} from "@/lib/weekly-ordering-window";
 import type { CartItem } from "@/store/cart-store";
 import type { CheckoutDetails } from "@/types/order";
 import type { DecimalLike } from "@/types/display";
@@ -250,32 +260,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!hasRequestedDateAndTime(checkout.requestedDateTime ?? "")) {
-      return NextResponse.json(
-        { error: "Please choose a requested date and time." },
-        { status: 400 },
-      );
-    }
-
-    const requestedDate = new Date(checkout.requestedDateTime);
-
-    if (Number.isNaN(requestedDate.getTime())) {
-      return NextResponse.json(
-        { error: "Please choose a valid requested date and time." },
-        { status: 400 },
-      );
-    }
-
-    const requestedDateValidation = await validateServerRequestedDateTime(
-      checkout.requestedDateTime,
+    const businessSettings = await getBusinessSettings();
+    const orderSubmissionTime = new Date();
+    const hasWeeklyMealPlanItems = items.some((item) =>
+      Boolean(item.weeklyMealPlanSelection),
     );
-
-    if (!requestedDateValidation.valid) {
-      return NextResponse.json(
-        { error: requestedDateValidation.error },
-        { status: 400 },
-      );
-    }
+    const hasNonWeeklyItems = items.some(
+      (item) => !item.weeklyMealPlanSelection,
+    );
+    let requestedDate: Date | null = null;
+    let weeklySchedule: ResolvedWeeklyPeriodSchedule | null = null;
 
     if (checkout.orderType === "delivery") {
       if (
@@ -454,8 +448,8 @@ export async function POST(request: NextRequest) {
 
       if (item.weeklyMealPlanSelection) {
         const selection = item.weeklyMealPlanSelection;
-        const now = new Date();
-        const { dayStart: todayStart } = getWeeklyMenuQueryDateRange(now);
+        const { dayStart: todayStart } =
+          getWeeklyMenuQueryDateRange(orderSubmissionTime);
 
         if (
           !selection.weeklyMenuPeriodId ||
@@ -536,15 +530,35 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        if (
-          weeklyPeriod.orderCutoffAt &&
-          requestedDate > weeklyPeriod.orderCutoffAt
-        ) {
+        const resolvedSchedule = resolveWeeklyPeriodSchedule({
+          period: weeklyPeriod,
+          settings: businessSettings,
+          timeZone: weeklyMenuTimeZone,
+        });
+        const windowState = getWeeklyOrderingWindowState({
+          now: orderSubmissionTime,
+          schedule: resolvedSchedule,
+          lateFee: businessSettings.lateFee,
+        });
+
+        if (!windowState.allowed) {
           return NextResponse.json(
-            { error: "Ordering for this weekly meal plan has closed." },
+            { error: windowState.message },
             { status: 400 },
           );
         }
+
+        if (hasNonWeeklyItems && !resolvedSchedule.customerSchedulingEnabled) {
+          return NextResponse.json(
+            {
+              error:
+                "Weekly meal plan items must be checked out separately from regular menu items during fixed Sunday fulfillment.",
+            },
+            { status: 400 },
+          );
+        }
+
+        weeklySchedule = resolvedSchedule;
 
         const selectedPackage = weeklyPeriod.packages[0];
 
@@ -1033,6 +1047,52 @@ export async function POST(request: NextRequest) {
         allergenConflicts: [],
       });
     }
+
+    const fixedWeeklySchedule =
+      hasWeeklyMealPlanItems &&
+      weeklySchedule &&
+      !weeklySchedule.customerSchedulingEnabled
+        ? weeklySchedule
+        : null;
+
+    if (fixedWeeklySchedule) {
+      requestedDate = fixedWeeklySchedule.fixedFulfillmentAt;
+    } else {
+      if (!hasRequestedDateAndTime(checkout.requestedDateTime ?? "")) {
+        return NextResponse.json(
+          { error: "Please choose a requested date and time." },
+          { status: 400 },
+        );
+      }
+
+      requestedDate = new Date(checkout.requestedDateTime);
+
+      if (Number.isNaN(requestedDate.getTime())) {
+        return NextResponse.json(
+          { error: "Please choose a valid requested date and time." },
+          { status: 400 },
+        );
+      }
+
+      const requestedDateValidation = await validateServerRequestedDateTime(
+        checkout.requestedDateTime,
+      );
+
+      if (!requestedDateValidation.valid) {
+        return NextResponse.json(
+          { error: requestedDateValidation.error },
+          { status: 400 },
+        );
+      }
+    }
+
+    if (!requestedDate) {
+      return NextResponse.json(
+        { error: "Unable to determine order fulfillment date." },
+        { status: 400 },
+      );
+    }
+
     const userAllergens = isAuthenticated
       ? await prisma.userAllergen.findMany({
           where: {
@@ -1116,8 +1176,24 @@ export async function POST(request: NextRequest) {
       0,
     );
 
-    const deliveryFee = await calculateServerDeliveryFee(checkout.orderType);
-    const lateFee = await calculateServerLateFee();
+    const deliveryFee =
+      checkout.orderType === "delivery" ? businessSettings.deliveryFee : 0;
+    const weeklyWindowState = weeklySchedule
+      ? getWeeklyOrderingWindowState({
+          now: orderSubmissionTime,
+          schedule: weeklySchedule,
+          lateFee: businessSettings.lateFee,
+        })
+      : null;
+    const lateFee = weeklyWindowState
+      ? weeklyWindowState.lateFeeAmount
+      : calculateLateFeeFromSettings({
+          lateFee: businessSettings.lateFee,
+          cutoffDay: businessSettings.orderCutoffDay,
+          cutoffHour: businessSettings.orderCutoffHour,
+          cutoffMinute: businessSettings.orderCutoffMinute,
+          timeZone: weeklyMenuTimeZone,
+        });
 
     const tipAmount = calculateTip(
       subtotal,
@@ -1381,6 +1457,8 @@ export async function POST(request: NextRequest) {
         paymentStatus: order.paymentStatus,
         approvalStatus: order.approvalStatus,
         orderUrl: isAuthenticated ? `${appUrl}/orders/${order.id}` : null,
+        scheduleLabel: getOrderScheduleLabel(Boolean(weeklySchedule)),
+        scheduleValue: formatOrderScheduleDateTime(order.requestedDateTime),
 
         deliveryName: order.deliveryName,
         deliveryPhone: order.deliveryPhone,

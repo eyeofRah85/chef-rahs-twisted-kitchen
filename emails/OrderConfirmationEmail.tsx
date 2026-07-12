@@ -32,6 +32,8 @@ type Props = {
   paymentStatus?: string | null;
   approvalStatus?: string | null;
   orderUrl?: string | null;
+  scheduleLabel?: string | null;
+  scheduleValue?: string | null;
   items: OrderEmailItem[];
   allergenAcknowledged?: boolean;
   allergenAcknowledgedAt?: Date | string | null;
@@ -66,6 +68,8 @@ export function OrderConfirmationEmail({
   lateFee,
   tipAmount,
   orderUrl,
+  scheduleLabel,
+  scheduleValue,
   items,
   deliveryName,
   deliveryPhone,
@@ -108,6 +112,9 @@ export function OrderConfirmationEmail({
           label="Approval"
           value={formatApprovalStatus(approvalStatus)}
         />
+        {scheduleLabel && scheduleValue && (
+          <DetailRow label={scheduleLabel} value={scheduleValue} />
+        )}
         <Text style={emailStyles.totalText}>${total.toFixed(2)}</Text>
       </Section>
 

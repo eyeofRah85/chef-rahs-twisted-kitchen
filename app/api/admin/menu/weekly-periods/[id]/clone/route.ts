@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
+import { getBusinessSettings } from "@/lib/business-settings";
 import { prisma } from "@/lib/prisma";
+import { weeklyMenuTimeZone } from "@/lib/weekly-menu-dates";
 import {
   isWeeklyMenuValidationError,
   parseWeeklyMenuCloneForm,
 } from "@/lib/weekly-menu-validation";
 import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
+import { fillWeeklyPeriodScheduleDefaults } from "@/lib/weekly-ordering-window";
 
 type RouteContext = {
   params: Promise<{
@@ -21,7 +24,13 @@ export async function POST(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const formData = await request.formData();
-    const data = parseWeeklyMenuCloneForm(formData);
+    const parsedData = parseWeeklyMenuCloneForm(formData);
+    const settings = await getBusinessSettings();
+    const data = fillWeeklyPeriodScheduleDefaults({
+      period: parsedData,
+      settings,
+      timeZone: weeklyMenuTimeZone,
+    });
 
     const source = await prisma.weeklyMenuPeriod.findUnique({
       where: {

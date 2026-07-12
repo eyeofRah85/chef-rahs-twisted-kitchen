@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatOrderStatus, formatOrderType } from "@/lib/format-labels";
 import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
+import {
   getWeeklyMealPlanSelectionDetails,
   type WeeklyOrderSelectionDisplay,
 } from "@/lib/weekly-order-display";
@@ -40,6 +44,9 @@ const nextStatuses: Record<string, string> = {
 
 export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
   const router = useRouter();
+  const hasWeeklyMealPlan = order.items.some((item) =>
+    Boolean(item.weeklyMealPlanSelection),
+  );
 
   async function advanceStatus() {
     const nextStatus = nextStatuses[order.status];
@@ -134,12 +141,12 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
 
       <div className="mt-6 flex flex-col gap-4 border-t border-[#ead8c1] pt-5">
         <div>
-          <p className="text-sm text-neutral-500">Requested</p>
+          <p className="text-sm text-neutral-500">
+            {getOrderScheduleLabel(hasWeeklyMealPlan)}
+          </p>
 
           <p className="font-bold">
-            {order.requestedDateTime
-              ? new Date(order.requestedDateTime).toLocaleString()
-              : "ASAP"}
+            {formatOrderScheduleDateTime(order.requestedDateTime)}
           </p>
         </div>
 

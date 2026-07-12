@@ -9,6 +9,16 @@ export type WeeklyOrderSelectionDisplay = {
   packagePrice: DecimalLike;
   packageRequiresChefApproval?: boolean;
   packageIsSeasonal?: boolean;
+  customerSchedulingEnabled?: boolean;
+  fixedFulfillmentAt?: string | Date | null;
+  fixedFulfillmentLabel?: string | null;
+  deliveryWindowLabel?: string | null;
+  orderingOpenAt?: string | Date | null;
+  lateFeeStartsAt?: string | Date | null;
+  orderingClosesAt?: string | Date | null;
+  orderingOpenLabel?: string | null;
+  lateFeeStartsLabel?: string | null;
+  orderingClosesLabel?: string | null;
   offeringName?: string | null;
   spiceLevel?: string | null;
   proteinSubstitution?: string | null;
@@ -82,6 +92,16 @@ export function getWeeklyMealPlanSelectionDetails(
   ];
 
   const mealSlots = selection.mealSlots ?? [];
+
+  if (selection.customerSchedulingEnabled === false) {
+    details.push({
+      label: "Weekly Fulfillment",
+      value:
+        selection.deliveryWindowLabel ??
+        selection.fixedFulfillmentLabel ??
+        "Weekly meal plan orders are delivered on Sunday.",
+    });
+  }
 
   if (mealSlots.length > 0) {
     [...mealSlots]

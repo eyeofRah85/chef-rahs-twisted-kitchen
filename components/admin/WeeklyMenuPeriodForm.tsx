@@ -11,6 +11,12 @@ export type WeeklyMenuPeriodFormData = {
   startDate: string;
   endDate: string;
   orderCutoffAt: string | null;
+  orderingOpenAt: string | null;
+  lateFeeStartsAt: string | null;
+  orderingClosesAt: string | null;
+  fixedFulfillmentAt: string | null;
+  customerSchedulingEnabled: boolean | null;
+  deliveryWindowLabel: string | null;
   fulfillmentNotes: string | null;
   status: string;
   capacity: number;
@@ -115,13 +121,17 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
 
         <div className="grid gap-4">
           <label className="admin-label">
-            Ordering Cutoff
+            Legacy Ordering Cutoff
             <input
               name="orderCutoffAt"
               type="datetime-local"
               defaultValue={period?.orderCutoffAt ?? ""}
               className="admin-input"
             />
+            <span className="text-xs font-normal leading-5 text-[#6b5a50]">
+              Kept for compatibility. Weekly launch validation uses the
+              resolved ordering window below.
+            </span>
           </label>
 
           <label className="admin-label">
@@ -141,6 +151,89 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
             </span>
           </label>
         </div>
+
+        <section className="rounded-lg border border-[#ead8c1] bg-[#fff8ee] p-4">
+          <h3 className="text-sm font-black uppercase text-[#9f2f18]">
+            Weekly Ordering Window
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#6b5a50]">
+            Leave fields blank on new menus to use the business defaults.
+            Published launch menus should resolve to Wednesday open, Friday late
+            fee, Friday close, and Sunday fulfillment.
+          </p>
+
+          <div className="mt-4 grid gap-4">
+            <label className="admin-label">
+              Weekly Customer Scheduling
+              <select
+                name="customerSchedulingEnabled"
+                defaultValue={
+                  period?.customerSchedulingEnabled === true
+                    ? "enabled"
+                    : period?.customerSchedulingEnabled === false
+                      ? "disabled"
+                      : "inherit"
+                }
+                className="admin-input"
+              >
+                <option value="inherit">Use business setting</option>
+                <option value="disabled">Fixed weekly fulfillment</option>
+                <option value="enabled">Customer selects date/time</option>
+              </select>
+            </label>
+
+            <label className="admin-label">
+              Ordering Opens
+              <input
+                name="orderingOpenAt"
+                type="datetime-local"
+                defaultValue={period?.orderingOpenAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Late Fee Starts
+              <input
+                name="lateFeeStartsAt"
+                type="datetime-local"
+                defaultValue={period?.lateFeeStartsAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Ordering Closes
+              <input
+                name="orderingClosesAt"
+                type="datetime-local"
+                defaultValue={period?.orderingClosesAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Fixed Fulfillment
+              <input
+                name="fixedFulfillmentAt"
+                type="datetime-local"
+                defaultValue={period?.fixedFulfillmentAt ?? ""}
+                className="admin-input"
+              />
+            </label>
+
+            <label className="admin-label">
+              Customer Delivery Message
+              <input
+                name="deliveryWindowLabel"
+                defaultValue={period?.deliveryWindowLabel ?? ""}
+                className="admin-input"
+                placeholder="Weekly meal plan orders are delivered on Sunday."
+              />
+            </label>
+          </div>
+        </section>
 
         <label className="admin-label">
           Status

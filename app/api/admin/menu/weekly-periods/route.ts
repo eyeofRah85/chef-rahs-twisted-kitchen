@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { writeAdminAuditLog } from "@/lib/admin-audit-log";
 import { requireAdminApi } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
+import { getBusinessSettings } from "@/lib/business-settings";
 import { hasPublishedWeeklyMenuOverlap } from "@/lib/weekly-menu-admin";
+import { weeklyMenuTimeZone } from "@/lib/weekly-menu-dates";
 import {
   isWeeklyMenuValidationError,
   parseWeeklyMenuPeriodForm,
 } from "@/lib/weekly-menu-validation";
 import { revalidateWeeklyMenuAdminPages } from "@/lib/weekly-menu-revalidation";
+import { fillWeeklyPeriodScheduleDefaults } from "@/lib/weekly-ordering-window";
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +18,13 @@ export async function POST(request: Request) {
     if (response) return response;
 
     const formData = await request.formData();
-    const data = parseWeeklyMenuPeriodForm(formData);
+    const parsedData = parseWeeklyMenuPeriodForm(formData);
+    const settings = await getBusinessSettings();
+    const data = fillWeeklyPeriodScheduleDefaults({
+      period: parsedData,
+      settings,
+      timeZone: weeklyMenuTimeZone,
+    });
     const hasOverlap = await hasPublishedWeeklyMenuOverlap(data);
 
     if (hasOverlap) {

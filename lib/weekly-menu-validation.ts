@@ -107,6 +107,25 @@ export function parseWeeklyMenuPeriodForm(formData: FormData) {
     formData.get("orderCutoffAt"),
     "Ordering cutoff",
   );
+  const orderingOpenAt = parseOptionalDateInput(
+    formData.get("orderingOpenAt"),
+    "Ordering opens",
+  );
+  const lateFeeStartsAt = parseOptionalDateInput(
+    formData.get("lateFeeStartsAt"),
+    "Late fee starts",
+  );
+  const orderingClosesAt = parseOptionalDateInput(
+    formData.get("orderingClosesAt"),
+    "Ordering closes",
+  );
+  const fixedFulfillmentAt = parseOptionalDateInput(
+    formData.get("fixedFulfillmentAt"),
+    "Fixed fulfillment",
+  );
+  const customerSchedulingEnabledValue = String(
+    formData.get("customerSchedulingEnabled") ?? "inherit",
+  );
   const status =
     parseEnumValue(weeklyMenuStatuses, String(formData.get("status") ?? "")) ??
     "DRAFT";
@@ -123,11 +142,40 @@ export function parseWeeklyMenuPeriodForm(formData: FormData) {
     );
   }
 
+  if (orderingOpenAt && orderingClosesAt && orderingOpenAt > orderingClosesAt) {
+    throw new WeeklyMenuValidationError(
+      "Ordering opens must be before ordering closes.",
+    );
+  }
+
+  if (
+    lateFeeStartsAt &&
+    orderingClosesAt &&
+    lateFeeStartsAt > orderingClosesAt
+  ) {
+    throw new WeeklyMenuValidationError(
+      "Late fee start must be before ordering closes.",
+    );
+  }
+
   return {
     label: parseRequiredText(formData.get("label"), "Week label"),
     startDate,
     endDate,
     orderCutoffAt,
+    orderingOpenAt,
+    lateFeeStartsAt,
+    orderingClosesAt,
+    fixedFulfillmentAt,
+    customerSchedulingEnabled:
+      customerSchedulingEnabledValue === "enabled"
+        ? true
+        : customerSchedulingEnabledValue === "disabled"
+          ? false
+          : null,
+    deliveryWindowLabel: parseOptionalText(
+      formData.get("deliveryWindowLabel"),
+    ),
     fulfillmentNotes: parseOptionalText(formData.get("fulfillmentNotes")),
     status: status as WeeklyMenuStatusValue,
     capacity: parseWholeNumber(formData.get("capacity"), "Capacity", 1),
@@ -140,6 +188,25 @@ export function parseWeeklyMenuCloneForm(formData: FormData) {
   const orderCutoffAt = parseOptionalDateInput(
     formData.get("orderCutoffAt"),
     "Ordering cutoff",
+  );
+  const orderingOpenAt = parseOptionalDateInput(
+    formData.get("orderingOpenAt"),
+    "Ordering opens",
+  );
+  const lateFeeStartsAt = parseOptionalDateInput(
+    formData.get("lateFeeStartsAt"),
+    "Late fee starts",
+  );
+  const orderingClosesAt = parseOptionalDateInput(
+    formData.get("orderingClosesAt"),
+    "Ordering closes",
+  );
+  const fixedFulfillmentAt = parseOptionalDateInput(
+    formData.get("fixedFulfillmentAt"),
+    "Fixed fulfillment",
+  );
+  const customerSchedulingEnabledValue = String(
+    formData.get("customerSchedulingEnabled") ?? "inherit",
   );
 
   if (endDate < startDate) {
@@ -154,11 +221,40 @@ export function parseWeeklyMenuCloneForm(formData: FormData) {
     );
   }
 
+  if (orderingOpenAt && orderingClosesAt && orderingOpenAt > orderingClosesAt) {
+    throw new WeeklyMenuValidationError(
+      "Ordering opens must be before ordering closes.",
+    );
+  }
+
+  if (
+    lateFeeStartsAt &&
+    orderingClosesAt &&
+    lateFeeStartsAt > orderingClosesAt
+  ) {
+    throw new WeeklyMenuValidationError(
+      "Late fee start must be before ordering closes.",
+    );
+  }
+
   return {
     label: parseRequiredText(formData.get("label"), "Week label"),
     startDate,
     endDate,
     orderCutoffAt,
+    orderingOpenAt,
+    lateFeeStartsAt,
+    orderingClosesAt,
+    fixedFulfillmentAt,
+    customerSchedulingEnabled:
+      customerSchedulingEnabledValue === "enabled"
+        ? true
+        : customerSchedulingEnabledValue === "disabled"
+          ? false
+          : null,
+    deliveryWindowLabel: parseOptionalText(
+      formData.get("deliveryWindowLabel"),
+    ),
     fulfillmentNotes: parseOptionalText(formData.get("fulfillmentNotes")),
     capacity: parseWholeNumber(formData.get("capacity"), "Capacity", 1),
   };

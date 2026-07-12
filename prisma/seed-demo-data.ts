@@ -1,4 +1,6 @@
 import { prisma } from "./script-prisma";
+import { weeklyMenuTimeZone } from "../lib/weekly-menu-dates";
+import { resolveWeeklyPeriodSchedule } from "../lib/weekly-ordering-window";
 
 async function seedDemoUser() {
   const user = await prisma.user.upsert({
@@ -871,9 +873,32 @@ async function seedWeeklyMealPlans() {
   endDate.setDate(startDate.getDate() + 6);
   endDate.setHours(23, 59, 59, 999);
 
-  const orderCutoffAt = new Date(startDate);
-  orderCutoffAt.setDate(startDate.getDate() - 3);
-  orderCutoffAt.setHours(17, 0, 0, 0);
+  const weeklySchedule = resolveWeeklyPeriodSchedule({
+    period: {
+      startDate,
+      endDate,
+    },
+    settings: {
+      lateFee: 10,
+      weeklyCustomerSchedulingEnabled: false,
+      weeklyOrderingOpenDay: 3,
+      weeklyOrderingOpenHour: 0,
+      weeklyOrderingOpenMinute: 0,
+      weeklyLateFeeStartDay: 5,
+      weeklyLateFeeStartHour: 17,
+      weeklyLateFeeStartMinute: 0,
+      weeklyOrderingCloseDay: 5,
+      weeklyOrderingCloseHour: 22,
+      weeklyOrderingCloseMinute: 0,
+      weeklyFixedFulfillmentDay: 0,
+      weeklyFixedFulfillmentHour: 12,
+      weeklyFixedFulfillmentMinute: 0,
+      weeklyFixedFulfillmentMessage:
+        "Weekly meal plan orders are delivered on Sunday.",
+    },
+    timeZone: weeklyMenuTimeZone,
+  });
+  const orderCutoffAt = weeklySchedule.orderingClosesAt;
 
   const existingPeriod = await prisma.weeklyMenuPeriod.findFirst({
     where: {
@@ -893,6 +918,12 @@ async function seedWeeklyMealPlans() {
           startDate,
           endDate,
           orderCutoffAt,
+          orderingOpenAt: weeklySchedule.orderingOpenAt,
+          lateFeeStartsAt: weeklySchedule.lateFeeStartsAt,
+          orderingClosesAt: weeklySchedule.orderingClosesAt,
+          fixedFulfillmentAt: weeklySchedule.fixedFulfillmentAt,
+          customerSchedulingEnabled: weeklySchedule.customerSchedulingEnabled,
+          deliveryWindowLabel: weeklySchedule.deliveryWindowLabel,
           fulfillmentNotes:
             "Demo weekly menu for testing package and offering selection.",
           status: "PUBLISHED",
@@ -906,6 +937,12 @@ async function seedWeeklyMealPlans() {
           startDate,
           endDate,
           orderCutoffAt,
+          orderingOpenAt: weeklySchedule.orderingOpenAt,
+          lateFeeStartsAt: weeklySchedule.lateFeeStartsAt,
+          orderingClosesAt: weeklySchedule.orderingClosesAt,
+          fixedFulfillmentAt: weeklySchedule.fixedFulfillmentAt,
+          customerSchedulingEnabled: weeklySchedule.customerSchedulingEnabled,
+          deliveryWindowLabel: weeklySchedule.deliveryWindowLabel,
           fulfillmentNotes:
             "Demo weekly menu for testing package and offering selection.",
           status: "PUBLISHED",

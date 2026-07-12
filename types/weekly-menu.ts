@@ -40,6 +40,17 @@ export type PublicWeeklyMenu = {
   label: string;
   dateRange: string;
   orderCutoffLabel: string | null;
+  orderingOpenAt: string | null;
+  lateFeeStartsAt: string | null;
+  orderingClosesAt: string | null;
+  orderingOpenLabel: string | null;
+  lateFeeStartsLabel: string | null;
+  orderingClosesLabel: string | null;
+  fixedFulfillmentAt: string | null;
+  fixedFulfillmentLabel: string | null;
+  deliveryWindowLabel: string | null;
+  customerSchedulingEnabled: boolean;
+  orderingStatus: "not_open" | "open" | "late" | "closed";
   orderingClosed: boolean;
   capacity: number;
   ordersPlaced: number;

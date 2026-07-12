@@ -49,6 +49,16 @@ export type WeeklyMealPlanCartSelection = {
   packagePrice: number;
   packageRequiresChefApproval?: boolean;
   packageIsSeasonal?: boolean;
+  customerSchedulingEnabled?: boolean;
+  fixedFulfillmentAt?: string | null;
+  fixedFulfillmentLabel?: string | null;
+  deliveryWindowLabel?: string | null;
+  orderingOpenAt?: string | null;
+  lateFeeStartsAt?: string | null;
+  orderingClosesAt?: string | null;
+  orderingOpenLabel?: string | null;
+  lateFeeStartsLabel?: string | null;
+  orderingClosesLabel?: string | null;
   offeringName?: string | null;
   mealSlots: WeeklyMealPlanSlotCartSelection[];
   spiceLevel?: string | null;
@@ -199,6 +209,17 @@ export const useCartStore = create<CartState>()(
             priceDelta: 0,
           },
         ];
+
+        if (!selection.customerSchedulingEnabled) {
+          selectedOptions.push({
+            groupName: "Fulfillment",
+            choiceName:
+              selection.deliveryWindowLabel ??
+              selection.fixedFulfillmentLabel ??
+              "Weekly meal plan orders are delivered on Sunday.",
+            priceDelta: 0,
+          });
+        }
 
         const mealSlots = selection.mealSlots ?? [];
 

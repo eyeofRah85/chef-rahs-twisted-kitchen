@@ -13,6 +13,10 @@ import {
   getWeeklyMealPlanSelectionDetails,
   type WeeklyOrderSelectionDisplay,
 } from "@/lib/weekly-order-display";
+import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
 import type { DecimalLike } from "@/types/display";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
@@ -122,10 +126,12 @@ export default async function AccountOrdersPage() {
                   </h2>
 
                   <p className="mt-2 text-sm text-[#6b5a50]">
-                    Requested:{" "}
-                    {order.requestedDateTime
-                      ? order.requestedDateTime.toLocaleString()
-                      : "Not provided"}
+                    {getOrderScheduleLabel(
+                      order.items.some((item) =>
+                        Boolean(item.weeklyMealPlanSelection),
+                      ),
+                    )}
+                    : {formatOrderScheduleDateTime(order.requestedDateTime)}
                   </p>
 
                   <p className="mt-1 text-sm text-[#6b5a50]">

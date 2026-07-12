@@ -56,11 +56,28 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
               Order by {weeklyMenu.orderCutoffLabel}
             </span>
           )}
+
+          {!weeklyMenu.customerSchedulingEnabled &&
+            weeklyMenu.fixedFulfillmentLabel && (
+              <span className="rounded-full border border-[#f4c46f]/50 bg-white/10 px-4 py-2 font-bold text-[#fff8ee]">
+                Fulfillment {weeklyMenu.fixedFulfillmentLabel}
+              </span>
+            )}
         </div>
       </div>
 
       <div className="mb-8 rounded-lg border border-[#f4c46f]/35 bg-white/10 p-5">
         <h3 className="text-xl font-black">Choose In This Order</h3>
+
+        {!weeklyMenu.customerSchedulingEnabled && (
+          <div className="mt-4 rounded-lg border border-[#f4c46f]/45 bg-[#fff8ee] p-4 text-sm font-semibold leading-6 text-[#24130f]">
+            {weeklyMenu.deliveryWindowLabel ??
+              "Weekly meal plan orders are delivered on Sunday."}{" "}
+            Ordering opens {weeklyMenu.orderingOpenLabel} and closes{" "}
+            {weeklyMenu.orderingClosesLabel}. Late fees begin{" "}
+            {weeklyMenu.lateFeeStartsLabel}.
+          </div>
+        )}
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-lg bg-white/10 p-4">

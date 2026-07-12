@@ -112,6 +112,12 @@ function toPeriodFormData(period: {
   startDate: Date;
   endDate: Date;
   orderCutoffAt: Date | null;
+  orderingOpenAt: Date | null;
+  lateFeeStartsAt: Date | null;
+  orderingClosesAt: Date | null;
+  fixedFulfillmentAt: Date | null;
+  customerSchedulingEnabled: boolean | null;
+  deliveryWindowLabel: string | null;
   fulfillmentNotes: string | null;
   status: string;
   capacity: number;
@@ -122,6 +128,12 @@ function toPeriodFormData(period: {
     startDate: formatDateInput(period.startDate),
     endDate: formatDateInput(period.endDate),
     orderCutoffAt: formatDateTimeInput(period.orderCutoffAt),
+    orderingOpenAt: formatDateTimeInput(period.orderingOpenAt),
+    lateFeeStartsAt: formatDateTimeInput(period.lateFeeStartsAt),
+    orderingClosesAt: formatDateTimeInput(period.orderingClosesAt),
+    fixedFulfillmentAt: formatDateTimeInput(period.fixedFulfillmentAt),
+    customerSchedulingEnabled: period.customerSchedulingEnabled,
+    deliveryWindowLabel: period.deliveryWindowLabel,
     fulfillmentNotes: period.fulfillmentNotes,
     status: period.status,
     capacity: period.capacity,
@@ -134,6 +146,12 @@ function toCloneSource(period: {
   startDate: Date;
   endDate: Date;
   orderCutoffAt: Date | null;
+  orderingOpenAt: Date | null;
+  lateFeeStartsAt: Date | null;
+  orderingClosesAt: Date | null;
+  fixedFulfillmentAt: Date | null;
+  customerSchedulingEnabled: boolean | null;
+  deliveryWindowLabel: string | null;
   fulfillmentNotes: string | null;
   capacity: number;
   packages: unknown[];
@@ -148,6 +166,20 @@ function toCloneSource(period: {
     suggestedOrderCutoffAt: formatDateTimeInput(
       period.orderCutoffAt ? addDays(period.orderCutoffAt, 7) : null,
     ),
+    suggestedOrderingOpenAt: formatDateTimeInput(
+      period.orderingOpenAt ? addDays(period.orderingOpenAt, 7) : null,
+    ),
+    suggestedLateFeeStartsAt: formatDateTimeInput(
+      period.lateFeeStartsAt ? addDays(period.lateFeeStartsAt, 7) : null,
+    ),
+    suggestedOrderingClosesAt: formatDateTimeInput(
+      period.orderingClosesAt ? addDays(period.orderingClosesAt, 7) : null,
+    ),
+    suggestedFixedFulfillmentAt: formatDateTimeInput(
+      period.fixedFulfillmentAt ? addDays(period.fixedFulfillmentAt, 7) : null,
+    ),
+    customerSchedulingEnabled: period.customerSchedulingEnabled,
+    deliveryWindowLabel: period.deliveryWindowLabel,
     fulfillmentNotes: period.fulfillmentNotes,
     capacity: period.capacity,
     packageCount: period.packages.length,
@@ -563,6 +595,33 @@ export default async function AdminWeeklyMenuPage() {
                         <p className="mt-2 text-sm text-[#6b5a50]">
                           {dateRange}
                         </p>
+
+                        <div className="mt-3 grid gap-1 text-xs text-[#6b5a50] sm:grid-cols-2">
+                          <span>
+                            Opens:{" "}
+                            {period.orderingOpenAt
+                              ? formatDisplayDateTime(period.orderingOpenAt)
+                              : "Uses defaults"}
+                          </span>
+                          <span>
+                            Late fee:{" "}
+                            {period.lateFeeStartsAt
+                              ? formatDisplayDateTime(period.lateFeeStartsAt)
+                              : "Uses defaults"}
+                          </span>
+                          <span>
+                            Closes:{" "}
+                            {period.orderingClosesAt
+                              ? formatDisplayDateTime(period.orderingClosesAt)
+                              : "Uses defaults"}
+                          </span>
+                          <span>
+                            Fulfillment:{" "}
+                            {period.fixedFulfillmentAt
+                              ? formatDisplayDateTime(period.fixedFulfillmentAt)
+                              : "Uses defaults"}
+                          </span>
+                        </div>
 
                         <div className="mt-3 flex flex-wrap gap-3 text-sm text-[#6b5a50]">
                           <span>
