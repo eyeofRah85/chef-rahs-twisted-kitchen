@@ -245,6 +245,7 @@ export default function CheckoutPage() {
         !settings.weeklyCustomerSchedulingEnabled),
   );
   const hasFixedWeeklyScheduling = Boolean(fixedWeeklySelection);
+  const showScheduleSection = !hasFixedWeeklyScheduling;
   const hasMixedFixedWeeklyCart =
     hasFixedWeeklyScheduling && hasNonWeeklyItems;
   const fixedWeeklySchedule =
@@ -627,6 +628,26 @@ export default function CheckoutPage() {
                     Your cart is empty.
                   </p>
                 )}
+
+                {hasMixedFixedWeeklyCart && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                    Weekly meal plan items must be checked out separately from
+                    regular menu items during fixed Sunday fulfillment.
+                  </div>
+                )}
+
+                {fixedWeeklyWindowState && !fixedWeeklyWindowState.allowed && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                    {fixedWeeklyWindowState.message}
+                  </div>
+                )}
+
+                {fixedWeeklyWindowState?.state === "late" && (
+                  <div className="rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
+                    Weekly meal plan orders are in the late-order window and
+                    include a ${settings.lateFee.toFixed(2)} late fee.
+                  </div>
+                )}
               </div>
             </section>
 
@@ -795,141 +816,94 @@ export default function CheckoutPage() {
               )}
             </section>
 
-            <section className={sectionClass}>
-              <h2 className="text-2xl font-black">Schedule</h2>
+            {showScheduleSection && (
+              <section className={sectionClass}>
+                <h2 className="text-2xl font-black">Schedule</h2>
 
-              {hasFixedWeeklyScheduling ? (
-                <div className="mt-5 space-y-4">
-                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
-                    <p className="font-black">Weekly meal plan fulfillment</p>
-                    <p className="mt-1">
-                      {fixedWeeklySelection?.deliveryWindowLabel ??
-                        fixedWeeklySelection?.fixedFulfillmentLabel ??
-                        "Weekly meal plan orders are delivered on Sunday."}
-                    </p>
-                    {fixedWeeklySelection?.fixedFulfillmentLabel && (
-                      <p className="mt-1 font-semibold">
-                        Fulfillment: {fixedWeeklySelection.fixedFulfillmentLabel}
-                      </p>
-                    )}
-                  </div>
+                <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <label className={labelClass}>
+                    Requested Date
+                    <input
+                      type="date"
+                      value={requestedSchedule.date}
+                      min={minimumRequestedSchedule.date}
+                      onChange={(event) => {
+                        const nextDate = event.target.value;
+                        const nextTime =
+                          nextDate === minimumRequestedSchedule.date &&
+                          requestedSchedule.time <
+                            minimumRequestedSchedule.time
+                            ? ""
+                            : requestedSchedule.time;
 
-                  {hasMixedFixedWeeklyCart && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
-                      Weekly meal plan items must be checked out separately from
-                      regular menu items during fixed Sunday fulfillment.
-                    </div>
-                  )}
+                        updateField(
+                          "requestedDateTime",
+                          combineRequestedDateTime(nextDate, nextTime),
+                        );
+                      }}
+                      className={`${inputClass} mt-2`}
+                    />
+                  </label>
 
-                  {fixedWeeklyWindowState &&
-                    !fixedWeeklyWindowState.allowed && (
-                      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
-                        {fixedWeeklyWindowState.message}
-                      </div>
-                    )}
+                  <label className={labelClass}>
+                    Requested Time
+                    <select
+                      value={requestedSchedule.time}
+                      onChange={(event) =>
+                        updateField(
+                          "requestedDateTime",
+                          combineRequestedDateTime(
+                            requestedSchedule.date,
+                            event.target.value,
+                          ),
+                        )
+                      }
+                      className={`${inputClass} mt-2`}
+                    >
+                      <option value="">Select a time</option>
+                      {orderTimeOptions.map((option) => {
+                        const optionIsPast =
+                          requestedSchedule.date ===
+                            minimumRequestedSchedule.date &&
+                          option.value < minimumRequestedSchedule.time;
 
-                  {fixedWeeklyWindowState?.state === "late" && (
-                    <div className="rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
-                      Weekly meal plan orders are in the late-order window and
-                      include a ${settings.lateFee.toFixed(2)} late fee.
-                    </div>
-                  )}
-
-                  <p className="text-xs leading-5 text-[#6b5a50]">
-                    Weekly ordering opens{" "}
-                    {fixedWeeklySelection?.orderingOpenLabel ?? "Wednesday"} and
-                    closes {fixedWeeklySelection?.orderingClosesLabel ?? "Friday"}.
-                    Late fees begin{" "}
-                    {fixedWeeklySelection?.lateFeeStartsLabel ?? "Friday at 5 PM"}.
-                  </p>
+                        return (
+                          <option
+                            key={option.value}
+                            value={option.value}
+                            disabled={optionIsPast}
+                          >
+                            {option.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </label>
                 </div>
-              ) : (
-                <>
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
-                    <label className={labelClass}>
-                      Requested Date
-                      <input
-                        type="date"
-                        value={requestedSchedule.date}
-                        min={minimumRequestedSchedule.date}
-                        onChange={(event) => {
-                          const nextDate = event.target.value;
-                          const nextTime =
-                            nextDate === minimumRequestedSchedule.date &&
-                            requestedSchedule.time <
-                              minimumRequestedSchedule.time
-                              ? ""
-                              : requestedSchedule.time;
 
-                          updateField(
-                            "requestedDateTime",
-                            combineRequestedDateTime(nextDate, nextTime),
-                          );
-                        }}
-                        className={`${inputClass} mt-2`}
-                      />
-                    </label>
+                <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
+                  Orders placed after {cutoffText} may include a $
+                  {settings.lateFee.toFixed(2)} late-order fee.
+                  {settings.noWeekendOrdering
+                    ? " Weekend ordering is currently unavailable."
+                    : ""}
+                </p>
 
-                    <label className={labelClass}>
-                      Requested Time
-                      <select
-                        value={requestedSchedule.time}
-                        onChange={(event) =>
-                          updateField(
-                            "requestedDateTime",
-                            combineRequestedDateTime(
-                              requestedSchedule.date,
-                              event.target.value,
-                            ),
-                          )
-                        }
-                        className={`${inputClass} mt-2`}
-                      >
-                        <option value="">Select a time</option>
-                        {orderTimeOptions.map((option) => {
-                          const optionIsPast =
-                            requestedSchedule.date ===
-                              minimumRequestedSchedule.date &&
-                            option.value < minimumRequestedSchedule.time;
-
-                          return (
-                            <option
-                              key={option.value}
-                              value={option.value}
-                              disabled={optionIsPast}
-                            >
-                              {option.label}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </label>
-                  </div>
-
-                  <p className="mt-3 text-xs leading-5 text-[#6b5a50]">
-                    Orders placed after {cutoffText} may include a $
+                {lateFee > 0 && (
+                  <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
+                    Orders placed after {cutoffText} include a $
                     {settings.lateFee.toFixed(2)} late-order fee.
-                    {settings.noWeekendOrdering
-                      ? " Weekend ordering is currently unavailable."
-                      : ""}
-                  </p>
+                  </div>
+                )}
 
-                  {lateFee > 0 && (
-                    <div className="mt-4 rounded-lg border border-[#d99426] bg-[#fff3cf] p-4 text-sm font-medium text-[#6f1f12]">
-                      Orders placed after {cutoffText} include a $
-                      {settings.lateFee.toFixed(2)} late-order fee.
+                {hasRequestedDateAndTime(details.requestedDateTime) &&
+                  !requestedDateTimeValidation.valid && (
+                    <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
+                      {requestedDateTimeValidation.error}
                     </div>
                   )}
-
-                  {hasRequestedDateAndTime(details.requestedDateTime) &&
-                    !requestedDateTimeValidation.valid && (
-                      <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-800">
-                        {requestedDateTimeValidation.error}
-                      </div>
-                    )}
-                </>
-              )}
-            </section>
+              </section>
+            )}
 
             <section className={sectionClass}>
               <h2 className="text-2xl font-black">Preferences</h2>
