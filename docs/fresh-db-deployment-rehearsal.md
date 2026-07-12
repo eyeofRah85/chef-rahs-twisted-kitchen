@@ -21,6 +21,7 @@ Prove the launch path from an empty database:
 9. Register the first owner/admin account through the running app.
 10. Promote that account with `npm run admin:promote`.
 11. Run checkout and admin smoke tests with `EMAIL_DRY_RUN=true`.
+12. Run a controlled internal Resend delivery test with `EMAIL_DRY_RUN=false` before approving launch.
 
 ## 2. Source Documents Reviewed
 
@@ -43,15 +44,15 @@ Use rehearsal-only values. Do not point this rehearsal at production customer da
 | `NEXTAUTH_URL` | Same origin as `AUTH_URL`. |
 | `NEXT_PUBLIC_APP_URL` | Same origin used to test email/order links. |
 | `BUSINESS_TIME_ZONE` | `America/New_York` unless the business confirms a different timezone. |
-| `RESEND_API_KEY` | Rehearsal/test key if available. With dry-run email, a placeholder-like value may still block `npm run env:check`; do not use a real production key unless intended. |
+| `RESEND_API_KEY` | Rehearsal/test key if available. A verified Resend key is required for the live internal delivery test. With dry-run email, a placeholder-like value may still block `npm run env:check`; do not use a real production key unless intended. |
 | `EMAIL_FROM_ADDRESS` | Rehearsal sender on the intended verified domain when possible. |
-| `EMAIL_DRY_RUN` | `true` during rehearsal smoke tests so no real customer email sends. |
-| `EMAIL_PREVIEW_FILES` | `true` for local email artifact inspection, or `false` if only console dry-run logging is desired. |
+| `EMAIL_DRY_RUN` | `true` during Phase 1 dry-run smoke tests; temporarily `false` for the controlled internal Resend delivery test. |
+| `EMAIL_PREVIEW_FILES` | `true` for local email artifact inspection, or `false` if only console dry-run logging is desired. Use `false` for production-style live delivery testing unless intentionally collecting preview files. |
 | `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` | `false` or unset. Keep production local uploads disabled. |
 | `ADMIN_EMAIL` | Exact email used to register the first owner/admin account. Required before `npm run admin:promote`. |
 | `ADMIN_ROLE` | `OWNER` for the first owner account, or `ADMIN` for a non-owner admin. |
 
-Note: `scripts/check-production-env.mjs` is a live-production launch gate and requires `EMAIL_DRY_RUN=false`. During this rehearsal, keep `EMAIL_DRY_RUN=true` for smoke tests, then run the env guard separately with live-email values only when preparing the final production cutover.
+Note: `scripts/check-production-env.mjs` is a live-production launch gate and requires `EMAIL_DRY_RUN=false`. During Phase 1, keep `EMAIL_DRY_RUN=true` for smoke tests. For Phase 2 and final launch approval, run the env guard with live-email values only after Resend sender DNS is verified and the team is ready for controlled internal delivery testing.
 
 ## 4. Fresh Database Setup
 
@@ -193,9 +194,13 @@ Expected result:
 - After signing out and back in, `/admin` loads for the promoted account.
 - Account pages remain inaccessible to anonymous users.
 
-## 10. EMAIL_DRY_RUN Smoke-Test Posture
+## 10. Two-Phase Email QA
 
-Set dry-run email values before smoke tests:
+Launch must not be approved based only on dry-run email tests. Dry-run checks prove that app-side email generation paths execute; they do not prove that Resend can deliver messages to an inbox.
+
+### Phase 1: Dry-Run Smoke Testing
+
+Set dry-run email values before app-side smoke tests:
 
 ```powershell
 $env:EMAIL_DRY_RUN = "true"
@@ -204,12 +209,44 @@ $env:EMAIL_PREVIEW_FILES = "true"
 
 Expected result:
 
-- Order and service-request email paths execute without sending real customer email.
-- Preview files or dry-run logs confirm the intended recipient and template path.
+- Order confirmation, approval, payment received, and service-request email generation paths execute without sending real customer email.
+- Preview files or dry-run logs show the expected recipient and subject.
 - Guest emails use `order.customerEmail`.
 - Guest emails do not include protected account order links.
+- App-side email rendering and triggering are validated.
 
-Do not set `EMAIL_DRY_RUN=false` until final internal production tests are ready and Resend sender DNS is verified.
+Important limitation:
+
+- With `EMAIL_DRY_RUN=true` and `EMAIL_PREVIEW_FILES=false`, `sendAppEmail` logs and returns without calling Resend.
+- Phase 1 validates only app-side rendering, recipient selection, subject selection, and trigger paths.
+- Phase 1 does not validate Resend authentication, sender DNS, provider delivery, inbox receipt, spam placement, or production email deliverability.
+
+### Phase 2: Live Internal Resend Delivery Test
+
+Run this phase only after Resend sender domain and DNS are verified.
+
+Use an internal/test recipient only. Do not send live customer test emails before internal delivery has passed.
+
+Set live-delivery values temporarily for the controlled test:
+
+```powershell
+$env:EMAIL_DRY_RUN = "false"
+$env:EMAIL_PREVIEW_FILES = "false"
+```
+
+Required live internal tests:
+
+- Submit at least one internal guest order confirmation test.
+- Trigger an approval email if the test order requires approval, or use a request-only weekly option to force approval.
+- Trigger a payment received email if the order is eligible for a mark-paid action.
+- Confirm each expected message is received in the internal/test inbox.
+- If a message is not received, check spam, junk, promotions, and Resend delivery logs before approving launch.
+
+After the controlled live test:
+
+- Set `EMAIL_DRY_RUN=true` again if more non-live QA remains.
+- Keep `EMAIL_DRY_RUN=false` for launch only after live internal email delivery passes and the team is ready for customer-facing emails.
+- Keep `EMAIL_DRY_RUN=true` for launch only if the owner intentionally wants customer emails disabled at launch.
 
 ## 11. Checkout Smoke-Test Checklist
 
@@ -304,7 +341,7 @@ During dry-run rehearsal, use `npm run env:check -- --report` only as an informa
 
 ## 14. Rehearsal Pass Criteria
 
-The fresh database rehearsal passes when:
+The fresh database rehearsal is technically complete when:
 
 - Migrations deploy cleanly to an empty MySQL/MariaDB database.
 - Foundation seed completes.
@@ -313,15 +350,37 @@ The fresh database rehearsal passes when:
 - First owner/admin registration and promotion succeed.
 - Guest pickup, guest delivery, guest weekly meal plan, and logged-in order smoke tests pass.
 - Admin can see guest and registered orders.
-- Dry-run emails target the expected recipients and do not expose protected guest order links.
+- Phase 1 dry-run email smoke tests pass.
+- Dry-run emails target the expected recipients and subjects and do not expose protected guest order links.
 - Past-date and weekend validation block invalid orders.
 - Breakfast-only filtering and server validation work.
 - Weekly option upcharges are included, persisted, and displayed.
 
-## 15. Remaining Risks
+The fresh database rehearsal is not enough by itself to approve launch. Launch approval also requires the live internal Resend delivery gate in the next section.
+
+## 15. Final Launch Approval Checklist
+
+Before approving production launch:
+
+- Fresh MySQL/MariaDB migration rehearsal passed from an empty database.
+- Foundation seed completed.
+- Owner/admin registration and `npm run admin:promote` completed successfully.
+- Checkout/admin smoke tests passed.
+- Dry-run email smoke tests passed.
+- Live internal Resend delivery test passed with `EMAIL_DRY_RUN=false`.
+- Internal order confirmation email was received.
+- Internal approval email was received, if the approval path applies to the test order.
+- Internal payment received email was received, if the mark-paid path applies to the test order.
+- Spam, junk, promotions, and Resend logs were checked for any missing internal test message.
+- `EMAIL_DRY_RUN` final value is intentionally set for launch.
+- If customer-facing emails should send at launch, `EMAIL_DRY_RUN=false` is set only after live internal delivery has passed.
+- If `EMAIL_DRY_RUN=true` remains set at launch, the owner has intentionally accepted that customer emails are disabled.
+- `EMAIL_PREVIEW_FILES=false` is set for production unless preview files are intentionally being collected during a controlled debugging window.
+
+## 16. Remaining Risks
 
 - This rehearsal still needs an actual disposable MySQL/MariaDB database to prove host connectivity, database privileges, and migration execution in the target environment.
 - Hostinger-specific deployment mechanics and process-manager behavior should be confirmed with the final hosting setup.
-- Resend live delivery cannot be fully proven until the sender domain DNS is verified and `EMAIL_DRY_RUN=false` is enabled for an internal test.
+- Resend live delivery remains a launch blocker until the sender domain DNS is verified and the Phase 2 internal delivery test passes with `EMAIL_DRY_RUN=false`.
 - Final client menu data, payment wording, and image hosting choices remain operational launch inputs.
 - Direct production uploads remain intentionally disabled unless durable storage is selected later.
