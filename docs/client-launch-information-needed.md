@@ -12,8 +12,8 @@ These items are needed before production can safely go live.
 
 - Final production domain.
 - Confirmed public production site URL, such as `https://example.com`.
-- Hosting provider or deployment target.
-- Production PostgreSQL database connection string for `DATABASE_URL`.
+- Hostinger hosting/deployment access or confirmation of the final deployment target.
+- Production MySQL/MariaDB database connection string for `DATABASE_URL`, such as `mysql://USER:PASSWORD@HOST:3306/DATABASE`.
 - Confirmation that the production database is separate from local/demo data.
 - Confirmation of who has deployment access.
 

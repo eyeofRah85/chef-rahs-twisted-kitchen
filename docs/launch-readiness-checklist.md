@@ -6,12 +6,12 @@ Use this checklist before deploying Chef Rah's Twisted Kitchen to a public produ
 
 ## Current Review Status
 
-Last reviewed: June 18, 2026
+Last reviewed: July 12, 2026
 
 Completed locally:
 
 - `npm run check` passes without lint warnings.
-- Prisma reports 16 migrations and the configured local development database schema is up to date.
+- Prisma migrations target MySQL/MariaDB and the configured local development database schema is up to date.
 - `npm run env:check -- --report` runs without printing secret values.
 - The local `.env` now includes `BUSINESS_TIME_ZONE`.
 
@@ -52,7 +52,7 @@ npm run env:check -- --report
 
 Required before launch:
 
-- `DATABASE_URL`: production PostgreSQL connection string.
+- `DATABASE_URL`: production MySQL/MariaDB connection string, such as `mysql://USER:PASSWORD@HOST:3306/DATABASE`.
 - `AUTH_SECRET`: generated production Auth.js secret, at least 32 characters.
 - `AUTH_URL`: `https://rahstwistedkitchen.com`.
 - `NEXTAUTH_URL`: `https://rahstwistedkitchen.com`.
@@ -130,9 +130,22 @@ Run a final browser pass after production environment values are set:
 Before production traffic:
 
 ```powershell
+npm ci
 npm run prisma:generate
 .\node_modules\.bin\prisma.cmd migrate deploy
+npm run build
+```
+
+If running deploy commands from a Linux shell, use:
+
+```bash
+npx prisma migrate deploy
+```
+
+After the app is deployed and reachable:
+
+```powershell
 npm run admin:promote
 ```
 
-Run `npm run admin:promote` only after the first admin user has registered and `ADMIN_EMAIL` is set.
+Run `npm run admin:promote` only after the first admin user has registered through the deployed production site and `ADMIN_EMAIL` is set.

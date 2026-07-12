@@ -91,6 +91,14 @@ npx prisma migrate deploy
 
 After migrations, confirm the app can boot with the production environment. Do not use `prisma migrate dev` in production.
 
+Current migration inventory:
+
+- `20260708130546_init_mysql`
+- `20260711010132_add_weekly_plan_slot_selections`
+- `20260711014741_add_weekly_slot_option_selections`
+- `20260711145356_add_weekly_package_flags_and_slot_labels`
+- `20260711182000_add_weekly_offering_breakfast_only`
+
 ## 5. Seed And Setup Notes
 
 The production-safe foundation seed is configured in `prisma.config.ts` and `package.json`. It creates common allergens and default business settings with upserts.
@@ -307,6 +315,5 @@ If live email sends incorrectly:
 - Choose durable production upload storage and wire direct admin uploads to it.
 - Replace any remaining legacy Stripe env parsing or placeholders when the Square/PayPal phase begins.
 - Add exact business-approved manual payment wording to customer-facing content if needed.
-- Confirm `scripts/check-production-env.mjs` matches the current MySQL/MariaDB production database posture before relying on it as a blocking launch gate.
 - Add host-specific deployment screenshots or Hostinger steps once the final hosting target and deployment mechanism are confirmed.
 - Continue tightening CSP after launch traffic patterns and required third-party assets are known.
