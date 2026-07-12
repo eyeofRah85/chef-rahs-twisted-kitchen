@@ -137,13 +137,13 @@ Recommended fix:
 5. Run `npm run prisma:generate`.
 6. Run `npx prisma migrate deploy` or `.\node_modules\.bin\prisma.cmd migrate deploy`.
 7. Run the foundation seed only after migrations.
-8. Register the first owner/admin account.
-9. Run `npm run admin:promote`.
-10. Configure Resend sender domain and DNS.
-11. Keep `EMAIL_DRY_RUN=true` until final internal test orders are ready.
-12. Build and deploy the app.
+8. Build and deploy the app.
+9. Register the first owner/admin account through the deployed production site.
+10. Run `npm run admin:promote`.
+11. Configure Resend sender domain and DNS.
+12. Keep `EMAIL_DRY_RUN=true` until final internal test orders are ready.
 13. Smoke test public pages, checkout, emails, admin, kitchen, and account pages.
-14. Set `EMAIL_DRY_RUN=false` only when ready for live customer email.
+14. Set `EMAIL_DRY_RUN=false` only after final internal email and order tests pass.
 
 ## 7. Environment Variable Checklist
 
