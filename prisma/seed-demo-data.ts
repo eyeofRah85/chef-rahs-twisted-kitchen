@@ -2,6 +2,29 @@ import { prisma } from "./script-prisma";
 import { weeklyMenuTimeZone } from "../lib/weekly-menu-dates";
 import { resolveWeeklyPeriodSchedule } from "../lib/weekly-ordering-window";
 
+const DEMO_WEEKLY_FULFILLMENT_MESSAGE =
+  "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.";
+
+const DEMO_BUSINESS_SETTINGS_ID = "business-settings";
+
+const DEMO_WEEKLY_SCHEDULE_SETTINGS = {
+  lateFee: 10,
+  weeklyCustomerSchedulingEnabled: false,
+  weeklyOrderingOpenDay: 3,
+  weeklyOrderingOpenHour: 0,
+  weeklyOrderingOpenMinute: 0,
+  weeklyLateFeeStartDay: 5,
+  weeklyLateFeeStartHour: 17,
+  weeklyLateFeeStartMinute: 0,
+  weeklyOrderingCloseDay: 5,
+  weeklyOrderingCloseHour: 22,
+  weeklyOrderingCloseMinute: 0,
+  weeklyFixedFulfillmentDay: 0,
+  weeklyFixedFulfillmentHour: null,
+  weeklyFixedFulfillmentMinute: null,
+  weeklyFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
+};
+
 async function seedDemoUser() {
   const user = await prisma.user.upsert({
     where: {
@@ -862,6 +885,89 @@ async function seedDemoMenuItems() {
   };
 }
 
+async function seedDemoBusinessSettings() {
+  const settings = await prisma.businessSettings.upsert({
+    where: {
+      id: DEMO_BUSINESS_SETTINGS_ID,
+    },
+    update: {
+      lateFee: "10.00",
+      checkoutCustomerSchedulingEnabled: false,
+      checkoutFixedFulfillmentDay: 0,
+      checkoutFixedFulfillmentHour: 12,
+      checkoutFixedFulfillmentMinute: 0,
+      checkoutFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
+      weeklyCustomerSchedulingEnabled:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyCustomerSchedulingEnabled,
+      weeklyOrderingOpenDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenDay,
+      weeklyOrderingOpenHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenHour,
+      weeklyOrderingOpenMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenMinute,
+      weeklyLateFeeStartDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartDay,
+      weeklyLateFeeStartHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartHour,
+      weeklyLateFeeStartMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartMinute,
+      weeklyOrderingCloseDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseDay,
+      weeklyOrderingCloseHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseHour,
+      weeklyOrderingCloseMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseMinute,
+      weeklyFixedFulfillmentDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentDay,
+      weeklyFixedFulfillmentHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentHour,
+      weeklyFixedFulfillmentMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentMinute,
+      weeklyFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
+    },
+    create: {
+      id: DEMO_BUSINESS_SETTINGS_ID,
+      lateFee: "10.00",
+      checkoutCustomerSchedulingEnabled: false,
+      checkoutFixedFulfillmentDay: 0,
+      checkoutFixedFulfillmentHour: 12,
+      checkoutFixedFulfillmentMinute: 0,
+      checkoutFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
+      weeklyCustomerSchedulingEnabled:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyCustomerSchedulingEnabled,
+      weeklyOrderingOpenDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenDay,
+      weeklyOrderingOpenHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenHour,
+      weeklyOrderingOpenMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingOpenMinute,
+      weeklyLateFeeStartDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartDay,
+      weeklyLateFeeStartHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartHour,
+      weeklyLateFeeStartMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyLateFeeStartMinute,
+      weeklyOrderingCloseDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseDay,
+      weeklyOrderingCloseHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseHour,
+      weeklyOrderingCloseMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyOrderingCloseMinute,
+      weeklyFixedFulfillmentDay:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentDay,
+      weeklyFixedFulfillmentHour:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentHour,
+      weeklyFixedFulfillmentMinute:
+        DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyFixedFulfillmentMinute,
+      weeklyFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
+    },
+  });
+
+  console.log("Demo business settings ready.");
+
+  return settings;
+}
+
 async function seedWeeklyMealPlans() {
   const now = new Date();
 
@@ -878,24 +984,7 @@ async function seedWeeklyMealPlans() {
       startDate,
       endDate,
     },
-    settings: {
-      lateFee: 10,
-      weeklyCustomerSchedulingEnabled: false,
-      weeklyOrderingOpenDay: 3,
-      weeklyOrderingOpenHour: 0,
-      weeklyOrderingOpenMinute: 0,
-      weeklyLateFeeStartDay: 5,
-      weeklyLateFeeStartHour: 17,
-      weeklyLateFeeStartMinute: 0,
-      weeklyOrderingCloseDay: 5,
-      weeklyOrderingCloseHour: 22,
-      weeklyOrderingCloseMinute: 0,
-      weeklyFixedFulfillmentDay: 0,
-      weeklyFixedFulfillmentHour: null,
-      weeklyFixedFulfillmentMinute: null,
-      weeklyFixedFulfillmentMessage:
-        "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.",
-    },
+    settings: DEMO_WEEKLY_SCHEDULE_SETTINGS,
     timeZone: weeklyMenuTimeZone,
   });
   const orderCutoffAt = weeklySchedule.orderingClosesAt;
@@ -990,19 +1079,7 @@ async function seedWeeklyMealPlans() {
         available: true,
         mealSlotLabels: ["Lunch", "Dinner"],
         displayOrder: 1,
-        notes: "Ten meals total.",
-      },
-      {
-        periodId: period.id,
-        name: "7-Day / 2 Meals Per Day",
-        days: 7,
-        mealsPerDay: 2,
-        price: "225.00",
-        available: true,
-        requiresChefApproval: true,
-        mealSlotLabels: ["Meal 1", "Meal 2"],
-        displayOrder: 2,
-        notes: "Fourteen meals total.",
+        notes: "Ten lunch and dinner meals total.",
       },
       {
         periodId: period.id,
@@ -1011,10 +1088,22 @@ async function seedWeeklyMealPlans() {
         mealsPerDay: 3,
         price: "240.00",
         available: true,
-        isSeasonal: true,
+        requiresChefApproval: true,
         mealSlotLabels: ["Breakfast", "Lunch", "Dinner"],
+        displayOrder: 2,
+        notes: "Fifteen meals total. Includes Breakfast, Lunch, and Dinner slots.",
+      },
+      {
+        periodId: period.id,
+        name: "3-Day / 2 Meals Per Day",
+        days: 3,
+        mealsPerDay: 2,
+        price: "99.00",
+        available: true,
+        isSeasonal: true,
+        mealSlotLabels: ["Lunch", "Dinner"],
         displayOrder: 3,
-        notes: "Fifteen meals total.",
+        notes: "Seasonal short-week lunch and dinner demo package.",
       },
     ],
   });
@@ -1026,6 +1115,7 @@ async function seedWeeklyMealPlans() {
         "Jerk-inspired chicken with vegetables and rice or sweet potato.",
       dietaryInfo: "Dairy-free option available.",
       displayOrder: 1,
+      breakfastOnly: false,
     },
     {
       name: "Salmon Wellness Meal Prep",
@@ -1033,14 +1123,47 @@ async function seedWeeklyMealPlans() {
         "Salmon-focused weekly prep with vegetables and healthy starches.",
       dietaryInfo: "Pescatarian-friendly.",
       displayOrder: 2,
+      breakfastOnly: false,
     },
     {
       name: "Turkey Power Bowl Prep",
       description:
         "Turkey-based prep bowls with vegetables and balanced starch portions.",
       dietaryInfo: "High-protein option.",
-      breakfastOnly: true,
       displayOrder: 3,
+      breakfastOnly: false,
+    },
+    {
+      name: "Lemon Herb Chicken & Greens",
+      description:
+        "Grilled lemon herb chicken with seasoned greens and roasted sweet potatoes.",
+      dietaryInfo: "Gluten-free option available.",
+      displayOrder: 4,
+      breakfastOnly: false,
+    },
+    {
+      name: "Turkey Sausage Breakfast Scramble",
+      description:
+        "Turkey sausage, eggs, peppers, onions, and roasted breakfast potatoes.",
+      dietaryInfo: "Breakfast-only weekly offering.",
+      displayOrder: 5,
+      breakfastOnly: true,
+    },
+    {
+      name: "Sweet Potato Breakfast Hash",
+      description:
+        "Roasted sweet potatoes, peppers, onions, greens, and seasoned breakfast protein.",
+      dietaryInfo: "Breakfast-only weekly offering.",
+      displayOrder: 6,
+      breakfastOnly: true,
+    },
+    {
+      name: "Berry Oat Breakfast Bowl",
+      description:
+        "Overnight oats with berries, cinnamon, and a balanced breakfast topping.",
+      dietaryInfo: "Breakfast-only weekly offering.",
+      displayOrder: 7,
+      breakfastOnly: true,
     },
   ];
 
@@ -1130,6 +1253,7 @@ async function seedWeeklyMealPlans() {
 
 async function main() {
   await seedDemoUser();
+  await seedDemoBusinessSettings();
   await seedDemoMenuItems();
   await seedWeeklyMealPlans();
 
