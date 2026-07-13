@@ -1474,7 +1474,10 @@ export async function POST(request: NextRequest) {
         approvalStatus: order.approvalStatus,
         orderUrl: isAuthenticated ? `${appUrl}/orders/${order.id}` : null,
         scheduleLabel: getOrderScheduleLabel(Boolean(weeklySchedule)),
-        scheduleValue: formatOrderScheduleDateTime(order.requestedDateTime),
+        scheduleValue: formatOrderScheduleDateTime(order.requestedDateTime, {
+          hasWeeklyMealPlan: Boolean(weeklySchedule),
+          weeklyFulfillmentMessage: weeklySchedule?.deliveryWindowLabel,
+        }),
 
         deliveryName: order.deliveryName,
         deliveryPhone: order.deliveryPhone,

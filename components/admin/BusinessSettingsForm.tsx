@@ -30,8 +30,8 @@ type Props = {
     weeklyOrderingCloseHour: number;
     weeklyOrderingCloseMinute: number;
     weeklyFixedFulfillmentDay: number;
-    weeklyFixedFulfillmentHour: number;
-    weeklyFixedFulfillmentMinute: number;
+    weeklyFixedFulfillmentHour: number | null;
+    weeklyFixedFulfillmentMinute: number | null;
     weeklyFixedFulfillmentMessage: string | null;
   };
 };
@@ -46,7 +46,11 @@ const dayOptions = [
   { value: 6, label: "Saturday" },
 ];
 
-function formatTimeInput(hour: number, minute: number) {
+function formatTimeInput(hour: number | null, minute: number | null) {
+  if (hour === null || minute === null) {
+    return "";
+  }
+
   return `${hour.toString().padStart(2, "0")}:${minute
     .toString()
     .padStart(2, "0")}`;
@@ -367,8 +371,13 @@ export function BusinessSettingsForm({ settings }: Props) {
                   settings.weeklyFixedFulfillmentMinute,
                 )}
                 className="admin-input"
+                aria-label="Optional fixed weekly fulfillment time"
               />
             </div>
+            <p className="mt-2 text-xs font-normal leading-5 text-[#6b5a50]">
+              Leave the time blank when Sunday delivery is planned but the
+              exact delivery time will be scheduled later.
+            </p>
           </div>
 
           <div className="md:col-span-2">
@@ -379,7 +388,7 @@ export function BusinessSettingsForm({ settings }: Props) {
               name="weeklyFixedFulfillmentMessage"
               defaultValue={settings.weeklyFixedFulfillmentMessage ?? ""}
               className="admin-input mt-2"
-              placeholder="Weekly meal plan orders are delivered on Sunday."
+              placeholder="Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
             />
           </div>
         </div>

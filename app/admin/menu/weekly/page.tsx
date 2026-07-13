@@ -617,9 +617,7 @@ export default async function AdminWeeklyMenuPage() {
                           </span>
                           <span>
                             Fulfillment:{" "}
-                            {period.fixedFulfillmentAt
-                              ? formatDisplayDateTime(period.fixedFulfillmentAt)
-                              : "Uses defaults"}
+                            {period.deliveryWindowLabel ?? "Uses defaults"}
                           </span>
                         </div>
 

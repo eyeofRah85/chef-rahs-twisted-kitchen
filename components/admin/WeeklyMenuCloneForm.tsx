@@ -118,16 +118,6 @@ export function WeeklyMenuCloneForm({ source }: Props) {
 
         <div className="grid gap-4">
           <label className="admin-label">
-            Legacy Ordering Cutoff
-            <input
-              name="orderCutoffAt"
-              type="datetime-local"
-              defaultValue={source.suggestedOrderCutoffAt ?? ""}
-              className="admin-input"
-            />
-          </label>
-
-          <label className="admin-label">
             Order Capacity
             <input
               name="capacity"
@@ -201,16 +191,6 @@ export function WeeklyMenuCloneForm({ source }: Props) {
             </label>
 
             <label className="admin-label">
-              Fixed Fulfillment
-              <input
-                name="fixedFulfillmentAt"
-                type="datetime-local"
-                defaultValue={source.suggestedFixedFulfillmentAt ?? ""}
-                className="admin-input"
-              />
-            </label>
-
-            <label className="admin-label">
               Customer Delivery Message
               <input
                 name="deliveryWindowLabel"
@@ -219,6 +199,32 @@ export function WeeklyMenuCloneForm({ source }: Props) {
               />
             </label>
           </div>
+
+          <details className="mt-4 rounded-lg border border-[#ead8c1] bg-white p-4 text-sm text-[#6b5a50]">
+            <summary className="cursor-pointer font-bold text-[#3b241b]">
+              Advanced / system schedule fields
+            </summary>
+
+            <div className="mt-3 space-y-2">
+              <p>
+                Legacy ordering cutoff is maintained automatically from the
+                cloned menu&apos;s Ordering Closes value.
+              </p>
+              <p>
+                Suggested compatibility cutoff:{" "}
+                <span className="font-semibold">
+                  {source.suggestedOrderCutoffAt ?? "Will use Ordering Closes"}
+                </span>
+              </p>
+              <p>
+                Internal fixed fulfillment datetime:{" "}
+                <span className="font-semibold">
+                  {source.suggestedFixedFulfillmentAt ??
+                    "Resolved server-side from the Sunday fulfillment settings"}
+                </span>
+              </p>
+            </div>
+          </details>
         </section>
 
         <label className="admin-label">

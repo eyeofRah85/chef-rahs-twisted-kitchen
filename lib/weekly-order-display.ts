@@ -1,5 +1,6 @@
 import type { DecimalLike } from "@/types/display";
 import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
+import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
 
 export type WeeklyOrderSelectionDisplay = {
   periodLabel: string;
@@ -99,7 +100,7 @@ export function getWeeklyMealPlanSelectionDetails(
       value:
         selection.deliveryWindowLabel ??
         selection.fixedFulfillmentLabel ??
-        "Weekly meal plan orders are delivered on Sunday.",
+        DEFAULT_WEEKLY_FIXED_MESSAGE,
     });
   }
 

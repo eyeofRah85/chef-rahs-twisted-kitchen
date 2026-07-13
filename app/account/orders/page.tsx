@@ -113,32 +113,35 @@ export default async function AccountOrdersPage() {
         </div>
 
         <div className="space-y-5">
-          {(user.orders as AccountOrder[]).map((order) => (
-            <div key={order.id} className="brand-card p-6">
-              <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
-                <div>
-                  <p className="text-sm font-bold uppercase text-[#9f2f18]">
-                    {formatOrderType(order.orderType)}
-                  </p>
+          {(user.orders as AccountOrder[]).map((order) => {
+            const hasWeeklyMealPlan = order.items.some((item) =>
+              Boolean(item.weeklyMealPlanSelection),
+            );
 
-                  <h2 className="mt-2 text-2xl font-black">
-                    Order from {order.createdAt.toLocaleDateString()}
-                  </h2>
+            return (
+              <div key={order.id} className="brand-card p-6">
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
+                  <div>
+                    <p className="text-sm font-bold uppercase text-[#9f2f18]">
+                      {formatOrderType(order.orderType)}
+                    </p>
 
-                  <p className="mt-2 text-sm text-[#6b5a50]">
-                    {getOrderScheduleLabel(
-                      order.items.some((item) =>
-                        Boolean(item.weeklyMealPlanSelection),
-                      ),
-                    )}
-                    : {formatOrderScheduleDateTime(order.requestedDateTime)}
-                  </p>
+                    <h2 className="mt-2 text-2xl font-black">
+                      Order from {order.createdAt.toLocaleDateString()}
+                    </h2>
 
-                  <p className="mt-1 text-sm text-[#6b5a50]">
-                    Payment:{" "}
-                    {formatPaymentStatus(order.paymentStatus) ?? "Not set"}
-                  </p>
-                </div>
+                    <p className="mt-2 text-sm text-[#6b5a50]">
+                      {getOrderScheduleLabel(hasWeeklyMealPlan)}:{" "}
+                      {formatOrderScheduleDateTime(order.requestedDateTime, {
+                        hasWeeklyMealPlan,
+                      })}
+                    </p>
+
+                    <p className="mt-1 text-sm text-[#6b5a50]">
+                      Payment:{" "}
+                      {formatPaymentStatus(order.paymentStatus) ?? "Not set"}
+                    </p>
+                  </div>
                 {order.payByDate && (
                   <p className="mt-1 text-sm font-bold text-[#9f2f18]">
                     Pay by: {order.payByDate.toLocaleDateString()}
@@ -251,7 +254,8 @@ export default async function AccountOrdersPage() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           {user.orders.length === 0 && (
             <div className="brand-card p-8 text-center">

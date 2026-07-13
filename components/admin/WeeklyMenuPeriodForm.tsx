@@ -121,20 +121,6 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
 
         <div className="grid gap-4">
           <label className="admin-label">
-            Legacy Ordering Cutoff
-            <input
-              name="orderCutoffAt"
-              type="datetime-local"
-              defaultValue={period?.orderCutoffAt ?? ""}
-              className="admin-input"
-            />
-            <span className="text-xs font-normal leading-5 text-[#6b5a50]">
-              Kept for compatibility. Weekly launch validation uses the
-              resolved ordering window below.
-            </span>
-          </label>
-
-          <label className="admin-label">
             Order Capacity
             <input
               name="capacity"
@@ -214,25 +200,41 @@ export function WeeklyMenuPeriodForm({ period }: Props) {
             </label>
 
             <label className="admin-label">
-              Fixed Fulfillment
-              <input
-                name="fixedFulfillmentAt"
-                type="datetime-local"
-                defaultValue={period?.fixedFulfillmentAt ?? ""}
-                className="admin-input"
-              />
-            </label>
-
-            <label className="admin-label">
               Customer Delivery Message
               <input
                 name="deliveryWindowLabel"
                 defaultValue={period?.deliveryWindowLabel ?? ""}
                 className="admin-input"
-                placeholder="Weekly meal plan orders are delivered on Sunday."
+                placeholder="Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
               />
             </label>
           </div>
+
+          <details className="mt-4 rounded-lg border border-[#ead8c1] bg-white p-4 text-sm text-[#6b5a50]">
+            <summary className="cursor-pointer font-bold text-[#3b241b]">
+              Advanced / system schedule fields
+            </summary>
+
+            <div className="mt-3 space-y-2">
+              <p>
+                Legacy ordering cutoff is maintained automatically from the
+                resolved Ordering Closes value.
+              </p>
+              <p>
+                Current compatibility cutoff:{" "}
+                <span className="font-semibold">
+                  {period?.orderCutoffAt ?? "Will use Ordering Closes"}
+                </span>
+              </p>
+              <p>
+                Internal fixed fulfillment datetime:{" "}
+                <span className="font-semibold">
+                  {period?.fixedFulfillmentAt ??
+                    "Resolved server-side from the Sunday fulfillment settings"}
+                </span>
+              </p>
+            </div>
+          </details>
         </section>
 
         <label className="admin-label">

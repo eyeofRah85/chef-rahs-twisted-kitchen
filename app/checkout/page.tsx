@@ -16,7 +16,10 @@ import type { CheckoutDetails } from "@/types/order";
 import { useCustomerAllergens } from "@/hooks/useCustomerAllergens";
 import { AllergenConflictWarning } from "@/components/allergens/AllergenConflictWarning";
 import { getWeeklyMealPlanSelectionDetails } from "@/lib/weekly-order-display";
-import { getWeeklyOrderingWindowState } from "@/lib/weekly-ordering-window";
+import {
+  DEFAULT_WEEKLY_FIXED_MESSAGE,
+  getWeeklyOrderingWindowState,
+} from "@/lib/weekly-ordering-window";
 import { resolveCheckoutFixedFulfillment } from "@/lib/checkout-fulfillment";
 
 const sectionClass =
@@ -279,7 +282,7 @@ export default function CheckoutPage() {
   const fixedFulfillmentMessage = hasFixedWeeklyScheduling
     ? fixedWeeklySelection?.deliveryWindowLabel ??
       fixedWeeklySelection?.fixedFulfillmentLabel ??
-      "Weekly meal plan orders are delivered on Sunday."
+      DEFAULT_WEEKLY_FIXED_MESSAGE
     : fixedCheckoutFulfillment?.message;
   const fixedFulfillmentLabel = hasFixedWeeklyScheduling
     ? fixedWeeklySelection?.fixedFulfillmentLabel

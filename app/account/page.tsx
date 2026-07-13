@@ -298,7 +298,9 @@ export default async function AccountPage() {
 
                       <p className="mt-1 text-xs text-neutral-500">
                         {getOrderScheduleLabel(weeklyItemCount > 0)}:{" "}
-                        {formatOrderScheduleDateTime(order.requestedDateTime)}
+                        {formatOrderScheduleDateTime(order.requestedDateTime, {
+                          hasWeeklyMealPlan: weeklyItemCount > 0,
+                        })}
                       </p>
 
                       {order.paymentStatus && (

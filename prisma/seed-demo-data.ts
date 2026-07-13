@@ -891,10 +891,10 @@ async function seedWeeklyMealPlans() {
       weeklyOrderingCloseHour: 22,
       weeklyOrderingCloseMinute: 0,
       weeklyFixedFulfillmentDay: 0,
-      weeklyFixedFulfillmentHour: 12,
-      weeklyFixedFulfillmentMinute: 0,
+      weeklyFixedFulfillmentHour: null,
+      weeklyFixedFulfillmentMinute: null,
       weeklyFixedFulfillmentMessage:
-        "Weekly meal plan orders are delivered on Sunday.",
+        "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.",
     },
     timeZone: weeklyMenuTimeZone,
   });

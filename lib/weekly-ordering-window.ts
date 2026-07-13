@@ -1,5 +1,8 @@
-const DEFAULT_WEEKLY_FIXED_MESSAGE =
-  "Weekly meal plan orders are delivered on Sunday.";
+export const DEFAULT_WEEKLY_FIXED_MESSAGE =
+  "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.";
+
+const INTERNAL_WEEKLY_FULFILLMENT_HOUR = 12;
+const INTERNAL_WEEKLY_FULFILLMENT_MINUTE = 0;
 
 export type WeeklyOrderingDefaults = {
   lateFee: number;
@@ -14,8 +17,8 @@ export type WeeklyOrderingDefaults = {
   weeklyOrderingCloseHour: number;
   weeklyOrderingCloseMinute: number;
   weeklyFixedFulfillmentDay: number;
-  weeklyFixedFulfillmentHour: number;
-  weeklyFixedFulfillmentMinute: number;
+  weeklyFixedFulfillmentHour: number | null;
+  weeklyFixedFulfillmentMinute: number | null;
   weeklyFixedFulfillmentMessage: string | null;
 };
 
@@ -37,6 +40,7 @@ export type ResolvedWeeklyPeriodSchedule = {
   lateFeeStartsAt: Date;
   orderingClosesAt: Date;
   fixedFulfillmentAt: Date;
+  fixedFulfillmentTimeConfigured: boolean;
   deliveryWindowLabel: string;
 };
 
@@ -254,6 +258,10 @@ function buildDefaultWeeklySchedule({
     settings.weeklyOrderingCloseDay,
   );
 
+  const fixedFulfillmentTimeConfigured =
+    settings.weeklyFixedFulfillmentHour !== null &&
+    settings.weeklyFixedFulfillmentMinute !== null;
+
   return {
     orderingOpenAt: dateTimeForDateKey({
       dateKey: orderingOpenDateKey,
@@ -275,10 +283,15 @@ function buildDefaultWeeklySchedule({
     }),
     fixedFulfillmentAt: dateTimeForDateKey({
       dateKey: fixedFulfillmentDateKey,
-      hour: settings.weeklyFixedFulfillmentHour,
-      minute: settings.weeklyFixedFulfillmentMinute,
+      hour:
+        settings.weeklyFixedFulfillmentHour ??
+        INTERNAL_WEEKLY_FULFILLMENT_HOUR,
+      minute:
+        settings.weeklyFixedFulfillmentMinute ??
+        INTERNAL_WEEKLY_FULFILLMENT_MINUTE,
       timeZone,
     }),
+    fixedFulfillmentTimeConfigured,
   };
 }
 
@@ -311,9 +324,12 @@ export function resolveWeeklyPeriodSchedule({
     orderingClosesAt:
       period.orderingClosesAt ?? period.orderCutoffAt ?? defaults.orderingClosesAt,
     fixedFulfillmentAt,
+    fixedFulfillmentTimeConfigured: defaults.fixedFulfillmentTimeConfigured,
     deliveryWindowLabel:
       period.deliveryWindowLabel?.trim() ||
-      `${fallbackMessage} (${formatWeeklyDateTime(fixedFulfillmentAt, timeZone)})`,
+      (defaults.fixedFulfillmentTimeConfigured
+        ? `${fallbackMessage} (${formatWeeklyDateTime(fixedFulfillmentAt, timeZone)})`
+        : fallbackMessage),
   };
 }
 
@@ -336,12 +352,11 @@ export function fillWeeklyPeriodScheduleDefaults<
 
   return {
     ...period,
-    orderCutoffAt: period.orderCutoffAt ?? resolved.orderingClosesAt,
+    orderCutoffAt: resolved.orderingClosesAt,
     orderingOpenAt: period.orderingOpenAt ?? resolved.orderingOpenAt,
     lateFeeStartsAt: period.lateFeeStartsAt ?? resolved.lateFeeStartsAt,
     orderingClosesAt: period.orderingClosesAt ?? resolved.orderingClosesAt,
-    fixedFulfillmentAt:
-      period.fixedFulfillmentAt ?? resolved.fixedFulfillmentAt,
+    fixedFulfillmentAt: resolved.fixedFulfillmentAt,
     customerSchedulingEnabled:
       period.customerSchedulingEnabled ?? resolved.customerSchedulingEnabled,
     deliveryWindowLabel:
@@ -403,6 +418,7 @@ export function formatWeeklyScheduleSummary(
     | "lateFeeStartsAt"
     | "orderingClosesAt"
     | "fixedFulfillmentAt"
+    | "fixedFulfillmentTimeConfigured"
     | "deliveryWindowLabel"
   >,
   timeZone: string,
@@ -414,10 +430,9 @@ export function formatWeeklyScheduleSummary(
       schedule.orderingClosesAt,
       timeZone,
     ),
-    fixedFulfillmentLabel: formatWeeklyDateTime(
-      schedule.fixedFulfillmentAt,
-      timeZone,
-    ),
+    fixedFulfillmentLabel: schedule.fixedFulfillmentTimeConfigured
+      ? formatWeeklyDateTime(schedule.fixedFulfillmentAt, timeZone)
+      : null,
     deliveryWindowLabel: schedule.deliveryWindowLabel,
   };
 }

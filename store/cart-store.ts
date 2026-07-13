@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { MenuItem } from "@/types/menu";
+import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
 
 export type SelectedCartOption = {
   groupName: string;
@@ -216,7 +217,7 @@ export const useCartStore = create<CartState>()(
             choiceName:
               selection.deliveryWindowLabel ??
               selection.fixedFulfillmentLabel ??
-              "Weekly meal plan orders are delivered on Sunday.",
+              DEFAULT_WEEKLY_FIXED_MESSAGE,
             priceDelta: 0,
           });
         }

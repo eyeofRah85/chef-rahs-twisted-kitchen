@@ -146,7 +146,9 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
           </p>
 
           <p className="font-bold">
-            {formatOrderScheduleDateTime(order.requestedDateTime)}
+            {formatOrderScheduleDateTime(order.requestedDateTime, {
+              hasWeeklyMealPlan,
+            })}
           </p>
         </div>
 

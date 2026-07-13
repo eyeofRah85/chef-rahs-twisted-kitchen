@@ -32,7 +32,26 @@ function parseTime(value: FormDataEntryValue | null, fallbackHour: number) {
   };
 }
 
-function formatTime(hour: number, minute: number) {
+function parseOptionalTime(value: FormDataEntryValue | null) {
+  const text = String(value ?? "").trim();
+
+  if (!text) {
+    return {
+      hour: null,
+      minute: null,
+    };
+  }
+
+  const parsed = parseTime(value, 12);
+
+  return parsed;
+}
+
+function formatTime(hour: number | null, minute: number | null) {
+  if (hour === null || minute === null) {
+    return "No exact time";
+  }
+
   return `${hour.toString().padStart(2, "0")}:${minute
     .toString()
     .padStart(2, "0")}`;
@@ -87,9 +106,8 @@ export async function PATCH(request: Request) {
       formData.get("weeklyOrderingCloseTime"),
       22,
     );
-    const weeklyFixedFulfillmentTime = parseTime(
+    const weeklyFixedFulfillmentTime = parseOptionalTime(
       formData.get("weeklyFixedFulfillmentTime"),
-      12,
     );
     const weeklyFixedFulfillmentMessage = String(
       formData.get("weeklyFixedFulfillmentMessage") ?? "",
@@ -146,7 +164,7 @@ export async function PATCH(request: Request) {
       weeklyFixedFulfillmentMinute: weeklyFixedFulfillmentTime.minute,
       weeklyFixedFulfillmentMessage:
         weeklyFixedFulfillmentMessage ||
-        "Weekly meal plan orders are delivered on Sunday.",
+        "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.",
     };
 
     const updated = await prisma.businessSettings.upsert({

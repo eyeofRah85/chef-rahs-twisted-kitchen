@@ -594,9 +594,9 @@ model BusinessSettings {
   weeklyOrderingCloseHour         Int     @default(22)
   weeklyOrderingCloseMinute       Int     @default(0)
   weeklyFixedFulfillmentDay       Int     @default(0)
-  weeklyFixedFulfillmentHour      Int     @default(12)
-  weeklyFixedFulfillmentMinute    Int     @default(0)
-  weeklyFixedFulfillmentMessage   String? @default("Weekly meal plan orders are delivered on Sunday.")
+  weeklyFixedFulfillmentHour      Int?
+  weeklyFixedFulfillmentMinute    Int?
+  weeklyFixedFulfillmentMessage   String? @default("Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.")
 
   createdAt                DateTime @default(now())
   updatedAt                DateTime @updatedAt

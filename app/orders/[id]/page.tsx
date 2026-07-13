@@ -244,7 +244,9 @@ export default async function OrderPage({ params }: OrderPageProps) {
 
                 <p>
                   <strong>{getOrderScheduleLabel(hasWeeklyMealPlan)}:</strong>{" "}
-                  {formatOrderScheduleDateTime(order.requestedDateTime)}
+                  {formatOrderScheduleDateTime(order.requestedDateTime, {
+                    hasWeeklyMealPlan,
+                  })}
                 </p>
               </div>
             </div>

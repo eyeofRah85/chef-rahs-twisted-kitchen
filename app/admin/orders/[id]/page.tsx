@@ -172,7 +172,9 @@ export default async function AdminOrderDetailsPage({ params }: PageProps) {
                 </p>
                 <p>
                   <strong>{getOrderScheduleLabel(hasWeeklyMealPlan)}:</strong>{" "}
-                  {formatOrderScheduleDateTime(order.requestedDateTime)}
+                  {formatOrderScheduleDateTime(order.requestedDateTime, {
+                    hasWeeklyMealPlan,
+                  })}
                 </p>
               </div>
             </div>

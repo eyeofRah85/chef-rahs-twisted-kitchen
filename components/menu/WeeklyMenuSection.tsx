@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { WeeklyMenuOrderForm } from "@/components/menu/WeeklyMenuOrderForm";
 import { formatWeeklyMealPlanOptionType } from "@/lib/format-labels";
+import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
 import type { PublicWeeklyMenu, PublicWeeklyOption } from "@/types/weekly-menu";
 
 type Props = {
@@ -72,7 +73,7 @@ export function WeeklyMenuSection({ weeklyMenu }: Props) {
         {!weeklyMenu.customerSchedulingEnabled && (
           <div className="mt-4 rounded-lg border border-[#f4c46f]/45 bg-[#fff8ee] p-4 text-sm font-semibold leading-6 text-[#24130f]">
             {weeklyMenu.deliveryWindowLabel ??
-              "Weekly meal plan orders are delivered on Sunday."}{" "}
+              DEFAULT_WEEKLY_FIXED_MESSAGE}{" "}
             Ordering opens {weeklyMenu.orderingOpenLabel} and closes{" "}
             {weeklyMenu.orderingClosesLabel}. Late fees begin{" "}
             {weeklyMenu.lateFeeStartsLabel}.
