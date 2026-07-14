@@ -117,7 +117,7 @@ Remaining launch gates are operational, not code blockers:
 - Provision production MySQL/MariaDB.
 - Run production migrations with `npx prisma migrate deploy`.
 - Verify Resend sender domain and DNS.
-- Register and promote the first owner/admin account after deployment.
+- Register and bootstrap the first owner account after deployment.
 - Run final internal production smoke tests before setting `EMAIL_DRY_RUN=false`.
 
 ## Non-Blocking Polish Items
@@ -142,8 +142,8 @@ Remaining launch gates are operational, not code blockers:
 11. Remove `.next` before the final clean validation if generated route types may be stale.
 12. Confirm `strict: true`, `noImplicitAny: true`, and no `ignoreBuildErrors` override.
 13. Build and deploy the app.
-14. Register the first owner/admin account through the deployed production site.
-15. Set `ADMIN_EMAIL` and run `npm run admin:promote`.
+14. Register the first owner account through the deployed production site.
+15. Set `OWNER_EMAIL` and run `npm run owner:promote`.
 16. Configure Resend sender domain and DNS.
 17. Keep `EMAIL_DRY_RUN=true` until final internal order/email tests are ready.
 18. Run production smoke tests.

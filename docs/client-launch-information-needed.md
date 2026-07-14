@@ -19,9 +19,9 @@ These items are needed before production can safely go live.
 
 ### Authentication And Admin Access
 
-- Email address for the first admin account.
-- Confirm whether the first admin should be role `ADMIN` or `OWNER`.
-- Confirmation that the admin user will register before `npm run admin:promote` is run.
+- Email address for the single bootstrap owner account (`OWNER_EMAIL`).
+- Confirmation that the owner will register normally before `npm run owner:promote` is run.
+- Email addresses for staff who should become admins after registering; the owner will assign those roles in `/admin/role-manager`.
 - Final `AUTH_SECRET` value, or approval for the developer/deployment host to generate it.
 - Production values for:
   - `AUTH_URL`

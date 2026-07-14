@@ -16,13 +16,13 @@ Only accounts with the `ADMIN` or `OWNER` role can access the admin dashboard.
 2. Go to `/admin`.
 3. If the account does not have admin access, the app redirects away from the dashboard.
 
-Before launch, the first admin account should be promoted using the documented launch command:
+Before launch, register and bootstrap the first owner using the documented launch command:
 
 ```powershell
-npm run admin:promote
+npm run owner:promote
 ```
 
-That command requires `ADMIN_EMAIL` to be set in the environment.
+That command requires `OWNER_EMAIL` to match an existing registered account. It does not create a user. Once signed in, the owner can open `/admin/role-manager` and assign `ADMIN` access to additional users who registered normally.
 
 ### Main Admin Routes
 
@@ -45,6 +45,7 @@ That command requires `ADMIN_EMAIL` to be set in the environment.
 | Reports | `/admin/reports` | Review revenue, order, payment, approval, and service request metrics. |
 | Notifications | `/admin/notifications` | Review active/planned notification types and current email delivery mode. |
 | Business settings | `/admin/settings` | Manage delivery fee, late fee, deposit percent, cutoff rules, weekend ordering, and delivery area. |
+| Role manager | `/admin/role-manager` | Owner-only user role management for registered customer, admin, and owner accounts. |
 
 ## Daily Operating Workflow
 
@@ -922,7 +923,7 @@ Before production launch:
 
 - Production URLs must use `https://`.
 - Email dry-run must be disabled only when ready for live customer email.
-- `ADMIN_EMAIL` must be set before promoting the first admin.
+- `OWNER_EMAIL` must match a registered user before bootstrapping the first owner with `npm run owner:promote`.
 - Durable image storage must be decided if admins need direct production uploads.
 - Square/PayPal automated checkout is future work; manual payment tracking remains supported for launch.
 

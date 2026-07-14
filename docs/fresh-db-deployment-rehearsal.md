@@ -18,8 +18,8 @@ Prove the launch path from an empty database:
 6. Seed foundation data.
 7. Build the app.
 8. Start the app.
-9. Register the first owner/admin account through the running app.
-10. Promote that account with `npm run admin:promote`.
+9. Register the first owner account through the running app.
+10. Promote that account with `npm run owner:promote`.
 11. Run checkout and admin smoke tests with `EMAIL_DRY_RUN=true`.
 12. Run a controlled internal Resend delivery test with `EMAIL_DRY_RUN=false` before approving launch.
 
@@ -49,8 +49,9 @@ Use rehearsal-only values. Do not point this rehearsal at production customer da
 | `EMAIL_DRY_RUN` | `true` during Phase 1 dry-run smoke tests; temporarily `false` for the controlled internal Resend delivery test. |
 | `EMAIL_PREVIEW_FILES` | `true` for local email artifact inspection, or `false` if only console dry-run logging is desired. Use `false` for production-style live delivery testing unless intentionally collecting preview files. |
 | `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` | `false` or unset. Keep production local uploads disabled. |
-| `ADMIN_EMAIL` | Exact email used to register the first owner/admin account. Required before `npm run admin:promote`. |
-| `ADMIN_ROLE` | `OWNER` for the first owner account, or `ADMIN` for a non-owner admin. |
+| `OWNER_EMAIL` | Exact email used to register the first owner account. Required before `npm run owner:promote`. |
+| `ADMIN_EMAIL` | Legacy single-account input for `npm run admin:promote`; not needed when admins are assigned in Role Manager. |
+| `ADMIN_ROLE` | Legacy role used only by `npm run admin:promote`. |
 
 Note: `scripts/check-production-env.mjs` is a live-production launch gate and requires `EMAIL_DRY_RUN=false`. During Phase 1, keep `EMAIL_DRY_RUN=true` for smoke tests. For Phase 2 and final launch approval, run the env guard with live-email values only after Resend sender DNS is verified and the team is ready for controlled internal delivery testing.
 
@@ -145,7 +146,7 @@ The seed upserts:
 npm run db:seed-demo
 ```
 
-For a disposable rehearsal, the demo seed can create cleanup-safe showcase data. It includes a published period with resolved scheduling fields, three packages, and exactly three Breakfast-only weekly offerings. Otherwise, create a small set of temporary QA menu data through the admin UI after the first admin is promoted:
+For a disposable rehearsal, the demo seed can create cleanup-safe showcase data. It includes a published period with resolved scheduling fields, three packages, and exactly three Breakfast-only weekly offerings. Otherwise, create a small set of temporary QA menu data through the admin UI after the first owner is promoted:
 
 - One available regular menu item.
 - One published weekly menu period with an active Wednesday-Friday ordering window and Sunday fulfillment.
@@ -193,21 +194,20 @@ Expected result:
 The promotion script does not create the user. Register first through the running app.
 
 1. Open `/register`.
-2. Register the first owner/admin account.
-3. Set the same email in `ADMIN_EMAIL`.
-4. Set `ADMIN_ROLE`.
-5. Run:
+2. Register the first owner account.
+3. Set the same email in `OWNER_EMAIL`.
+4. Run:
 
 ```powershell
-$env:ADMIN_EMAIL = "owner@example.com"
-$env:ADMIN_ROLE = "OWNER"
-npm run admin:promote
+$env:OWNER_EMAIL = "owner@example.com"
+npm run owner:promote
 ```
 
 Expected result:
 
 - The registered user is promoted.
-- After signing out and back in, `/admin` loads for the promoted account.
+- After signing out and back in, `/admin` and `/admin/role-manager` load for the owner.
+- Additional registered users can be promoted to `ADMIN` in Role Manager; admins cannot open Role Manager or its API.
 - Account pages remain inaccessible to anonymous users.
 
 ## 10. Two-Phase Email QA
@@ -397,7 +397,7 @@ Before approving production launch:
 - Fresh MySQL/MariaDB migration rehearsal passed from an empty database.
 - Foundation seed completed.
 - BusinessSettings were reviewed after migration/seed and match the launch scheduling values.
-- Owner/admin registration and `npm run admin:promote` completed successfully.
+- Owner registration and `npm run owner:promote` completed successfully.
 - Checkout/admin smoke tests passed.
 - Dry-run email smoke tests passed.
 - Live internal Resend delivery test passed with `EMAIL_DRY_RUN=false`.

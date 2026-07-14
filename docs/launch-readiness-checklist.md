@@ -25,7 +25,7 @@ Current warnings to resolve or accept before launch:
 - `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` is not set. This is acceptable only if production uploads stay blocked and admins use public image URLs.
 - `EMAIL_PREVIEW_FILES` is enabled. Disable preview file output in production unless intentionally debugging email rendering.
 - Stripe is no longer the planned payment provider. Square and PayPal are selected for a future dedicated integration; manual Square/PayPal links or invoices are acceptable while online checkout remains disabled.
-- `ADMIN_EMAIL` is not set. Set it before running `npm run admin:promote`.
+- `OWNER_EMAIL` is not set. Set it after the owner registers and before running `npm run owner:promote`.
 
 ## Required Validation
 
@@ -66,8 +66,8 @@ Required before launch:
 
 Optional or workflow-specific:
 
-- `ADMIN_EMAIL`: used by `npm run admin:promote`.
-- `ADMIN_ROLE`: defaults to `ADMIN`; set to `OWNER` only when appropriate.
+- `OWNER_EMAIL`: used once by `npm run owner:promote` to bootstrap the first registered owner.
+- `ADMIN_EMAIL` and `ADMIN_ROLE`: retained only for the legacy single-account `npm run admin:promote` command.
 - `CONTACT_TO_EMAIL`: reserved for future internal contact notifications.
 - Square/PayPal API credentials are not required until the future automated checkout integration phase. Legacy Stripe variables can remain blank while online card checkout is disabled.
 
@@ -184,7 +184,7 @@ After migrations:
 After the app is deployed and reachable:
 
 ```powershell
-npm run admin:promote
+npm run owner:promote
 ```
 
-Run `npm run admin:promote` only after the first admin user has registered through the deployed production site and `ADMIN_EMAIL` is set.
+Run `npm run owner:promote` only after the first owner has registered through the deployed production site and `OWNER_EMAIL` is set. Assign additional registered users as admins from `/admin/role-manager`; do not create fake or passwordless accounts.

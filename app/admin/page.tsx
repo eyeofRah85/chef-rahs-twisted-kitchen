@@ -21,7 +21,7 @@ type AdminRecentOrder = {
 };
 
 export default async function AdminPage() {
-  await requireAdminPage();
+  const session = await requireAdminPage();
 
   const metrics = {
     pendingOrders: prisma.order.count({
@@ -205,6 +205,9 @@ export default async function AdminPage() {
     { label: "Payment Settings", href: "/admin/payments" },
     { label: "Notifications", href: "/admin/notifications" },
     { label: "Audit Log", href: "/admin/audit" },
+    ...(session.user.role === "OWNER"
+      ? [{ label: "Role Manager", href: "/admin/role-manager" }]
+      : []),
   ];
 
   return (

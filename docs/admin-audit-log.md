@@ -21,7 +21,7 @@ Audit entries are written after the selected admin mutation succeeds:
 - Menu item create/update/archive/restore/delete and availability changes.
 - Weekly meal plan period create/update/clone plus package, offering, and option create/update/delete actions where routes exist.
 - Gallery image create/update/delete.
-- `npm run admin:promote` role promotion script.
+- `npm run owner:promote`, the legacy `npm run admin:promote`, and owner Role Manager updates.
 
 ## Admin review
 

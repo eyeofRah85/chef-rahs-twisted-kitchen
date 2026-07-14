@@ -46,8 +46,9 @@ Workflow-specific variables:
 
 | Variable | Production value or note |
 | --- | --- |
-| `ADMIN_EMAIL` | First admin user's registered email before running `npm run admin:promote`. |
-| `ADMIN_ROLE` | Defaults to `ADMIN`; use `OWNER` only for the primary owner account. |
+| `OWNER_EMAIL` | Exact email of the first registered owner account before running `npm run owner:promote`. |
+| `ADMIN_EMAIL` | Legacy single-account input for `npm run admin:promote`; not required for normal role management. |
+| `ADMIN_ROLE` | Legacy role for `npm run admin:promote`; defaults to `ADMIN`. |
 
 Legacy/optional payment variables:
 
@@ -125,7 +126,7 @@ Run only after migrations:
 npm run db:seed-demo
 ```
 
-Launch menu items, weekly meal plan periods, offerings, gallery images, pricing, and business settings should be reviewed and configured through the admin UI after the first admin account is promoted.
+Launch menu items, weekly meal plan periods, offerings, gallery images, pricing, and business settings should be reviewed and configured through the admin UI after the first owner account is promoted.
 
 After the foundation seed or any intentional demo seed, review `/admin/settings` and confirm the final launch scheduling values:
 
@@ -141,25 +142,23 @@ After the foundation seed or any intentional demo seed, review `/admin/settings`
 
 The app may store a server-resolved fallback datetime in `Order.requestedDateTime` for fixed scheduling. That internal value is not a promised delivery time and must not appear to customers as a fallback such as `12:00 PM`.
 
-## 6. First Admin Account Creation And Promotion
+## 6. First Owner Account And Admin Access
 
-The promotion script only promotes an existing registered user. It does not create the account.
+The bootstrap script only promotes an existing registered user. It does not create an account, send an invitation, or create a passwordless user.
 
 Steps:
 
 1. Deploy the app with production env vars.
-2. Register the first admin/owner account through the production `/register` page.
-3. Set `ADMIN_EMAIL` to that exact registered email.
-4. Set `ADMIN_ROLE` to `ADMIN` or `OWNER`.
-5. Run the promotion script:
+2. Register the first owner account through the production `/register` page.
+3. Set `OWNER_EMAIL` to that exact registered email.
+4. Run the owner bootstrap command:
 
 ```powershell
-$env:ADMIN_EMAIL = "owner@example.com"
-$env:ADMIN_ROLE = "OWNER"
-npm run admin:promote
+$env:OWNER_EMAIL = "owner@example.com"
+npm run owner:promote
 ```
 
-After promotion, sign out and sign back in, then confirm `/admin` loads for the promoted account.
+After promotion, sign out and sign back in, then confirm `/admin` and `/admin/role-manager` load for the owner. Additional users must register normally; the owner can then assign `ADMIN` access in Role Manager. Admins retain normal admin access but cannot manage roles. Keep at least one owner at all times.
 
 ## 7. Resend Setup Notes
 
@@ -252,7 +251,7 @@ Launch posture:
 
 ## 12. Manual Pre-Launch QA Checklist
 
-Run this after production env vars, migrations, seed, DNS, and the first admin promotion are complete.
+Run this after production env vars, migrations, seed, DNS, and the first owner bootstrap are complete.
 
 Customer-facing:
 

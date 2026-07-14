@@ -51,7 +51,7 @@ Start by auditing the checkout/profile/order flow and tell me what you find. The
 
 Progress update - July 9, 2026:
 - Added `docs/production-runbook.md` as the production deployment runbook for `https://rahstwistedkitchen.com`.
-- The runbook covers production environment variables, MySQL/MariaDB database setup, Prisma migration/deploy commands, foundation seed notes, first admin promotion, Resend setup, Hostinger/DNS notes, disabled local production uploads, manual Square/PayPal payment launch posture, security launch posture, QA, smoke tests, rollback, and future follow-up items.
+- The runbook covers production environment variables, MySQL/MariaDB database setup, Prisma migration/deploy commands, foundation seed notes, first owner bootstrap and owner-managed admins, Resend setup, Hostinger/DNS notes, disabled local production uploads, manual Square/PayPal payment launch posture, security launch posture, QA, smoke tests, rollback, and future follow-up items.
 - This was a documentation-only pass. No application code, Prisma schema, checkout/order/payment behavior, auth logic, upload behavior, security headers, Resend sending behavior, or email templates were changed.
 
 Progress update - June 6, 2026:
@@ -518,7 +518,7 @@ Next work items - June 8, 2026:
    - `prisma migrate status` reports 16 migrations and the configured local development database schema is up to date.
    - `npm run env:check -- --report` runs without exposing secret values and correctly reports the current local `.env` as not production-ready.
    - Updated `docs/launch-readiness-checklist.md` with the June 16 review status and remaining production blockers/warnings.
-   - Remaining blockers before launch are non-code deployment tasks: set production `https://` app/auth URLs, set `BUSINESS_TIME_ZONE`, disable email dry-run for the live-send test, decide/confirm durable upload storage posture, set `ADMIN_EMAIL` before promotion, and execute the final manual QA checklist in the target environment.
+   - Remaining blockers before launch are non-code deployment tasks: set production `https://` app/auth URLs, set `BUSINESS_TIME_ZONE`, disable email dry-run for the live-send test, decide/confirm durable upload storage posture, set `OWNER_EMAIL` before owner bootstrap, and execute the final manual QA checklist in the target environment.
 
 37. Weekly capacity wording clarification - completed June 16, 2026
    - Confirmed current weekly capacity behavior matches the resolved business rule: capacity counts submitted customer orders per weekly menu, not weekly meal plan item quantity or package count.
@@ -566,7 +566,7 @@ Next work items - June 8, 2026:
    - `npm run env:check -- --report` runs without printing secret values when invoked through the working npm path.
    - Next patched `package-lock.json` with the missing SWC optional dependency entries during build; keep this lockfile update so future installs/builds do not repeat the warning.
    - Current production URL target is `https://rahstwistedkitchen.com`; production env values for `NEXT_PUBLIC_APP_URL`, `AUTH_URL`, and `NEXTAUTH_URL` should use that origin. `EMAIL_DRY_RUN` must be `false` before live email sending.
-   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, online checkout intentionally disabled while Square/PayPal integration is future work, and `ADMIN_EMAIL` not set for admin promotion.
+   - Remaining warnings are local production uploads not explicitly configured, email preview files enabled, online checkout intentionally disabled while Square/PayPal integration is future work, and `OWNER_EMAIL` not set for owner bootstrap.
    - Updated `docs/launch-readiness-checklist.md` with the June 18 review status.
 
 42. Admin dashboard user guide - completed June 18, 2026

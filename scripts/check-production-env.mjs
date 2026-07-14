@@ -188,8 +188,16 @@ if (configuredStripeValues.length > 0) {
   );
 }
 
-if (!readEnv("ADMIN_EMAIL")) {
-  addWarning("ADMIN_EMAIL is not set. Set it when using npm run admin:promote.");
+if (!readEnv("OWNER_EMAIL")) {
+  if (readEnv("ADMIN_EMAIL")) {
+    addWarning(
+      "OWNER_EMAIL is not set. ADMIN_EMAIL is supported only by the legacy admin:promote command.",
+    );
+  } else {
+    addWarning(
+      "OWNER_EMAIL is not set. Set it before bootstrapping the first owner with npm run owner:promote.",
+    );
+  }
 }
 
 console.log("Production environment check");

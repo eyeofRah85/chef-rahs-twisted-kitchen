@@ -32,7 +32,7 @@ Prepare these accounts before QA:
 Production admin promotion should happen only after the admin has registered:
 
 ```powershell
-npm run admin:promote
+npm run owner:promote
 ```
 
 ## Required Local Settings
@@ -68,7 +68,7 @@ For production deployment after final environment values are set:
 ```powershell
 npm run prisma:generate
 .\node_modules\.bin\prisma.cmd migrate deploy
-npm run admin:promote
+npm run owner:promote
 ```
 
 ## Test Data Setup
@@ -388,9 +388,9 @@ Pass criteria:
 After production environment values are set and migrations are deployed:
 
 1. Run `npm run env:check`.
-2. Register the admin account if it does not exist.
-3. Run `npm run admin:promote`.
-4. Log in as admin.
+2. Register the owner account if it does not exist and set `OWNER_EMAIL` to that exact email.
+3. Run `npm run owner:promote`.
+4. Log in as owner and use Role Manager for additional registered admin accounts.
 5. Confirm `/admin/notifications` reports live email only when intended.
 6. Submit one customer order using a test customer email.
 7. Confirm live order confirmation email is delivered.

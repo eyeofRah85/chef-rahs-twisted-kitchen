@@ -136,8 +136,8 @@ Resolution:
 9. Verify BusinessSettings after migration/seed, including disabled global scheduling, Sunday fulfillment without a public time, Wednesday open, Friday 5:00 PM late start, and Friday 10:00 PM close.
 10. Remove `.next` before final clean validation if generated Next.js types may be stale; keep `strict: true`, `noImplicitAny: true`, and no `ignoreBuildErrors` override.
 11. Build and deploy the app.
-12. Register the first owner/admin account through the deployed production site.
-13. Run `npm run admin:promote`.
+12. Register the first owner account through the deployed production site.
+13. Set `OWNER_EMAIL` and run `npm run owner:promote`.
 14. Configure Resend sender domain and DNS.
 15. Keep `EMAIL_DRY_RUN=true` until final internal test orders are ready.
 16. Smoke test public pages, checkout, emails, admin, kitchen, and account pages.
@@ -161,8 +161,8 @@ Required production values:
 
 Workflow values:
 
-- `ADMIN_EMAIL`: set to the registered owner/admin email before promotion.
-- `ADMIN_ROLE`: `OWNER` for the primary owner account or `ADMIN` for staff.
+- `OWNER_EMAIL`: set to the first registered owner email before owner bootstrap.
+- `ADMIN_EMAIL` and `ADMIN_ROLE`: legacy single-account promotion inputs only; additional admins are managed by the owner in `/admin/role-manager`.
 
 Legacy/future payment values:
 
@@ -206,7 +206,8 @@ Production deployment posture:
 
 ## 10. Admin Checklist
 
-- Promote the first owner/admin account.
+- Bootstrap the first registered owner with `npm run owner:promote`.
+- Confirm the owner can assign multiple registered admins in `/admin/role-manager` and an admin cannot manage roles.
 - Confirm `/admin` is restricted to admin/owner roles.
 - Confirm `/admin/orders` displays guest badges for guest orders.
 - Confirm `/admin/orders/[id]` displays guest contact and weekly slot details.
