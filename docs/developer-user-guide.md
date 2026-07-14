@@ -102,10 +102,10 @@ npx prisma migrate deploy
 
 Use `migrate deploy` for fresh rehearsals and production. Do not use `prisma migrate dev` in production.
 
-Run the production-safe foundation seed when the target database needs the baseline allergens and BusinessSettings:
+Run the production-safe foundation seed once after the first migration when the target database needs the baseline allergens. It upserts only allergen names and does not create business settings or demo content:
 
 ```powershell
-npx prisma db seed
+npm run db:seed
 ```
 
 For local, demo, staging, or a disposable rehearsal database, the demo seed adds showcase users, menu data, weekly packages, offerings, options, and launch scheduling defaults:
@@ -115,6 +115,8 @@ npm run db:seed-demo
 ```
 
 Do not run `npm run db:seed-demo` against a real production customer database unless the owner intentionally wants the demo catalog and understands that the script recreates demo weekly records.
+
+Neither `npm run db:seed` nor `npm run db:seed-demo` runs automatically during the production build or migration lifecycle.
 
 ## 5. Environment Variables
 
@@ -319,7 +321,7 @@ Use a fresh, disposable MySQL/MariaDB database and production-shaped non-secret 
 3. Run `npm ci` from the repository root.
 4. Run `npm run prisma:generate`.
 5. Run `npx prisma migrate deploy`.
-6. Run `npx prisma db seed` for foundation data.
+6. Run `npm run db:seed` for foundation allergen data.
 7. Optionally run `npm run db:seed-demo` only on the disposable rehearsal database.
 8. Review BusinessSettings, especially disabled scheduling, blank public times, Wednesday open, Friday 5:00 PM late fee, Friday 10:00 PM close, and Sunday fulfillment.
 9. Run `npm run build` and `npm run start`.
@@ -374,7 +376,7 @@ Recommended deployment order:
 npm ci
 npm run build
 # Run the production foundation seed separately only when the launch procedure calls for it:
-npx prisma db seed
+npm run db:seed
 ```
 
 Then start/deploy the built app, register the first owner, use either `npm run owner:promote` or the temporary-token endpoint, configure Resend, and complete production smoke tests. On a host without console access, remove `OWNER_BOOTSTRAP_TOKEN` and restart/redeploy before normal production operation.

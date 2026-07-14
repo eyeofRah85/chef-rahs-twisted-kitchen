@@ -14,8 +14,8 @@
     "env:check": "node scripts/check-production-env.mjs",
     "owner:promote": "tsx prisma/promote-admin.ts --owner",
     "admin:promote": "tsx prisma/promote-admin.ts",
+    "db:seed": "tsx prisma/seed.ts",
     "db:seed-demo": "tsx prisma/seed-demo-data.ts"
-
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

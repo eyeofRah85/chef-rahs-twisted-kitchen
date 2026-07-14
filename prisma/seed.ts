@@ -1,102 +1,35 @@
-import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import { prisma } from "./script-prisma";
 
-function getMariaDbConfig() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is not set.");
-  }
-
-  const url = new URL(process.env.DATABASE_URL);
-
-  return {
-    host: url.hostname,
-    port: Number(url.port || 3306),
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
-    database: url.pathname.replace("/", ""),
-  };
-}
-
-const adapter = new PrismaMariaDb(getMariaDbConfig());
-
-const prisma = new PrismaClient({
-  adapter,
-});
+const baselineAllergenNames = [
+  "Dairy",
+  "Egg",
+  "Fish",
+  "Shellfish",
+  "Peanut",
+  "Tree Nut",
+  "Soy",
+  "Wheat",
+  "Gluten",
+  "Sesame",
+] as const;
 
 async function main() {
-  const allergens = [
-    "Dairy",
-    "Egg",
-    "Fish",
-    "Shellfish",
-    "Tree Nuts",
-    "Peanuts",
-    "Wheat",
-    "Soy",
-    "Sesame",
-  ];
-
-  for (const allergen of allergens) {
+  for (const name of baselineAllergenNames) {
     await prisma.allergen.upsert({
-      where: {
-        name: allergen,
-      },
-
+      where: { name },
       update: {},
-
-      create: {
-        name: allergen,
-      },
+      create: { name },
     });
   }
 
-  console.log("Allergens seeded.");
-
-  await prisma.businessSettings.upsert({
-    where: {
-      id: "business-settings",
-    },
-    update: {},
-    create: {
-      id: "business-settings",
-      deliveryFee: 10,
-      lateFee: 10,
-      cateringDepositPercent: 50,
-      orderCutoffDay: 4,
-      orderCutoffHour: 17,
-      orderCutoffMinute: 0,
-      noWeekendOrdering: true,
-      deliveryArea: "Greater Atlanta area",
-      checkoutCustomerSchedulingEnabled: false,
-      checkoutFixedFulfillmentDay: 0,
-      checkoutFixedFulfillmentHour: null,
-      checkoutFixedFulfillmentMinute: null,
-      checkoutFixedFulfillmentMessage:
-        "Orders are fulfilled on Sunday. You will be notified when your order is scheduled.",
-      weeklyCustomerSchedulingEnabled: false,
-      weeklyOrderingOpenDay: 3,
-      weeklyOrderingOpenHour: 0,
-      weeklyOrderingOpenMinute: 0,
-      weeklyLateFeeStartDay: 5,
-      weeklyLateFeeStartHour: 17,
-      weeklyLateFeeStartMinute: 0,
-      weeklyOrderingCloseDay: 5,
-      weeklyOrderingCloseHour: 22,
-      weeklyOrderingCloseMinute: 0,
-      weeklyFixedFulfillmentDay: 0,
-      weeklyFixedFulfillmentHour: null,
-      weeklyFixedFulfillmentMinute: null,
-      weeklyFixedFulfillmentMessage:
-        "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled.",
-    },
-  });
-
-  console.log("Business settings seeded");
+  console.log(`Seeded ${baselineAllergenNames.length} baseline allergens.`);
 }
 
 main()
-  .catch(console.error)
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
   .finally(async () => {
     await prisma.$disconnect();
   });

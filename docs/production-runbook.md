@@ -121,7 +121,7 @@ The npm lifecycle now runs these operations in order:
 
 `npx prisma migrate deploy` is production-safe and idempotent: it applies committed pending migrations and reports success without reapplying migrations already recorded in the database. If generation or migration fails, npm stops and `next build` does not run.
 
-The build lifecycle intentionally does not run `npx prisma db seed`, `npm run db:seed-demo`, `npm run owner:promote`, or the HTTP owner bootstrap endpoint. Seeding and owner setup remain explicit, separately reviewed launch actions.
+The build lifecycle intentionally does not run `npm run db:seed`, `npm run db:seed-demo`, `npm run owner:promote`, or the HTTP owner bootstrap endpoint. Seeding and owner setup remain explicit, separately reviewed launch actions.
 
 Confirm every Hostinger deployment log shows `prisma generate`, `prisma migrate deploy`, and then `next build`. Because migrations now run in `prebuild`, local and CI uses of `npm run build` also require a valid, reachable `DATABASE_URL`; use only a database appropriate for that environment.
 
@@ -156,12 +156,12 @@ Current migration inventory:
 
 ## 5. Seed And Setup Notes
 
-The production-safe foundation seed is configured in `prisma.config.ts` and `package.json`. It creates common allergens and default business settings with upserts.
+The production-safe foundation seed is configured in `prisma.config.ts` and `package.json`. It upserts only the baseline allergen names and leaves existing records unchanged. It does not create business settings, users, orders, menu content, or service requests.
 
-Run only after migrations:
+Run it once after the first production migration. It is idempotent and can be rerun safely when needed:
 
 ```powershell
-.\node_modules\.bin\prisma.cmd db seed
+npm run db:seed
 ```
 
 `npm run db:seed-demo` is intended for local, demo, staging, or disposable rehearsal databases. Do not run it against real production customer data unless the owner intentionally wants the demo catalog and understands that the script recreates demo weekly data.
@@ -169,6 +169,8 @@ Run only after migrations:
 ```powershell
 npm run db:seed-demo
 ```
+
+Neither seed command runs automatically during `npm run build`, Hostinger `prebuild`, or `npx prisma migrate deploy`.
 
 Launch menu items, weekly meal plan periods, offerings, gallery images, pricing, and business settings should be reviewed and configured through the admin UI after the first owner account is promoted.
 
