@@ -1,6 +1,6 @@
 # Chef Rah's Twisted Kitchen Admin Dashboard User Guide
 
-Last updated: June 18, 2026
+Last updated: July 14, 2026
 
 This guide explains how to use the admin dashboard for daily operations, menu management, service requests, weekly meal plans, gallery updates, customer lookup, payments, reports, notifications, and business settings.
 
@@ -12,6 +12,11 @@ The guide is written for business admins, kitchen staff, and trusted operators. 
 
 Only accounts with the `ADMIN` or `OWNER` role can access the admin dashboard.
 
+| Role | Access |
+| --- | --- |
+| `OWNER` | All normal admin pages plus the owner-only Role Manager. The owner can assign `CUSTOMER`, `ADMIN`, or `OWNER` to registered users. |
+| `ADMIN` | Normal admin operations, including orders, kitchen, menus, customers, reports, notifications, and settings. Admins cannot manage user roles. |
+
 1. Register or sign in with the admin account.
 2. Go to `/admin`.
 3. If the account does not have admin access, the app redirects away from the dashboard.
@@ -22,7 +27,16 @@ Before launch, register and bootstrap the first owner using the documented launc
 npm run owner:promote
 ```
 
-That command requires `OWNER_EMAIL` to match an existing registered account. It does not create a user. Once signed in, the owner can open `/admin/role-manager` and assign `ADMIN` access to additional users who registered normally.
+That command requires `OWNER_EMAIL` to match an existing registered account. It does not create a user, invitation, or passwordless account. Once signed in, the owner can open `/admin/role-manager` and assign `ADMIN` access to additional users who registered normally.
+
+In Role Manager:
+
+1. Find the registered user by name or email.
+2. Select `ADMIN` from that user's role list.
+3. Choose Update Role.
+4. Confirm the user can open the normal admin dashboard.
+
+Keep at least one owner at all times. The page disables unsafe last-owner demotion, and the server rejects it even if a request is submitted manually. Successful role changes are written to the admin audit log with the acting owner, target user, previous role, new role, and timestamp.
 
 ### Main Admin Routes
 
@@ -35,7 +49,7 @@ That command requires `OWNER_EMAIL` to match an existing registered account. It 
 | Service Requests | `/admin/catering` | Shared queue for catering and personal chef requests. |
 | Service request detail | `/admin/catering/[id]` | Approve or deny requests, quote, manage deposits, and update request status. |
 | Menu manager | `/admin/menu` | Manage standard menu items, categories, type, availability, allergens, and option groups. |
-| Weekly menu manager | `/admin/menu/weekly` | Manage weekly meal plan periods, packages, fixed offerings, allergens, allowed spice/protein choices, and fulfillment prep. |
+| Weekly menu manager | `/admin/menu/weekly` | Manage weekly periods, packages, slot labels, General/Breakfast offerings, allowed options, ordering windows, and fulfillment prep. |
 | Menu categories | `/admin/menu/categories` | Rename display categories and control sort order. |
 | Archived menu items | `/admin/menu/archived` | Restore or permanently delete archived menu items. |
 | Gallery manager | `/admin/gallery` | Add, edit, sort, categorize, replace, or remove public gallery images. |
@@ -44,7 +58,7 @@ That command requires `OWNER_EMAIL` to match an existing registered account. It 
 | Payments | `/admin/payments` | Track outstanding manual/offline payments and mark orders paid. |
 | Reports | `/admin/reports` | Review revenue, order, payment, approval, and service request metrics. |
 | Notifications | `/admin/notifications` | Review active/planned notification types and current email delivery mode. |
-| Business settings | `/admin/settings` | Manage delivery fee, late fee, deposit percent, cutoff rules, weekend ordering, and delivery area. |
+| Business settings | `/admin/settings` | Manage fees, general order rules, global checkout scheduling, weekly ordering windows, fixed fulfillment, and customer-facing fulfillment messages. |
 | Role manager | `/admin/role-manager` | Owner-only user role management for registered customer, admin, and owner accounts. |
 
 ## Daily Operating Workflow
@@ -117,11 +131,14 @@ Routes:
 
 Orders are direct checkout purchases. Meal plan and a la carte orders live here. Catering and personal chef requests do not become direct checkout orders; they use the service request workflow.
 
+Both guest and logged-in customers can submit direct checkout orders. Logged-in orders are linked to the customer's account. Guest orders keep the submitted name, email, phone, and delivery/contact snapshot with `userId = null`; they do not create or attach a user account by matching email.
+
 ### Order List
 
 The orders page shows:
 
 - Customer name and email.
+- A `Guest` badge when the order is not linked to a registered user.
 - Order type: Delivery or Pickup.
 - Order status.
 - Approval status.
@@ -179,11 +196,11 @@ The app blocks duplicate final approval decisions. After an order is approved or
 
 The order detail page shows:
 
-- Customer information.
+- Customer information and whether the order is a guest order.
 - Delivery/contact snapshot saved at checkout.
-- Requested date/time.
+- The customer-selected date/time when scheduling was enabled, or the configured fixed fulfillment message when scheduling was disabled.
 - Order items and option notes.
-- Weekly meal plan snapshots when present.
+- Weekly meal plan selections grouped by day and configured slot label, including per-slot options and upcharges.
 - Allergen acknowledgement status.
 - Allergy notes.
 - Substitution preference.
@@ -191,7 +208,7 @@ The order detail page shows:
 - Payment status.
 - Status history.
 
-The delivery/contact snapshot is historical. It shows the information used for that order, even if the customer later changes their account profile.
+The delivery/contact snapshot is historical. It shows the information used for that order, even if the customer later changes their account profile. For fixed-schedule orders, an internal fallback datetime may be stored for system use, but it is not a promised delivery time and should not be presented to the customer as one.
 
 ### Approving or Denying an Order
 
@@ -227,9 +244,9 @@ On the order detail page, use Print Kitchen Ticket.
 The print view is designed to include core kitchen information such as:
 
 - Customer/order details.
-- Requested time.
+- Customer-selected schedule or the fixed fulfillment message, as appropriate.
 - Items and quantities.
-- Weekly meal plan snapshots.
+- Weekly meal plan slot labels, selected offerings, options, and upcharges.
 - Allergy alerts.
 - Notes and selections.
 
@@ -245,11 +262,12 @@ The kitchen view shows prep-ready orders only. An order appears here when it is:
 Each kitchen card shows:
 
 - Customer name.
+- Guest status when the order is not linked to an account.
 - Order type.
 - Current status.
-- Requested date/time.
+- Customer-selected schedule or fixed fulfillment message.
 - Items and quantities.
-- Weekly meal plan snapshots.
+- Weekly meal plan slots grouped by day and readable slot label, with selected options.
 - Item notes and selections.
 - Allergy alerts.
 
@@ -362,7 +380,7 @@ Routes:
 - `/admin/menu/categories`
 - `/admin/menu/archived`
 
-The Menu Manager controls standard menu records. Weekly meal plan periods and weekly fixed offerings are managed separately at `/admin/menu/weekly`.
+The Menu Manager controls standard menu records. Weekly meal plan periods, packages, and weekly offerings are managed separately at `/admin/menu/weekly`.
 
 ### Critical Menu Concepts
 
@@ -475,7 +493,7 @@ For fixed meal plan items, the template adds only:
 - Spice Level.
 - Protein Substitution.
 
-Older broad customizations such as vegetable/starch choice or 3-meal packages are intentionally not part of the current meal plan model.
+Older broad customizations such as vegetable/starch choice are intentionally not part of this standard menu item template. Weekly package slots and weekly offering choices are configured separately in the Weekly Menu Manager.
 
 Pork and beef should be treated as request-only proteins. Pricing may vary and chef approval may be required.
 
@@ -495,7 +513,7 @@ Use this page to restore archived items or permanently delete them.
 
 Route: `/admin/menu/weekly`
 
-Weekly meal plans are fixed offerings created by the business. Customers can select package, offering, spice level, and protein substitution, but meals are not otherwise customizable.
+Weekly meal plans use a Build Your Weekly Plan flow. A package defines the number of days and meal slots, and the customer must fill every slot with a published offering from the same weekly period. Slot-specific options and upcharges are preserved with the order for checkout, email, admin, and kitchen use.
 
 ### Weekly Menu Periods
 
@@ -504,10 +522,25 @@ A weekly menu period includes:
 - Week label.
 - Start date.
 - End date.
-- Ordering cutoff.
+- Customer scheduling mode: inherit the business setting, fixed weekly fulfillment, or customer-selected date/time.
+- Ordering open date/time.
+- Late-fee start date/time.
+- Ordering close date/time.
+- Customer-facing delivery message.
 - Order capacity.
 - Status.
 - Fulfillment notes.
+
+The normal form keeps the legacy ordering cutoff out of the main workflow. It is maintained automatically from Ordering Closes and appears only in the Advanced / system schedule section with the internal fixed fulfillment datetime.
+
+Launch periods should resolve to this business-local schedule:
+
+- Weekly menus are posted and ordering opens Wednesday.
+- Orders before Friday at 5:00 PM have no weekly late fee.
+- Orders from Friday at 5:00 PM through Friday at 10:00 PM include the configured late fee.
+- Weekly ordering closes Friday at 10:00 PM; orders after that time are rejected.
+- Fulfillment is Sunday, with no promised public delivery time.
+- The customer-facing message is: "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
 
 Weekly menu statuses:
 
@@ -529,12 +562,13 @@ Use Create Weekly Menu to start a new period, or open an existing period and use
 Recommended setup order:
 
 1. Create the weekly menu period in Draft status.
-2. Add 1-meal and/or 2-meal packages.
-3. Add fixed weekly offerings.
-4. Add allergens to each offering.
-5. Add allowed spice/protein options.
-6. Review capacity and fulfillment notes.
-7. Publish when ready.
+2. Review the resolved ordering open, late-fee start, close, and Sunday fulfillment settings.
+3. Add packages and configure each package's meal slot labels.
+4. Add General and, where needed, Breakfast offerings.
+5. Add allergens to each offering.
+6. Add allowed weekly options and verify any upcharges or request-only flags.
+7. Review capacity, customer-facing delivery copy, and fulfillment notes.
+8. Publish when ready.
 
 ### Cloning a Weekly Menu
 
@@ -548,8 +582,9 @@ The clone copies:
 - Allowed spice/protein options.
 - Fulfillment notes.
 - Capacity value.
+- Weekly scheduling mode and customer-facing delivery message.
 
-After cloning, update the week label, dates, cutoff, and any meal-specific details before publishing.
+Cloning advances resolved schedule datetimes for the new period. Before publishing, verify the week label, period dates, ordering window, Sunday fulfillment, capacity, packages, offerings, and meal-specific details.
 
 ### Weekly Packages
 
@@ -560,12 +595,17 @@ Fields:
 - Package name.
 - Package price.
 - Days: 5 days or 7 days.
-- Meals per day: 1 meal or 2 meals.
+- Meals per day: 1 through 4.
+- One configured label for each daily meal slot.
 - Display order.
 - Notes.
 - Availability.
+- Requires chef approval.
+- Seasonal package.
 
-The 3-meal package is not part of the current business model.
+Meal slot labels are selected from consistent choices such as Breakfast, Lunch, Dinner, Snack, or the slot-specific generic label (`Meal 1`, `Meal 2`, and so on). Breakfast can be assigned to any package slot. A 5-Day / 3 Meals package can use Breakfast, Lunch, and Dinner, producing 15 required customer selections.
+
+`Requires chef approval` is displayed to admins with that wording and displayed to customers as `By request`. `Seasonal` is a separate package flag and customer badge; it does not mean the same thing as By request.
 
 ### Weekly Offerings
 
@@ -579,8 +619,9 @@ Fields:
 - Dietary info.
 - Image URL.
 - Availability.
+- Meal type: General or Breakfast.
 
-Offerings should be written as fixed meals, not open-ended custom meal builders.
+Offerings should be written as complete meals, not open-ended custom meal builders. Breakfast offerings receive a Breakfast-only badge in admin and are shown only in package slots labeled Breakfast. They do not appear in Lunch, Dinner, Snack, or generic Meal slots, and the server rejects a Breakfast offering submitted for a non-Breakfast slot.
 
 ### Weekly Offering Allergens
 
@@ -590,7 +631,7 @@ These tags power customer warning and checkout acknowledgement flows when the cu
 
 ### Weekly Spice and Protein Options
 
-Allowed weekly options are limited to:
+Allowed weekly options currently include:
 
 - Spice Level.
 - Protein Substitution.
@@ -606,7 +647,7 @@ Each option can include:
 - Availability.
 - Request with chef approval, for protein substitutions.
 
-The approval checkbox is only available for protein substitutions.
+The approval checkbox is only available for protein substitutions. Options are selected per meal slot. Positive price deltas are added to the package price by the server, while request-only options remain visible in the order, confirmation email, admin detail, and kitchen workflow.
 
 ### Weekly Fulfillment Prep
 
@@ -778,15 +819,15 @@ The Email System card shows the current email mode:
 - Dry Run: emails are logged only.
 - Disabled: emails are skipped because the email provider key is not configured.
 
-For local testing, preview/dry-run modes protect real customers from receiving test emails.
+For local testing, `EMAIL_DRY_RUN=true` protects real customers from receiving test emails. Dry-run logs and preview files prove that app-side rendering and triggers ran, but they do not prove Resend delivery. A controlled internal delivery test requires a verified Resend sender, an internal recipient, and `EMAIL_DRY_RUN=false`. Confirm inbox delivery before leaving live sending enabled for launch.
 
 ## Business Settings
 
 Route: `/admin/settings`
 
-Business settings control operational rules used by checkout and service requests.
+Business settings control operational rules used by checkout and service requests. Changes affect new checkout calculations and newly resolved weekly periods; historical order snapshots remain unchanged.
 
-Fields:
+General fields:
 
 - Delivery Fee.
 - Late Fee.
@@ -797,7 +838,27 @@ Fields:
 - Delivery Area.
 - Disable weekend ordering.
 
-Be careful when changing settings during an active order window. Existing historical orders keep their saved snapshots, but new checkout calculations and service request quotes may use current settings.
+Checkout Fulfillment Schedule fields:
+
+- Allow customers to choose checkout fulfillment date/time.
+- Fixed checkout fulfillment day.
+- Optional fixed checkout fulfillment time.
+- Customer-facing checkout fulfillment message.
+
+For launch, global customer scheduling is disabled. Checkout therefore hides Requested Date and Requested Time for weekly and regular orders and stores a trusted server-resolved fulfillment datetime. Leave the public time blank because the business does not promise an exact delivery time. The internal fallback time is system data, not a customer promise.
+
+Weekly Meal Plan Ordering Window fields:
+
+- Allow customers to choose weekly meal plan fulfillment date/time.
+- Weekly ordering open day/time.
+- Weekly late-fee start day/time.
+- Weekly ordering close day/time.
+- Fixed weekly fulfillment day and optional time.
+- Customer-facing weekly fulfillment message.
+
+Launch defaults are Wednesday opening, Friday 5:00 PM late-fee start, Friday 10:00 PM close, Sunday fulfillment, and no public fulfillment time. Weekly periods resolve these defaults when they are created, after which the period's schedule should be reviewed before publication.
+
+Be careful when changing settings during an active order window. Existing historical orders keep their saved snapshots, but new checkout calculations, newly created periods, and service request quotes may use current settings.
 
 ## Image and Upload Guidelines
 
@@ -883,11 +944,11 @@ These guardrails help prevent duplicate customer emails and inconsistent final s
 ### Before Each Weekly Menu Window
 
 - Create or clone the weekly menu period.
-- Confirm dates, cutoff, and capacity.
-- Add 1-meal and 2-meal packages.
-- Add fixed offerings.
+- Confirm dates, ordering open/late/close times, Sunday fulfillment message, and capacity.
+- Configure packages, meal counts, and readable slot labels.
+- Add General offerings and Breakfast offerings where Breakfast slots exist.
 - Tag allergens.
-- Add spice and protein options.
+- Add per-offering spice and protein options, including any upcharges.
 - Mark request-only proteins appropriately.
 - Publish only after the weekly menu is complete.
 
@@ -911,8 +972,9 @@ These guardrails help prevent duplicate customer emails and inconsistent final s
 - Do not send Catering through cart checkout. Use service requests and quotes.
 - Do not confuse menu category with menu item type.
 - Do not publish a weekly menu until packages, offerings, allergens, and options are complete.
-- Do not use 3-meal packages; only 1-meal and 2-meal packages are currently supported.
-- Do not treat weekly meals as fully customizable. They are fixed offerings.
+- Do not omit or mislabel package meal slots; customers must fill every configured slot.
+- Do not place Breakfast-only offerings in non-Breakfast slots.
+- Do not treat weekly meals as unrestricted custom items; choices must come from published offerings in the same weekly period.
 - Do not mark payments or deposits paid until money is actually received.
 - Do not ignore request-only proteins; they may need chef approval.
 - Do not rely on local uploads for production unless durable storage is confirmed.
@@ -922,8 +984,9 @@ These guardrails help prevent duplicate customer emails and inconsistent final s
 Before production launch:
 
 - Production URLs must use `https://`.
-- Email dry-run must be disabled only when ready for live customer email.
+- Run dry-run email QA with `EMAIL_DRY_RUN=true`, then complete a controlled internal Resend delivery test with `EMAIL_DRY_RUN=false` before enabling customer-facing email.
 - `OWNER_EMAIL` must match a registered user before bootstrapping the first owner with `npm run owner:promote`.
+- Confirm global and weekly customer scheduling are disabled, both public fulfillment times are blank, and the fixed Sunday messages do not promise a time.
 - Durable image storage must be decided if admins need direct production uploads.
 - Square/PayPal automated checkout is future work; manual payment tracking remains supported for launch.
 
@@ -944,8 +1007,8 @@ That is expected. Final approval decisions are locked to prevent duplicate custo
 Check:
 
 - The weekly period status is Published.
-- The current business date falls within the weekly period.
-- The ordering cutoff has not passed.
+- The resolved ordering window has opened and has not closed in the business timezone.
+- The weekly period dates and Sunday fulfillment date are correct.
 - Packages and offerings are available.
 - Capacity has not been reached.
 
