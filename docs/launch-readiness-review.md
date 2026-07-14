@@ -1,10 +1,10 @@
 # Launch Readiness Review
 
-Date: July 12, 2026
+Last updated: July 14, 2026
 
 Branch: `launch/readiness-review`
 
-Scope: full order-flow launch review after weekly meal plan slot selections, breakfast-only weekly offerings, weekly option upcharges, past-date validation, late-fee corrections, and true guest checkout.
+Scope: full order-flow launch review after weekly meal plan slot selections, breakfast-only weekly offerings, weekly option upcharges, true guest checkout, and the final fixed checkout/weekly scheduling model.
 
 This is a documentation/review pass. No application behavior, Prisma schema, payment provider behavior, catering flow, or personal-chef flow was changed.
 
@@ -16,6 +16,7 @@ The main launch readiness concern found in this review was production documentat
 
 - `docs/production-runbook.md` correctly describes MySQL/MariaDB, Hostinger, Resend, manual Square/PayPal payment posture, disabled local production uploads, and `prisma migrate deploy`.
 - `.env.example`, `scripts/check-production-env.mjs`, `docs/launch-readiness-checklist.md`, and `docs/client-launch-information-needed.md` now align with the MySQL/MariaDB production path.
+- Launch checkout scheduling is now fixed: customers are not asked for Requested Date or Requested Time, weekly ordering follows the Wednesday-Friday window, and Sunday fulfillment is communicated without promising a public time.
 
 Recommended next action: run the final release-candidate validation and a production-like smoke test with `EMAIL_DRY_RUN=true` before enabling live Resend delivery.
 
@@ -49,10 +50,10 @@ Weekly meal plans:
 
 Validation and fees:
 
-- Past requested date/time validation exists in shared business rules and is enforced server-side through `validateServerRequestedDateTime`.
-- No-weekend validation remains tied to requested fulfillment date/time.
-- Late fee calculation remains based on current order submission time and business settings, not requested fulfillment date/time.
-- Weekly deadline validation remains in place and rejects selected requested dates after a period cutoff.
+- Global customer-selected scheduling is disabled for launch; regular and weekly checkout resolve trusted fulfillment server-side without requiring client `requestedDateTime`.
+- Weekly ordering is open Wednesday through Friday, enters the late-fee window Friday at 5:00 PM, and closes Friday at 10:00 PM in the business timezone.
+- Weekly fixed fulfillment is Sunday. The app may store an internal fallback datetime, but customer-facing views use the configured message and do not promise the fallback time.
+- Past-date and no-weekend validation remain available and server-enforced when customer-selected scheduling is enabled.
 
 Emails:
 
@@ -77,16 +78,16 @@ Account ownership:
 
 Run these in a production-like environment after migrations and seed/setup:
 
-1. Anonymous pickup order with name, email, phone, manual payment, and valid weekday requested time.
+1. Anonymous pickup order with name, email, phone, manual payment, no customer-supplied `requestedDateTime`, and the fixed fulfillment message visible.
 2. Anonymous delivery order with required delivery address fields.
-3. Anonymous weekly meal plan order using a current published period before its order cutoff.
+3. Anonymous weekly meal plan order during its resolved Wednesday-Friday ordering window, without a customer-supplied `requestedDateTime`.
 4. Logged-in pickup or delivery order and account order history visibility.
 5. Weekly plan with at least one option upcharge and one request-only option.
 6. Breakfast-only offering visible in Breakfast slots and hidden from Lunch/Dinner/Snack/Meal slots.
 7. Tampered API request using breakfast-only offering in non-Breakfast slot returns `400`.
-8. Past requested date/time returns `400`.
-9. Weekend requested date/time returns `400` when no-weekend ordering is enabled.
-10. Late fee appears when the order is submitted after the configured cutoff.
+8. Requested Date and Requested Time remain hidden while global scheduling is disabled.
+9. No `12:00 PM` internal fallback appears in checkout, customer order detail, or email.
+10. Weekly orders before Friday 5:00 PM have no late fee; Friday 5:00 PM-10:00 PM orders have the late fee; orders after Friday 10:00 PM are rejected.
 11. Guest confirmation lands on `/checkout/thank-you`.
 12. Logged-in confirmation lands on `/orders/[id]`.
 13. Guest confirmation, approval, and payment emails do not include account-only detail links.
@@ -117,7 +118,6 @@ Resolution:
 
 ## 5. Non-Blocking Polish Items
 
-- `docs/production-runbook.md` says to run current migrations, but it does not list the current migration names. This is acceptable because `prisma migrate deploy` applies all pending migrations, but a short migration inventory could make launch handoff clearer.
 - Customer-facing manual payment copy is launch-safe but generic. Business-approved exact Square/PayPal invoice/link wording can be added later.
 - Guest checkout intentionally has no public tracking link. This is correct for launch, but a future tokenized guest-order access design may improve support.
 - Legacy Stripe dependency/env parsing remains present while online card checkout is disabled. This is acceptable for launch, but should be cleaned up when Square/PayPal integration work begins.
@@ -132,13 +132,16 @@ Resolution:
 5. Run `npm run prisma:generate`.
 6. Run `npx prisma migrate deploy` or `.\node_modules\.bin\prisma.cmd migrate deploy`.
 7. Run the foundation seed only after migrations.
-8. Build and deploy the app.
-9. Register the first owner/admin account through the deployed production site.
-10. Run `npm run admin:promote`.
-11. Configure Resend sender domain and DNS.
-12. Keep `EMAIL_DRY_RUN=true` until final internal test orders are ready.
-13. Smoke test public pages, checkout, emails, admin, kitchen, and account pages.
-14. Set `EMAIL_DRY_RUN=false` only after final internal email and order tests pass.
+8. Run `npm run db:seed-demo` only for local, demo, staging, or disposable rehearsal data, not real production customer data unless intentionally desired.
+9. Verify BusinessSettings after migration/seed, including disabled global scheduling, Sunday fulfillment without a public time, Wednesday open, Friday 5:00 PM late start, and Friday 10:00 PM close.
+10. Remove `.next` before final clean validation if generated Next.js types may be stale; keep `strict: true`, `noImplicitAny: true`, and no `ignoreBuildErrors` override.
+11. Build and deploy the app.
+12. Register the first owner/admin account through the deployed production site.
+13. Run `npm run admin:promote`.
+14. Configure Resend sender domain and DNS.
+15. Keep `EMAIL_DRY_RUN=true` until final internal test orders are ready.
+16. Smoke test public pages, checkout, emails, admin, kitchen, and account pages.
+17. Set `EMAIL_DRY_RUN=false` only after final internal email and order tests pass.
 
 ## 7. Environment Variable Checklist
 
@@ -175,6 +178,10 @@ Current migration inventory:
 - `20260711014741_add_weekly_slot_option_selections`
 - `20260711145356_add_weekly_package_flags_and_slot_labels`
 - `20260711182000_add_weekly_offering_breakfast_only`
+- `20260712170000_add_weekly_ordering_window`
+- `20260712203000_add_global_checkout_scheduling`
+- `20260713093000_make_weekly_fulfillment_time_optional`
+- `20260713101500_make_checkout_fulfillment_time_optional`
 
 Production deployment posture:
 
@@ -208,13 +215,15 @@ Production deployment posture:
 - Confirm mark-paid sends payment received email.
 - Confirm manual payment status is updated only after external payment confirmation.
 - Confirm weekly menu packages, offerings, breakfast flags, slot labels, and option pricing are accurate.
+- Confirm `/admin/settings` has global and weekly customer scheduling disabled, Sunday fulfillment, no public fulfillment time, the approved messages, and the Wednesday-Friday weekly window.
 
 ## 11. Customer Checkout Checklist
 
 Guest checkout:
 
-- Pickup requires name, email, phone, requested date/time, and payment method.
-- Delivery requires name, email, phone, address line 1, city, state, postal code, requested date/time, and payment method.
+- Pickup requires name, email, phone, and payment method; launch checkout does not require a customer-supplied `requestedDateTime`.
+- Delivery requires name, email, phone, address line 1, city, state, postal code, and payment method; launch checkout does not require a customer-supplied `requestedDateTime`.
+- Requested Date and Requested Time are hidden and the configured fixed fulfillment message is visible.
 - Guest orders land on `/checkout/thank-you`.
 - Guest orders do not create users and do not appear in account pages.
 
@@ -229,16 +238,20 @@ Weekly meal plans:
 
 - Package slot count equals `days * mealsPerDay`.
 - Slot labels use package-configured labels.
+- The 5-Day / 3 Meals package uses Breakfast/Lunch/Dinner and displays "By request" to customers because it requires chef approval.
 - Breakfast offerings appear only for Breakfast slots.
+- The demo seed contains exactly three Breakfast-only offerings when used in a demo/staging database.
 - Server rejects breakfast-only offerings in non-Breakfast slots.
 - Slot options and upcharges persist and display in cart, checkout, emails, order detail, admin, and kitchen.
+- Weekly checkout shows Sunday delivery with the configured message and no promised time.
 
 Validation:
 
-- Past requested date/time is rejected.
-- Weekend requested date/time is rejected when enabled.
-- Weekly deadline validation rejects requested dates after the period cutoff.
-- Late fee is based on current order submission time in the business timezone.
+- No customer-facing view shows an internal `12:00 PM` fallback time.
+- Weekly ordering is allowed Wednesday through Friday 10:00 PM.
+- Weekly late fee applies from Friday 5:00 PM through Friday 10:00 PM.
+- Weekly orders after Friday 10:00 PM are rejected for that period.
+- Past-date and weekend validation remain enforced if customer scheduling is enabled later.
 
 ## 12. Rollback Notes
 

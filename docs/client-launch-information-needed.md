@@ -1,6 +1,6 @@
 # Client Launch Information Needed
 
-Last updated: June 19, 2026
+Last updated: July 14, 2026
 
 Use this list to request the remaining information and assets from the client before launching Chef Rah's Twisted Kitchen.
 
@@ -56,7 +56,17 @@ These items are needed before production can safely go live.
 - Delivery area or delivery radius.
 - Delivery fee.
 - Minimum lead time for orders.
-- Late fee rules, if any.
+- Confirmation of the final launch scheduling configuration already implemented:
+  - Global customer-selected checkout scheduling is disabled.
+  - Regular and weekly checkout do not ask for Requested Date or Requested Time.
+  - Global and weekly fixed fulfillment day is Sunday.
+  - No public fulfillment time is promised or displayed.
+  - Weekly menus are posted and ordering opens Wednesday.
+  - Weekly late fee starts Friday at 5:00 PM.
+  - Weekly ordering closes Friday at 10:00 PM; later orders are rejected for that weekly period.
+- Approval of the weekly customer message: "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
+- Approval of the regular-order fixed fulfillment message shown while global scheduling is disabled.
+- Confirmation that the weekly late fee remains `$10.00`.
 - Service request deposit percentage.
 - Preferred manual payment instructions for customer orders.
 - Preferred manual deposit/payment instructions for service requests.
@@ -66,12 +76,13 @@ These items are needed before production can safely go live.
 
 - Final launch-week weekly menu.
 - Weekly menu start date and end date.
-- Ordering cutoff date/time.
+- Confirmation that the resolved weekly period schedule matches Wednesday open, Friday 5:00 PM late-fee start, Friday 10:00 PM close, and Sunday fulfillment.
 - Weekly order capacity. Current expected value is 10 customer orders per weekly menu.
-- Final 1-meal package price.
-- Final 2-meal package price.
-- Confirmation that 3-meal packages should remain removed.
+- Final 5-Day / 2 Meals package price; its slots are Lunch and Dinner.
+- Final 5-Day / 3 Meals package price; its slots are Breakfast, Lunch, and Dinner, it requires chef approval, and customers see "By request."
 - Final weekly offerings with names, descriptions, and images if available.
+- Confirmation that Breakfast-only offerings are appropriate for Breakfast slots and must remain hidden from non-Breakfast slots.
+- The demo seed contains exactly three Breakfast-only offerings for demo/staging use; replace or approve them before using that catalog as launch data.
 - Allergen tags for every weekly offering.
 - Allowed spice levels.
 - Allowed protein substitutions.
@@ -169,3 +180,5 @@ Please review the attached launch information list and send the launch-blocking 
 - Do not allow local production uploads unless the client accepts the durability risk or the host guarantees persistent shared storage.
 - Do not enable automated Square/PayPal checkout unless the client approves a dedicated future payment integration phase. Manual Square/PayPal payment links or invoices are acceptable for launch.
 - Keep Catering and Personal Chef as service request workflows, not checkout products.
+- Do not interpret the internally stored fulfillment datetime as a customer promise. When no public fulfillment time is configured, customer pages and emails must show the approved message and never expose a fallback such as `12:00 PM`.
+- Use `npm run db:seed-demo` only for local, demo, staging, or disposable rehearsal databases. Do not run it against real production customer data unless the demo catalog is intentionally desired.

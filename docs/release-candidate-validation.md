@@ -1,6 +1,6 @@
 # Release Candidate Validation
 
-Date: July 12, 2026
+Last updated: July 14, 2026
 
 This document records the final release-candidate validation pass after the weekly meal plan slot-selection work, true guest checkout work, launch readiness documentation, and MySQL/MariaDB production readiness cleanup.
 
@@ -8,7 +8,7 @@ This document records the final release-candidate validation pass after the week
 
 The release candidate is ready for production deployment preparation, pending final production environment values, Resend sender verification, and the documented live smoke tests.
 
-No application behavior, payment flow, Prisma schema, checkout logic, catering flow, or personal-chef flow was changed during this pass. The only cleanup outside this file was documentation-only: the historical root `Notes.md` stack note was updated so it no longer recommends PostgreSQL/Supabase/Neon as the production database path.
+No application behavior, payment flow, Prisma schema, checkout logic, catering flow, or personal-chef flow was changed during the original validation pass or this final scheduling documentation refresh. The release-candidate record and related launch guides were updated only to match the behavior already present in the app.
 
 ## Branches And Features Included
 
@@ -22,7 +22,13 @@ This validation branch was created from `main` and includes the current release-
 - True guest checkout creates guest orders with `userId = null`.
 - Guest orders do not create fake/passwordless accounts and are not auto-attached by matching email.
 - Guest checkout uses `/checkout/thank-you`; protected `/orders/[id]` links are only sent for authenticated customer orders.
+- Global customer-selected checkout scheduling is disabled for launch, so regular and weekly checkout use trusted server-resolved fulfillment values.
+- Weekly ordering opens Wednesday, enters the late-fee window Friday at 5:00 PM, closes Friday at 10:00 PM, and resolves Sunday fulfillment.
+- Fixed fulfillment times are optional; internal fallback datetimes are not displayed as customer promises.
+- The 5-Day / 3 Meals demo package uses Breakfast, Lunch, and Dinner and displays customer-facing "By request" because it requires chef approval.
+- The demo seed contains exactly three Breakfast-only weekly offerings.
 - MySQL/MariaDB is the documented production database path for Hostinger compatibility.
+- TypeScript keeps `strict: true` and explicitly enables `noImplicitAny: true`.
 
 ## Validation Commands Run
 
@@ -30,8 +36,10 @@ Code and build validation:
 
 ```powershell
 npm run prisma:generate
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
 npm run check
 npm run build
+npx tsc --noEmit --pretty false
 git diff --check
 ```
 
@@ -93,9 +101,11 @@ Weekly meal plan validation:
 
 Scheduling and fee validation:
 
-- `validateServerRequestedDateTime` enforces past-date and no-weekend validation using business-timezone helpers.
-- Late fee calculation uses current server/business time through `calculateServerLateFee`, not `requestedDateTime`.
-- Weekly period/deadline validation still uses the submitted `requestedDateTime` for schedule/window checks.
+- With global customer scheduling disabled, checkout hides Requested Date and Requested Time and the order API resolves trusted fulfillment server-side.
+- Regular fixed checkout uses the configured global fulfillment day/message; weekly fixed checkout uses the resolved weekly period schedule.
+- Weekly ordering window validation uses current server/business time: open Wednesday, no late fee before Friday 5:00 PM, late fee Friday 5:00 PM-10:00 PM, and closed after Friday 10:00 PM.
+- Weekly fulfillment is Sunday. When no public time is configured, customer views use the fulfillment message and do not format the internal fallback datetime.
+- `validateServerRequestedDateTime` continues to enforce past-date and no-weekend validation when customer scheduling is enabled.
 
 ## Launch Blockers
 
@@ -127,13 +137,17 @@ Remaining launch gates are operational, not code blockers:
 6. Run `npm run prisma:generate`.
 7. Run `npx prisma migrate deploy`.
 8. Seed foundation data only if required by the runbook.
-9. Build and deploy the app.
-10. Register the first owner/admin account through the deployed production site.
-11. Set `ADMIN_EMAIL` and run `npm run admin:promote`.
-12. Configure Resend sender domain and DNS.
-13. Keep `EMAIL_DRY_RUN=true` until final internal order/email tests are ready.
-14. Run production smoke tests.
-15. Set `EMAIL_DRY_RUN=false` only after internal email/order tests pass.
+9. Run `npm run db:seed-demo` only for local, demo, staging, or disposable rehearsal databases, not real production customer data unless intentionally desired.
+10. Verify BusinessSettings after migration/seed: scheduling disabled, Sunday fixed fulfillment with no public time, Wednesday open, Friday 5:00 PM late start, and Friday 10:00 PM close.
+11. Remove `.next` before the final clean validation if generated route types may be stale.
+12. Confirm `strict: true`, `noImplicitAny: true`, and no `ignoreBuildErrors` override.
+13. Build and deploy the app.
+14. Register the first owner/admin account through the deployed production site.
+15. Set `ADMIN_EMAIL` and run `npm run admin:promote`.
+16. Configure Resend sender domain and DNS.
+17. Keep `EMAIL_DRY_RUN=true` until final internal order/email tests are ready.
+18. Run production smoke tests.
+19. Set `EMAIL_DRY_RUN=false` only after internal email/order tests pass.
 
 ## Final Production Smoke-Test Checklist
 
@@ -144,14 +158,19 @@ Customer flow:
 - Anonymous delivery order submits and lands on `/checkout/thank-you`.
 - Anonymous weekly meal plan order submits with all required slots/options.
 - Logged-in order submits and appears in account order history.
-- Past requested date/time is rejected.
-- Weekend requested date/time is rejected.
-- Late fee reflects current order submission time after cutoff.
+- Requested Date and Requested Time are hidden while global customer scheduling is disabled.
+- The configured fixed fulfillment message is visible for regular and weekly checkout.
+- Guest regular and weekly orders submit without a customer-supplied `requestedDateTime`.
+- No customer-facing cart, checkout, order detail, or email displays the internal `12:00 PM` fallback.
+- When customer scheduling is temporarily enabled for regression QA, past and weekend requested times remain rejected.
+- Weekly late fee applies Friday from 5:00 PM through 10:00 PM, and weekly ordering is rejected after Friday 10:00 PM.
 
 Weekly meal plan flow:
 
 - Slot labels display clearly in menu, cart, checkout, emails, admin, and kitchen views.
 - Breakfast-only offerings appear only in Breakfast-labeled slots.
+- The 5-Day / 3 Meals package shows Breakfast/Lunch/Dinner and customer-facing "By request".
+- The demo seed contains exactly three Breakfast-only offerings when used in a demo/staging database.
 - Weekly option upcharges are included in totals and visible in admin/kitchen/email.
 - Expired, unpublished, stale, or wrong-period weekly selections are rejected.
 

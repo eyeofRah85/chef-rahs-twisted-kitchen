@@ -1,6 +1,6 @@
 # Production Deployment Runbook
 
-Date: July 9, 2026
+Last updated: July 14, 2026
 
 Use this runbook to prepare, deploy, verify, and recover the production Chef Rah's Twisted Kitchen app at `https://rahstwistedkitchen.com`.
 
@@ -17,6 +17,12 @@ Node.js Current releases, including Node 26, should not be used for production b
 - the warning came from the dependency/toolchain layer, not from app code.
 
 Treat Node 26 build output as a signal to switch back to the recommended LTS runtime before deployment. Keep the production host, local release machine, and CI build environment on Node.js 24 LTS unless a future upgrade is tested and documented.
+
+TypeScript launch posture:
+
+- Keep `strict: true` and `noImplicitAny: true` in `tsconfig.json`.
+- Do not add `ignoreBuildErrors` to make a deployment pass.
+- If generated Next.js route types become stale, remove `.next`, then rerun `npm run check`, `npm run build`, and `npx tsc --noEmit --pretty false` from a clean generated state.
 
 ## 2. Production Environment Variable Checklist
 
@@ -98,6 +104,10 @@ Current migration inventory:
 - `20260711014741_add_weekly_slot_option_selections`
 - `20260711145356_add_weekly_package_flags_and_slot_labels`
 - `20260711182000_add_weekly_offering_breakfast_only`
+- `20260712170000_add_weekly_ordering_window`
+- `20260712203000_add_global_checkout_scheduling`
+- `20260713093000_make_weekly_fulfillment_time_optional`
+- `20260713101500_make_checkout_fulfillment_time_optional`
 
 ## 5. Seed And Setup Notes
 
@@ -109,13 +119,27 @@ Run only after migrations:
 .\node_modules\.bin\prisma.cmd db seed
 ```
 
-Do not run demo data in production:
+`npm run db:seed-demo` is intended for local, demo, staging, or disposable rehearsal databases. Do not run it against real production customer data unless the owner intentionally wants the demo catalog and understands that the script recreates demo weekly data.
 
 ```powershell
 npm run db:seed-demo
 ```
 
 Launch menu items, weekly meal plan periods, offerings, gallery images, pricing, and business settings should be reviewed and configured through the admin UI after the first admin account is promoted.
+
+After the foundation seed or any intentional demo seed, review `/admin/settings` and confirm the final launch scheduling values:
+
+- Global checkout customer scheduling is disabled.
+- Global fixed fulfillment day is Sunday, the public time is blank, and the configured fixed fulfillment message is customer-ready.
+- Weekly customer scheduling is disabled.
+- Weekly ordering opens Wednesday.
+- Weekly late ordering starts Friday at 5:00 PM in `BUSINESS_TIME_ZONE`.
+- Weekly ordering closes Friday at 10:00 PM in `BUSINESS_TIME_ZONE`.
+- Weekly fixed fulfillment day is Sunday and its public time is blank.
+- Weekly fixed fulfillment message is: "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
+- Late fee amount is `$10.00` unless the owner has approved another amount.
+
+The app may store a server-resolved fallback datetime in `Order.requestedDateTime` for fixed scheduling. That internal value is not a promised delivery time and must not appear to customers as a fallback such as `12:00 PM`.
 
 ## 6. First Admin Account Creation And Promotion
 
@@ -238,6 +262,14 @@ Customer-facing:
 - Add an a la carte item to the cart.
 - Confirm allergen acknowledgement appears when expected.
 - Test checkout validation for pickup and delivery.
+- Confirm Requested Date and Requested Time are hidden while global customer scheduling is disabled.
+- Confirm checkout shows the configured fixed fulfillment message instead of date/time inputs.
+- Confirm no customer-facing cart, checkout, order detail, or email displays an internal `12:00 PM` fallback time.
+- Submit a guest regular order without `requestedDateTime` and confirm the server stores trusted fulfillment data.
+- Submit a guest weekly meal plan order without `requestedDateTime` and confirm Sunday fulfillment is resolved by the weekly period.
+- Confirm weekly ordering is open Wednesday through Friday, adds the late fee from Friday 5:00 PM through 10:00 PM, and rejects orders after Friday 10:00 PM.
+- Confirm Breakfast-only weekly offerings appear only in Breakfast slots.
+- Confirm the 5-Day / 3 Meals package shows Breakfast, Lunch, and Dinner and displays "By request" to customers.
 - Submit one internal test order.
 - Confirm the customer account order detail page shows the submitted order.
 - Submit one internal catering request.
@@ -255,6 +287,7 @@ Admin:
 - Review `/admin/catering` for service requests.
 - Review `/admin/notifications` for email mode.
 - Review `/admin/settings` for business settings.
+- Confirm weekly period schedule fields resolve from the launch defaults and do not require a public fulfillment time.
 
 Email:
 
@@ -272,6 +305,10 @@ Run immediately after launch:
 - `/menu` loads and shows the active published menu.
 - `/cart` loads.
 - `/checkout` loads and still shows automated online card checkout as disabled.
+- `/checkout` hides Requested Date and Requested Time while customer scheduling is disabled and shows the configured fulfillment message.
+- Guest regular and weekly orders submit without a customer-supplied `requestedDateTime`.
+- Customer order detail and email do not expose the internal fallback fulfillment time.
+- Weekly Friday 5:00 PM-10:00 PM late-fee behavior and the Friday 10:00 PM close are enforced server-side.
 - Customer registration and login work.
 - Internal test order submission works.
 - Internal test service request submission works.

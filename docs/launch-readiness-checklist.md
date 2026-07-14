@@ -6,7 +6,7 @@ Use this checklist before deploying Chef Rah's Twisted Kitchen to a public produ
 
 ## Current Review Status
 
-Last reviewed: July 12, 2026
+Last reviewed: July 14, 2026
 
 Completed locally:
 
@@ -71,6 +71,24 @@ Optional or workflow-specific:
 - `CONTACT_TO_EMAIL`: reserved for future internal contact notifications.
 - Square/PayPal API credentials are not required until the future automated checkout integration phase. Legacy Stripe variables can remain blank while online card checkout is disabled.
 
+## Final Launch Scheduling Settings
+
+Verify these database-backed values in `/admin/settings` after migration and seed/setup:
+
+- Global checkout customer scheduling is disabled.
+- Global fixed fulfillment day is Sunday.
+- Global fixed fulfillment time is blank; there is no promised delivery time.
+- The global fixed fulfillment message is approved for regular orders.
+- Weekly customer scheduling is disabled.
+- Weekly ordering opens Wednesday.
+- Weekly late fee starts Friday at 5:00 PM in `BUSINESS_TIME_ZONE`.
+- Weekly ordering closes Friday at 10:00 PM in `BUSINESS_TIME_ZONE`.
+- Weekly fixed fulfillment day is Sunday and its public time is blank.
+- Weekly fixed fulfillment message is: "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
+- Late fee amount is `$10.00` unless the owner intentionally approves another amount.
+
+The app may store an internal fallback fulfillment datetime. It is system data, not a promised delivery time, and customer-facing pages and emails must not display that fallback as `12:00 PM`.
+
 ## Durable Upload Storage
 
 Current safe launch posture:
@@ -118,6 +136,16 @@ Run a final browser pass after production environment values are set:
 - Add weekly meal plan to cart.
 - Cart allergen warning and acknowledgement.
 - Checkout delivery and pickup validation.
+- Requested Date and Requested Time are hidden while customer scheduling is disabled.
+- The configured fixed fulfillment message is visible instead of schedule inputs.
+- A guest regular order submits without a customer-supplied `requestedDateTime`.
+- A guest weekly order submits without a customer-supplied `requestedDateTime` and resolves Sunday fulfillment.
+- No cart, checkout, customer order detail, or confirmation email displays the internal `12:00 PM` fallback.
+- Weekly orders before Friday 5:00 PM have no late fee.
+- Weekly orders Friday 5:00 PM-10:00 PM include the configured late fee.
+- Weekly orders after Friday 10:00 PM are rejected for that period.
+- Breakfast-only offerings appear only in Breakfast slots.
+- The 5-Day / 3 Meals package displays Breakfast/Lunch/Dinner and customer-facing "By request."
 - Checkout order submission with email delivery enabled.
 - Customer account order detail.
 - Admin order approval and duplicate-decision blocking.
@@ -133,7 +161,10 @@ Before production traffic:
 npm ci
 npm run prisma:generate
 .\node_modules\.bin\prisma.cmd migrate deploy
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
+npm run check
 npm run build
+npx tsc --noEmit --pretty false
 ```
 
 If running deploy commands from a Linux shell, use:
@@ -141,6 +172,14 @@ If running deploy commands from a Linux shell, use:
 ```bash
 npx prisma migrate deploy
 ```
+
+After migrations:
+
+- Run the production-safe foundation seed if required by `docs/production-runbook.md`.
+- Run `npm run db:seed-demo` only for local, demo, staging, or disposable rehearsal databases. Do not run it against real production customer data unless the demo catalog is intentionally desired.
+- Verify BusinessSettings match the Final Launch Scheduling Settings above.
+- Confirm `tsconfig.json` keeps `strict: true` and `noImplicitAny: true`.
+- Do not add `ignoreBuildErrors`. Remove `.next` and regenerate/check types when generated Next.js types are stale.
 
 After the app is deployed and reachable:
 

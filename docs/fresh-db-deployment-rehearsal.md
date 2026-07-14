@@ -1,6 +1,6 @@
 # Fresh Database Deployment Rehearsal
 
-Date: July 12, 2026
+Last updated: July 14, 2026
 
 Use this rehearsal to validate that Chef Rah's Twisted Kitchen can deploy from a clean MySQL/MariaDB database using the same operational order expected for production.
 
@@ -109,6 +109,10 @@ Current migration inventory:
 - `20260711014741_add_weekly_slot_option_selections`
 - `20260711145356_add_weekly_package_flags_and_slot_labels`
 - `20260711182000_add_weekly_offering_breakfast_only`
+- `20260712170000_add_weekly_ordering_window`
+- `20260712203000_add_global_checkout_scheduling`
+- `20260713093000_make_weekly_fulfillment_time_optional`
+- `20260713101500_make_checkout_fulfillment_time_optional`
 
 Expected result:
 
@@ -133,22 +137,31 @@ npx prisma db seed
 The seed upserts:
 
 - Common allergens.
-- Default business settings, including delivery fee, late fee, Thursday 5 PM cutoff, no-weekend ordering, catering deposit percent, and delivery area.
+- Default business settings, including delivery fee, `$10.00` late fee, global customer scheduling disabled, Wednesday weekly opening, Friday 5:00 PM weekly late-fee start, Friday 10:00 PM weekly close, Sunday fixed fulfillment without a public time, no-weekend ordering for customer-scheduled orders, catering deposit percent, and delivery area.
 
-Do not run demo seed data in production:
+`npm run db:seed-demo` is for local, demo, staging, or a disposable rehearsal database. Do not run it against real production customer data unless the owner intentionally wants the demo catalog and understands that it recreates demo weekly records.
 
 ```powershell
 npm run db:seed-demo
 ```
 
-For the rehearsal smoke tests, create a small set of temporary QA menu data through the admin UI after the first admin is promoted:
+For a disposable rehearsal, the demo seed can create cleanup-safe showcase data. It includes a published period with resolved scheduling fields, three packages, and exactly three Breakfast-only weekly offerings. Otherwise, create a small set of temporary QA menu data through the admin UI after the first admin is promoted:
 
 - One available regular menu item.
-- One published weekly menu period with a valid future weekday fulfillment window.
+- One published weekly menu period with an active Wednesday-Friday ordering window and Sunday fulfillment.
 - At least one weekly package with configured meal slot labels.
 - General weekly offerings for non-Breakfast slots.
-- One Breakfast-only weekly offering for Breakfast-labeled slots.
+- Breakfast-only weekly offerings for Breakfast-labeled slots.
 - At least one weekly option with a positive upcharge.
+
+After either seed path, verify `/admin/settings` before checkout QA:
+
+- Global and weekly customer scheduling are disabled.
+- The global and weekly fixed fulfillment days are Sunday.
+- Both public fixed fulfillment times are blank.
+- The weekly message is "Weekly meal plan orders are delivered on Sunday. You will be notified when delivery is scheduled."
+- Weekly ordering opens Wednesday, enters the late window Friday at 5:00 PM, and closes Friday at 10:00 PM in the business timezone.
+- The late fee amount is `$10.00` unless the rehearsal intentionally tests another approved value.
 
 Clean up rehearsal data after verification if the database will be reused for another rehearsal.
 
@@ -157,7 +170,9 @@ Clean up rehearsal data after verification if the database will be reused for an
 Build:
 
 ```powershell
+Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
 npm run build
+npx tsc --noEmit --pretty false
 ```
 
 Start:
@@ -171,6 +186,7 @@ Expected result:
 - The app starts without migration or Prisma adapter errors.
 - Public routes load at the configured app origin.
 - `/dev/email-preview` remains development-only and must not be reachable in `NODE_ENV=production`.
+- `tsconfig.json` retains `strict: true` and `noImplicitAny: true`; no `ignoreBuildErrors` override is present.
 
 ## 9. Owner Registration And Admin Promotion
 
@@ -253,7 +269,8 @@ After the controlled live test:
 Guest pickup order:
 
 - Submit as an anonymous customer.
-- Provide name, email, phone, requested weekday date/time, and pickup details.
+- Provide name, email, phone, and pickup details without a customer-selected `requestedDateTime`.
+- Confirm Requested Date and Requested Time are hidden and the configured fixed fulfillment message is visible.
 - Confirm the order succeeds and lands on `/checkout/thank-you`.
 - Confirm admin can see the order with a Guest badge.
 - Confirm dry-run confirmation email targets `order.customerEmail`.
@@ -261,19 +278,22 @@ Guest pickup order:
 Guest delivery order:
 
 - Submit as an anonymous customer.
-- Provide name, email, phone, delivery address, requested weekday date/time, and delivery notes if needed.
+- Provide name, email, phone, delivery address, and delivery notes if needed, without a customer-selected `requestedDateTime`.
+- Confirm Requested Date and Requested Time remain hidden.
 - Confirm delivery fee is applied according to business settings.
 - Confirm the order succeeds and lands on `/checkout/thank-you`.
 - Confirm admin can see full delivery details.
 
 Guest weekly meal plan order:
 
-- Use a published weekly period whose order cutoff has not passed.
-- Select a valid future weekday `requestedDateTime` inside the weekly period.
+- Use a published weekly period whose resolved Wednesday-Friday ordering window is currently open.
+- Confirm checkout does not request or submit a customer-selected `requestedDateTime`.
+- Confirm the Sunday delivery message is visible and does not promise an exact time.
 - Complete every required package meal slot.
 - Confirm Breakfast-only offerings appear only in Breakfast-labeled slots.
 - Select at least one weekly option with an upcharge.
 - Confirm checkout total includes package price plus weekly option upcharge, delivery fee if applicable, late fee if applicable, and tip if applicable.
+- Confirm the server stores the trusted Sunday fulfillment datetime while customer-facing views omit the internal fallback time.
 - Confirm admin detail and kitchen views show slot labels, selected offerings, selected options, and upcharges.
 - Confirm dry-run confirmation email shows weekly slot selections and options.
 
@@ -284,23 +304,30 @@ Logged-in order:
 - Confirm the order links to the authenticated user.
 - Confirm `/account/orders` shows the order.
 - Confirm protected `/orders/[id]` is reachable only by the owning authenticated user.
+- Confirm fixed fulfillment displays as the configured message, with no customer-visible `12:00 PM` fallback.
 
 ## 12. Validation Smoke-Test Checklist
 
-Past-date blocking:
+Customer scheduling disabled:
 
-- Attempt to submit a requested date/time earlier than the current business-local time.
-- Expected: checkout blocks or the API rejects with a clear 400 response.
+- Confirm Requested Date and Requested Time are hidden for regular and weekly checkout.
+- Submit guest regular and weekly orders without `requestedDateTime`.
+- Expected: both paths resolve trusted fulfillment server-side and show the configured message rather than an internal fallback time.
 
-Weekend blocking:
+Customer scheduling enabled regression check:
 
-- Attempt to submit a Saturday or Sunday requested date/time.
-- Expected: checkout blocks or the API rejects with the no-weekend message.
+- Temporarily enable global customer scheduling in the rehearsal database.
+- Confirm regular checkout date/time controls return.
+- Attempt a past requested date/time and a weekend requested date/time.
+- Expected: the existing past-date and no-weekend validation still rejects invalid customer-selected schedules.
+- Restore global customer scheduling to disabled for launch.
 
-Late fee:
+Weekly ordering window and late fee:
 
-- With business settings configured for Thursday 5 PM and a $10 late fee, submit after the cutoff in business time.
-- Expected: late fee applies based on current order submission time, not requested fulfillment date/time.
+- Wednesday through Friday before 5:00 PM: ordering is allowed with no weekly late fee.
+- Friday from 5:00 PM through 10:00 PM: ordering is allowed and the configured `$10.00` late fee applies.
+- After Friday 10:00 PM: the weekly order is rejected for that period.
+- Expected: the server uses the resolved weekly ordering window and current business-local submission time, not customer-supplied fulfillment input.
 
 Breakfast-only filtering:
 
@@ -345,14 +372,19 @@ The fresh database rehearsal is technically complete when:
 
 - Migrations deploy cleanly to an empty MySQL/MariaDB database.
 - Foundation seed completes.
+- BusinessSettings match the final global and weekly scheduling model.
 - Build succeeds.
 - App starts against the migrated database.
 - First owner/admin registration and promotion succeed.
 - Guest pickup, guest delivery, guest weekly meal plan, and logged-in order smoke tests pass.
+- Requested Date and Requested Time are hidden while scheduling is disabled.
+- Fixed fulfillment messages are visible and no `12:00 PM` internal fallback is customer-visible.
 - Admin can see guest and registered orders.
 - Phase 1 dry-run email smoke tests pass.
 - Dry-run emails target the expected recipients and subjects and do not expose protected guest order links.
-- Past-date and weekend validation block invalid orders.
+- Guest regular and weekly orders succeed without a customer-supplied `requestedDateTime`.
+- Past-date and weekend validation still block invalid schedules when customer scheduling is enabled.
+- Weekly Friday 5:00 PM-10:00 PM late-fee behavior and Friday 10:00 PM close are enforced.
 - Breakfast-only filtering and server validation work.
 - Weekly option upcharges are included, persisted, and displayed.
 
@@ -364,6 +396,7 @@ Before approving production launch:
 
 - Fresh MySQL/MariaDB migration rehearsal passed from an empty database.
 - Foundation seed completed.
+- BusinessSettings were reviewed after migration/seed and match the launch scheduling values.
 - Owner/admin registration and `npm run admin:promote` completed successfully.
 - Checkout/admin smoke tests passed.
 - Dry-run email smoke tests passed.
