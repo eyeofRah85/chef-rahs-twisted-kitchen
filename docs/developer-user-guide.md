@@ -79,6 +79,18 @@ $env:DATABASE_URL = "mysql://chef_rahs:local-dev-password@127.0.0.1:3307/chef_ra
 
 If a username or password contains URL-special characters, URL-encode it before placing it in `DATABASE_URL`.
 
+### Hostinger MySQL Connection Note
+
+For the current Hostinger deployment, use `127.0.0.1` rather than `localhost` in the production Prisma URL:
+
+```text
+mysql://DB_USER:URL_ENCODED_PASSWORD@127.0.0.1:3306/DB_NAME
+```
+
+Although Hostinger guidance may refer to `localhost`, Prisma returned `P1000` with that host during deployment. phpMyAdmin's `SELECT CURRENT_USER();` reported the account as `user@127.0.0.1`; using the same host in `DATABASE_URL` fixed authentication. Treat the phpMyAdmin account host and Hostinger database panel as the source of truth for this deployment.
+
+Always URL-encode special characters in the password. For example, `+` becomes `%2B` and `!` becomes `%21`. If credentials or the full URL were exposed while troubleshooting, rotate the database password, update the encoded production URL, and redeploy before launch.
+
 ### Prisma Commands
 
 Generate the client and apply the committed migrations:
@@ -110,7 +122,7 @@ Start from `.env.example`.
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | MySQL-compatible Prisma URL: `mysql://USER:PASSWORD@HOST:3306/DATABASE`. |
+| `DATABASE_URL` | MySQL-compatible Prisma URL. Hostinger production currently uses `mysql://DB_USER:URL_ENCODED_PASSWORD@127.0.0.1:3306/DB_NAME`. |
 | `AUTH_SECRET` | Auth.js signing/encryption secret. Use a strong, stable value. |
 | `AUTH_URL` | Canonical Auth.js origin. Local default is `http://localhost:3000`; production is `https://rahstwistedkitchen.com`. |
 | `NEXTAUTH_URL` | Compatibility Auth.js origin; keep it aligned with `AUTH_URL`. |

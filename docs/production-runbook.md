@@ -76,6 +76,27 @@ PowerShell connection-string shape:
 $env:DATABASE_URL = "mysql://USER:PASSWORD@HOST:3306/DATABASE"
 ```
 
+### Hostinger MySQL Host And Password Encoding
+
+Hostinger documentation may describe an application-local MySQL host as `localhost`, but MySQL/MariaDB account grants can distinguish `user@localhost` from `user@127.0.0.1`. During this production deployment, Prisma returned `P1000` authentication failures when `DATABASE_URL` used `localhost`. phpMyAdmin reported `CURRENT_USER()` as the database account at `127.0.0.1`, and changing the Prisma URL host to `127.0.0.1` resolved authentication.
+
+Use this Hostinger production shape unless the active database panel shows a different assigned host:
+
+```text
+mysql://DB_USER:URL_ENCODED_PASSWORD@127.0.0.1:3306/DB_NAME
+```
+
+URL-encode the database password before placing it in `DATABASE_URL`. For example, `+` becomes `%2B` and `!` becomes `%21`. Encode every other URL-reserved character as well; do not change the actual database password while encoding it.
+
+If Prisma reports `P1000`, confirm all of the following before changing application code:
+
+1. In phpMyAdmin, run `SELECT CURRENT_USER();` and compare the returned account host with `DATABASE_URL`.
+2. Confirm the database name and username exactly match Hostinger's database panel.
+3. Confirm the password is current and correctly URL-encoded.
+4. Retry `npx prisma migrate deploy` with `127.0.0.1` when the account is reported as `user@127.0.0.1`.
+
+If a database password or complete connection URL was shared in chat, a ticket, logs, or troubleshooting notes, rotate the database password before final launch. Update Hostinger's environment variable with the newly encoded password and redeploy.
+
 Do not point production at a local database, a development database, a throwaway preview database, or any old PostgreSQL database from earlier project assumptions.
 
 ## 4. Prisma Migration And Deploy Steps
