@@ -2,12 +2,15 @@ import { formatBusinessDateTimeInputValue } from "@/lib/business-rules";
 import { zonedDateTimeToUtc } from "@/lib/weekly-ordering-window";
 
 export const DEFAULT_CHECKOUT_FIXED_FULFILLMENT_MESSAGE =
-  "Orders are fulfilled on Sunday.";
+  "Orders are fulfilled on Sunday. You will be notified when your order is scheduled.";
+
+const INTERNAL_CHECKOUT_FULFILLMENT_HOUR = 12;
+const INTERNAL_CHECKOUT_FULFILLMENT_MINUTE = 0;
 
 export type CheckoutFixedFulfillmentSettings = {
   checkoutFixedFulfillmentDay: number;
-  checkoutFixedFulfillmentHour: number;
-  checkoutFixedFulfillmentMinute: number;
+  checkoutFixedFulfillmentHour: number | null;
+  checkoutFixedFulfillmentMinute: number | null;
   checkoutFixedFulfillmentMessage: string | null;
 };
 
@@ -62,11 +65,51 @@ function fixedFulfillmentAtForDateKey({
       year,
       month,
       day,
-      hour: settings.checkoutFixedFulfillmentHour,
-      minute: settings.checkoutFixedFulfillmentMinute,
+      hour:
+        settings.checkoutFixedFulfillmentHour ??
+        INTERNAL_CHECKOUT_FULFILLMENT_HOUR,
+      minute:
+        settings.checkoutFixedFulfillmentMinute ??
+        INTERNAL_CHECKOUT_FULFILLMENT_MINUTE,
     },
     timeZone,
   );
+}
+
+export function hasPublicCheckoutFulfillmentTime(
+  settings: CheckoutFixedFulfillmentSettings,
+) {
+  return (
+    settings.checkoutFixedFulfillmentHour !== null &&
+    settings.checkoutFixedFulfillmentMinute !== null
+  );
+}
+
+export function getCheckoutFixedFulfillmentMessage(
+  settings: Pick<
+    CheckoutFixedFulfillmentSettings,
+    "checkoutFixedFulfillmentMessage"
+  >,
+) {
+  return (
+    settings.checkoutFixedFulfillmentMessage?.trim() ||
+    DEFAULT_CHECKOUT_FIXED_FULFILLMENT_MESSAGE
+  );
+}
+
+export function getFixedCheckoutScheduleDisplayMessage(
+  settings: CheckoutFixedFulfillmentSettings & {
+    checkoutCustomerSchedulingEnabled: boolean;
+  },
+) {
+  if (
+    settings.checkoutCustomerSchedulingEnabled ||
+    hasPublicCheckoutFulfillmentTime(settings)
+  ) {
+    return null;
+  }
+
+  return getCheckoutFixedFulfillmentMessage(settings);
 }
 
 export function formatCheckoutFulfillmentDateTime(
@@ -115,18 +158,18 @@ export function resolveCheckoutFixedFulfillment({
     });
   }
 
-  const message =
-    settings.checkoutFixedFulfillmentMessage?.trim() ||
-    DEFAULT_CHECKOUT_FIXED_FULFILLMENT_MESSAGE;
-  const label = formatCheckoutFulfillmentDateTime(
-    fixedFulfillmentAt,
-    timeZone,
-  );
+  const message = getCheckoutFixedFulfillmentMessage(settings);
+  const fixedFulfillmentTimeConfigured =
+    hasPublicCheckoutFulfillmentTime(settings);
+  const label = fixedFulfillmentTimeConfigured
+    ? formatCheckoutFulfillmentDateTime(fixedFulfillmentAt, timeZone)
+    : null;
 
   return {
     fixedFulfillmentAt,
     label,
     message,
-    displayMessage: `${message} (${label})`,
+    fixedFulfillmentTimeConfigured,
+    displayMessage: label ? `${message} (${label})` : message,
   };
 }

@@ -1,3 +1,4 @@
+import { DEFAULT_CHECKOUT_FIXED_FULFILLMENT_MESSAGE } from "@/lib/checkout-fulfillment";
 import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
 
 export function formatOrderScheduleDateTime(
@@ -5,12 +6,20 @@ export function formatOrderScheduleDateTime(
   options: {
     hasWeeklyMealPlan?: boolean;
     weeklyFulfillmentMessage?: string | null;
+    fixedFulfillmentMessage?: string | null;
   } = {},
 ) {
   if (options.hasWeeklyMealPlan) {
     return (
       options.weeklyFulfillmentMessage?.trim() ||
       DEFAULT_WEEKLY_FIXED_MESSAGE
+    );
+  }
+
+  if (options.fixedFulfillmentMessage) {
+    return (
+      options.fixedFulfillmentMessage.trim() ||
+      DEFAULT_CHECKOUT_FIXED_FULFILLMENT_MESSAGE
     );
   }
 

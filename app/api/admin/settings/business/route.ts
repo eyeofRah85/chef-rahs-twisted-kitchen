@@ -87,9 +87,8 @@ export async function PATCH(request: Request) {
     );
     const deliveryArea = String(formData.get("deliveryArea") ?? "").trim();
     const noWeekendOrdering = formData.get("noWeekendOrdering") === "on";
-    const checkoutFixedFulfillmentTime = parseTime(
+    const checkoutFixedFulfillmentTime = parseOptionalTime(
       formData.get("checkoutFixedFulfillmentTime"),
-      12,
     );
     const checkoutFixedFulfillmentMessage = String(
       formData.get("checkoutFixedFulfillmentMessage") ?? "",
@@ -131,7 +130,8 @@ export async function PATCH(request: Request) {
       checkoutFixedFulfillmentHour: checkoutFixedFulfillmentTime.hour,
       checkoutFixedFulfillmentMinute: checkoutFixedFulfillmentTime.minute,
       checkoutFixedFulfillmentMessage:
-        checkoutFixedFulfillmentMessage || "Orders are fulfilled on Sunday.",
+        checkoutFixedFulfillmentMessage ||
+        "Orders are fulfilled on Sunday. You will be notified when your order is scheduled.",
       weeklyCustomerSchedulingEnabled:
         formData.get("weeklyCustomerSchedulingEnabled") === "on",
       weeklyOrderingOpenDay: clampWholeNumber(

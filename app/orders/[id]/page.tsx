@@ -16,6 +16,8 @@ import {
   formatOrderScheduleDateTime,
   getOrderScheduleLabel,
 } from "@/lib/order-schedule-display";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { getFixedCheckoutScheduleDisplayMessage } from "@/lib/checkout-fulfillment";
 import type { DecimalLike } from "@/types/display";
 
 type OrderPageProps = {
@@ -118,6 +120,9 @@ export default async function OrderPage({ params }: OrderPageProps) {
   const hasWeeklyMealPlan = order.items.some((item) =>
     Boolean(item.weeklyMealPlanSelection),
   );
+  const businessSettings = await getBusinessSettings();
+  const fixedCheckoutScheduleMessage =
+    getFixedCheckoutScheduleDisplayMessage(businessSettings);
 
   return (
     <main className="brand-page px-6 py-12">
@@ -246,6 +251,9 @@ export default async function OrderPage({ params }: OrderPageProps) {
                   <strong>{getOrderScheduleLabel(hasWeeklyMealPlan)}:</strong>{" "}
                   {formatOrderScheduleDateTime(order.requestedDateTime, {
                     hasWeeklyMealPlan,
+                    fixedFulfillmentMessage: hasWeeklyMealPlan
+                      ? null
+                      : fixedCheckoutScheduleMessage,
                   })}
                 </p>
               </div>

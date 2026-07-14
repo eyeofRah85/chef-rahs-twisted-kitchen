@@ -16,8 +16,8 @@ type Props = {
     deliveryArea: string | null;
     checkoutCustomerSchedulingEnabled: boolean;
     checkoutFixedFulfillmentDay: number;
-    checkoutFixedFulfillmentHour: number;
-    checkoutFixedFulfillmentMinute: number;
+    checkoutFixedFulfillmentHour: number | null;
+    checkoutFixedFulfillmentMinute: number | null;
     checkoutFixedFulfillmentMessage: string | null;
     weeklyCustomerSchedulingEnabled: boolean;
     weeklyOrderingOpenDay: number;
@@ -223,8 +223,13 @@ export function BusinessSettingsForm({ settings }: Props) {
                   settings.checkoutFixedFulfillmentMinute,
                 )}
                 className="admin-input"
+                aria-label="Optional fixed checkout fulfillment time"
               />
             </div>
+            <p className="mt-2 text-xs font-normal leading-5 text-[#6b5a50]">
+              Leave the time blank when orders are fulfilled on a fixed day but
+              the exact time will be scheduled later.
+            </p>
           </div>
 
           <div className="md:col-span-2">
@@ -235,7 +240,7 @@ export function BusinessSettingsForm({ settings }: Props) {
               name="checkoutFixedFulfillmentMessage"
               defaultValue={settings.checkoutFixedFulfillmentMessage ?? ""}
               className="admin-input mt-2"
-              placeholder="Orders are fulfilled on Sunday."
+              placeholder="Orders are fulfilled on Sunday. You will be notified when your order is scheduled."
             />
           </div>
         </div>

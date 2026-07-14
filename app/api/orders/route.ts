@@ -1477,6 +1477,7 @@ export async function POST(request: NextRequest) {
         scheduleValue: formatOrderScheduleDateTime(order.requestedDateTime, {
           hasWeeklyMealPlan: Boolean(weeklySchedule),
           weeklyFulfillmentMessage: weeklySchedule?.deliveryWindowLabel,
+          fixedFulfillmentMessage: fixedCheckoutFulfillment?.displayMessage,
         }),
 
         deliveryName: order.deliveryName,

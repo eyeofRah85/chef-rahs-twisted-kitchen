@@ -33,6 +33,7 @@ type KitchenOrder = {
 
 type KitchenOrderCardProps = {
   order: KitchenOrder;
+  fixedCheckoutScheduleMessage?: string | null;
 };
 
 const nextStatuses: Record<string, string> = {
@@ -42,7 +43,10 @@ const nextStatuses: Record<string, string> = {
   READY: "COMPLETED",
 };
 
-export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
+export function KitchenOrderCard({
+  order,
+  fixedCheckoutScheduleMessage,
+}: KitchenOrderCardProps) {
   const router = useRouter();
   const hasWeeklyMealPlan = order.items.some((item) =>
     Boolean(item.weeklyMealPlanSelection),
@@ -148,6 +152,9 @@ export function KitchenOrderCard({ order }: KitchenOrderCardProps) {
           <p className="font-bold">
             {formatOrderScheduleDateTime(order.requestedDateTime, {
               hasWeeklyMealPlan,
+              fixedFulfillmentMessage: hasWeeklyMealPlan
+                ? null
+                : fixedCheckoutScheduleMessage,
             })}
           </p>
         </div>

@@ -824,10 +824,11 @@ export default async function AdminWeeklyMenuPage() {
                                             </p>
 
                                             <p className="mt-1 text-xs text-[#6b5a50]">
-                                              Requested:{" "}
-                                              {formatDisplayDateTime(
-                                                order.requestedDateTime,
-                                              )}
+                                              Weekly fulfillment:{" "}
+                                              {period.deliveryWindowLabel ??
+                                                formatDisplayDateTime(
+                                                  order.requestedDateTime,
+                                                )}
                                             </p>
                                           </div>
 

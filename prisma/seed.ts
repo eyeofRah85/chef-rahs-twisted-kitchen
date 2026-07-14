@@ -70,9 +70,10 @@ async function main() {
       deliveryArea: "Greater Atlanta area",
       checkoutCustomerSchedulingEnabled: false,
       checkoutFixedFulfillmentDay: 0,
-      checkoutFixedFulfillmentHour: 12,
-      checkoutFixedFulfillmentMinute: 0,
-      checkoutFixedFulfillmentMessage: "Orders are fulfilled on Sunday.",
+      checkoutFixedFulfillmentHour: null,
+      checkoutFixedFulfillmentMinute: null,
+      checkoutFixedFulfillmentMessage:
+        "Orders are fulfilled on Sunday. You will be notified when your order is scheduled.",
       weeklyCustomerSchedulingEnabled: false,
       weeklyOrderingOpenDay: 3,
       weeklyOrderingOpenHour: 0,

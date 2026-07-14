@@ -9,6 +9,12 @@ import {
   formatServiceRequestType,
   formatServiceRequestStatus,
 } from "@/lib/format-labels";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { getFixedCheckoutScheduleDisplayMessage } from "@/lib/checkout-fulfillment";
+import {
+  formatOrderScheduleDateTime,
+  getOrderScheduleLabel,
+} from "@/lib/order-schedule-display";
 import type { DecimalLike } from "@/types/display";
 
 type PageProps = {
@@ -84,6 +90,9 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
   const orders = customer.orders as CustomerOrder[];
   const cateringRequests =
     customer.cateringRequests as CustomerServiceRequest[];
+  const businessSettings = await getBusinessSettings();
+  const fixedCheckoutScheduleMessage =
+    getFixedCheckoutScheduleDisplayMessage(businessSettings);
 
   const totalSpent = orders
     .filter(
@@ -177,10 +186,17 @@ export default async function AdminCustomerDetailsPage({ params }: PageProps) {
                           )}
 
                           <p className="mt-1 text-xs text-[#6b5a50]">
-                            Requested:{" "}
-                            {order.requestedDateTime
-                              ? order.requestedDateTime.toLocaleString()
-                              : "Not provided"}
+                            {getOrderScheduleLabel(weeklyItemCount > 0)}:{" "}
+                            {formatOrderScheduleDateTime(
+                              order.requestedDateTime,
+                              {
+                                hasWeeklyMealPlan: weeklyItemCount > 0,
+                                fixedFulfillmentMessage:
+                                  weeklyItemCount > 0
+                                    ? null
+                                    : fixedCheckoutScheduleMessage,
+                              },
+                            )}
                           </p>
 
                           {order.paymentStatus && (

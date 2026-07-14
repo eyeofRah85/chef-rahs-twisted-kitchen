@@ -894,8 +894,8 @@ async function seedDemoBusinessSettings() {
       lateFee: "10.00",
       checkoutCustomerSchedulingEnabled: false,
       checkoutFixedFulfillmentDay: 0,
-      checkoutFixedFulfillmentHour: 12,
-      checkoutFixedFulfillmentMinute: 0,
+      checkoutFixedFulfillmentHour: null,
+      checkoutFixedFulfillmentMinute: null,
       checkoutFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
       weeklyCustomerSchedulingEnabled:
         DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyCustomerSchedulingEnabled,
@@ -930,8 +930,8 @@ async function seedDemoBusinessSettings() {
       lateFee: "10.00",
       checkoutCustomerSchedulingEnabled: false,
       checkoutFixedFulfillmentDay: 0,
-      checkoutFixedFulfillmentHour: 12,
-      checkoutFixedFulfillmentMinute: 0,
+      checkoutFixedFulfillmentHour: null,
+      checkoutFixedFulfillmentMinute: null,
       checkoutFixedFulfillmentMessage: DEMO_WEEKLY_FULFILLMENT_MESSAGE,
       weeklyCustomerSchedulingEnabled:
         DEMO_WEEKLY_SCHEDULE_SETTINGS.weeklyCustomerSchedulingEnabled,

@@ -4,6 +4,8 @@ import { KitchenOrderCard } from "@/components/admin/KitchenOrderCard";
 import Link from "next/link";
 import type { DecimalLike } from "@/types/display";
 import type { WeeklyOrderSelectionDisplay } from "@/lib/weekly-order-display";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { getFixedCheckoutScheduleDisplayMessage } from "@/lib/checkout-fulfillment";
 
 type KitchenOrderRow = {
   id: string;
@@ -24,6 +26,10 @@ type KitchenOrderRow = {
 
 export default async function KitchenPage() {
   await requireAdminPage();
+
+  const businessSettings = await getBusinessSettings();
+  const fixedCheckoutScheduleMessage =
+    getFixedCheckoutScheduleDisplayMessage(businessSettings);
 
   const activeOrders = (await prisma.order.findMany({
     where: {
@@ -103,6 +109,7 @@ export default async function KitchenPage() {
           {activeOrders.map((order) => (
             <KitchenOrderCard
               key={order.id}
+              fixedCheckoutScheduleMessage={fixedCheckoutScheduleMessage}
               order={{
                 id: order.id,
                 orderType: order.orderType,

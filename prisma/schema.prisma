@@ -579,9 +579,9 @@ model BusinessSettings {
 
   checkoutCustomerSchedulingEnabled Boolean @default(false)
   checkoutFixedFulfillmentDay       Int     @default(0)
-  checkoutFixedFulfillmentHour      Int     @default(12)
-  checkoutFixedFulfillmentMinute    Int     @default(0)
-  checkoutFixedFulfillmentMessage   String? @default("Orders are fulfilled on Sunday.")
+  checkoutFixedFulfillmentHour      Int?
+  checkoutFixedFulfillmentMinute    Int?
+  checkoutFixedFulfillmentMessage   String? @default("Orders are fulfilled on Sunday. You will be notified when your order is scheduled.")
 
   weeklyCustomerSchedulingEnabled Boolean @default(false)
   weeklyOrderingOpenDay           Int     @default(3)

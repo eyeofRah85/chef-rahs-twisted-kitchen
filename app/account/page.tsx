@@ -13,6 +13,8 @@ import {
   formatOrderScheduleDateTime,
   getOrderScheduleLabel,
 } from "@/lib/order-schedule-display";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { getFixedCheckoutScheduleDisplayMessage } from "@/lib/checkout-fulfillment";
 import type { DecimalLike } from "@/types/display";
 import { AccountAllergenPreferencesForm } from "@/components/account/AccountAllergenPreferencesForm";
 
@@ -81,6 +83,9 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
+  const businessSettings = await getBusinessSettings();
+  const fixedCheckoutScheduleMessage =
+    getFixedCheckoutScheduleDisplayMessage(businessSettings);
   const orders = user.orders as DashboardOrder[];
   const cateringRequests = user.cateringRequests as DashboardServiceRequest[];
 
@@ -300,6 +305,10 @@ export default async function AccountPage() {
                         {getOrderScheduleLabel(weeklyItemCount > 0)}:{" "}
                         {formatOrderScheduleDateTime(order.requestedDateTime, {
                           hasWeeklyMealPlan: weeklyItemCount > 0,
+                          fixedFulfillmentMessage:
+                            weeklyItemCount > 0
+                              ? null
+                              : fixedCheckoutScheduleMessage,
                         })}
                       </p>
 

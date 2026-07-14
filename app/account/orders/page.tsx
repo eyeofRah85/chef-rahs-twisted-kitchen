@@ -17,6 +17,8 @@ import {
   formatOrderScheduleDateTime,
   getOrderScheduleLabel,
 } from "@/lib/order-schedule-display";
+import { getBusinessSettings } from "@/lib/business-settings";
+import { getFixedCheckoutScheduleDisplayMessage } from "@/lib/checkout-fulfillment";
 import type { DecimalLike } from "@/types/display";
 
 function isPaymentDue(paymentStatus: string | null | undefined) {
@@ -98,6 +100,10 @@ export default async function AccountOrdersPage() {
     redirect("/login");
   }
 
+  const businessSettings = await getBusinessSettings();
+  const fixedCheckoutScheduleMessage =
+    getFixedCheckoutScheduleDisplayMessage(businessSettings);
+
   return (
     <main className="brand-page px-6 py-12">
       <div className="mx-auto max-w-6xl">
@@ -134,6 +140,9 @@ export default async function AccountOrdersPage() {
                       {getOrderScheduleLabel(hasWeeklyMealPlan)}:{" "}
                       {formatOrderScheduleDateTime(order.requestedDateTime, {
                         hasWeeklyMealPlan,
+                        fixedFulfillmentMessage: hasWeeklyMealPlan
+                          ? null
+                          : fixedCheckoutScheduleMessage,
                       })}
                     </p>
 
