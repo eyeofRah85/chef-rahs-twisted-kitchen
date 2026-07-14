@@ -121,7 +121,8 @@ Start from `.env.example`.
 | `EMAIL_DRY_RUN` | `true` logs/renders without sending; `false` permits live Resend delivery. |
 | `EMAIL_PREVIEW_FILES` | Enables local preview file output when supported by the email utility. Keep it `false` in production unless intentionally debugging. |
 | `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` | Keep `false` or unset for launch; local production uploads are not durable. |
-| `OWNER_EMAIL` | Existing registered user's email for the one-time `npm run owner:promote` bootstrap. |
+| `OWNER_EMAIL` | Existing registered user's email for the one-time owner bootstrap. It is never a user-creation input. |
+| `OWNER_BOOTSTRAP_TOKEN` | Temporary long random secret for `POST /api/setup/promote-owner` when the host has no console. Remove it and restart/redeploy immediately after success. |
 | `ADMIN_EMAIL` | Legacy single-user input for `npm run admin:promote`. Not needed for owner-managed admins. |
 | `ADMIN_ROLE` | Legacy role for `npm run admin:promote`; defaults to `ADMIN`. |
 
@@ -134,19 +135,34 @@ The application does not create privileged users from environment variables.
 1. Start or deploy the app.
 2. Register the first owner normally through `/register`.
 3. Set `OWNER_EMAIL` to that exact registered email.
-4. Run:
+4. If the host has console access, run:
 
 ```powershell
 npm run owner:promote
 ```
 
-5. Sign in as the owner and open `/admin/role-manager`.
-6. Have additional staff register normally.
+   If the host has no console, temporarily set a random `OWNER_BOOTSTRAP_TOKEN` of at least 32 characters, restart/redeploy, and call the POST-only endpoint:
+
+```powershell
+$headers = @{
+  "x-owner-bootstrap-token" = $env:OWNER_BOOTSTRAP_TOKEN
+}
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "https://rahstwistedkitchen.com/api/setup/promote-owner" `
+  -Headers $headers
+```
+
+   Remove `OWNER_BOOTSTRAP_TOKEN` and restart/redeploy immediately after the successful response. The endpoint then becomes unavailable.
+
+5. Sign out, sign back in as the owner, and open `/admin/role-manager`.
+6. Have additional staff register normally with their own passwords.
 7. Assign those registered users the `ADMIN` role in Role Manager.
 
 `OWNER` has all normal admin access plus role management. `ADMIN` has normal admin access but cannot open the role page or call its mutation API. Last-owner protection prevents the final owner from being demoted. Successful changes are audited.
 
-Do not create fake users, passwordless users, or users solely to satisfy an environment variable. Do not use email matching to attach guest orders to registered users.
+Neither bootstrap method creates users or passwords, and neither reads or updates `User.passwordHash`. Do not create fake users, passwordless users, temporary admin passwords, or users solely to satisfy an environment variable. Do not use email matching to attach guest orders to registered users.
 
 ## 7. Running The App
 
@@ -335,7 +351,7 @@ npx prisma db seed
 npm run build
 ```
 
-Then start/deploy the built app, register the first owner, run `npm run owner:promote`, configure Resend, and complete production smoke tests.
+Then start/deploy the built app, register the first owner, use either `npm run owner:promote` or the temporary-token endpoint, configure Resend, and complete production smoke tests. On a host without console access, remove `OWNER_BOOTSTRAP_TOKEN` and restart/redeploy before normal production operation.
 
 Production rules:
 

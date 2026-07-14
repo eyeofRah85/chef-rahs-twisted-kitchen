@@ -46,7 +46,8 @@ Workflow-specific variables:
 
 | Variable | Production value or note |
 | --- | --- |
-| `OWNER_EMAIL` | Exact email of the first registered owner account before running `npm run owner:promote`. |
+| `OWNER_EMAIL` | Exact email of the first registered owner account. The bootstrap process never creates this user. |
+| `OWNER_BOOTSTRAP_TOKEN` | Temporary long random secret for `POST /api/setup/promote-owner` when production has no console. Remove it and restart/redeploy immediately after bootstrap; it is not a permanent runtime variable. |
 | `ADMIN_EMAIL` | Legacy single-account input for `npm run admin:promote`; not required for normal role management. |
 | `ADMIN_ROLE` | Legacy role for `npm run admin:promote`; defaults to `ADMIN`. |
 
@@ -144,21 +145,39 @@ The app may store a server-resolved fallback datetime in `Order.requestedDateTim
 
 ## 6. First Owner Account And Admin Access
 
-The bootstrap script only promotes an existing registered user. It does not create an account, send an invitation, or create a passwordless user.
+Both bootstrap methods only promote an existing registered user. They do not create an account, set or change a password, read or update `User.passwordHash`, send an invitation, or create a passwordless user.
 
 Steps:
 
 1. Deploy the app with production env vars.
 2. Register the first owner account through the production `/register` page.
 3. Set `OWNER_EMAIL` to that exact registered email.
-4. Run the owner bootstrap command:
+4. Choose the method available on the production host.
+
+With console or SSH access, run:
 
 ```powershell
 $env:OWNER_EMAIL = "owner@example.com"
 npm run owner:promote
 ```
 
-After promotion, sign out and sign back in, then confirm `/admin` and `/admin/role-manager` load for the owner. Additional users must register normally; the owner can then assign `ADMIN` access in Role Manager. Admins retain normal admin access but cannot manage roles. Keep at least one owner at all times.
+Without console access, generate a one-time random secret of at least 32 characters, store it temporarily as `OWNER_BOOTSTRAP_TOKEN` in Hostinger, and restart/redeploy so the running app receives it. Call the endpoint once from a trusted PowerShell session:
+
+```powershell
+$env:OWNER_BOOTSTRAP_TOKEN = "temporary-long-random-secret-from-secure-storage"
+$headers = @{
+  "x-owner-bootstrap-token" = $env:OWNER_BOOTSTRAP_TOKEN
+}
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "https://rahstwistedkitchen.com/api/setup/promote-owner" `
+  -Headers $headers
+```
+
+The request has no body. `OWNER_EMAIL` is the only possible target, the endpoint supports `POST` only, and it refuses to run after any owner exists. On success, remove `OWNER_BOOTSTRAP_TOKEN` from Hostinger and restart/redeploy again. Verify the endpoint is unavailable after removal.
+
+After promotion, sign out and sign back in, then confirm `/admin`, `/admin/role-manager`, and the `OWNER_BOOTSTRAPPED` audit event. Additional users must register normally with their own passwords; the owner can then assign `ADMIN` access in Role Manager. Admins retain normal admin access but cannot manage roles. Keep at least one owner at all times.
 
 ## 7. Resend Setup Notes
 

@@ -102,4 +102,9 @@ export const rateLimits = {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   },
+  ownerBootstrap: {
+    keyPrefix: "setup:owner-bootstrap",
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  },
 };
