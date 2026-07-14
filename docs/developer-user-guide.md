@@ -179,13 +179,7 @@ npm run build
 npm run start
 ```
 
-Hostinger production deployment uses a separate migration-aware build command:
-
-```powershell
-npm run hostinger:build
-```
-
-Use the Hostinger command only with the intended production `DATABASE_URL`. It generates Prisma Client, runs `npx prisma migrate deploy` against that MySQL/MariaDB database, and then runs `next build`. Normal `npm run build` retains its existing local behavior and does not deploy database migrations.
+`npm run build` is migration-aware in every environment. Its `prebuild` hook generates Prisma Client and runs `npx prisma migrate deploy` before `next build`. Set `DATABASE_URL` to a valid, reachable MySQL/MariaDB database appropriate for the environment before building; the database user needs migration permissions.
 
 The default origin is `http://localhost:3000`. When using another port, update all three local URL variables so Auth.js redirects and generated links use the same origin.
 
@@ -207,13 +201,14 @@ npm run db:seed-demo
 Notes:
 
 - `npm run check` runs ESLint, Prisma generation, Next route type generation, TypeScript, and a production build.
+- The build inside `npm run check` also invokes the migration-aware `prebuild`, so `check` requires a valid `DATABASE_URL` and database connectivity.
 - The separate build and `tsc` commands are still useful final deployment checks.
 - The QA script validates the weekly open, late-fee, close, and fixed Sunday fulfillment rules.
 - The demo seed changes the configured database. Run it only against cleanup-safe data.
 
 ## 9. TypeScript And Hostinger Notes
 
-Set the Hostinger/hPanel build command to `npm run hostinger:build`. Before deployment, configure `DATABASE_URL` in the Hostinger environment and confirm the build environment can reach the production MySQL/MariaDB database with migration permissions.
+Hostinger runs the fixed command `npm run build`. Before deployment, configure `DATABASE_URL` in the Hostinger environment and confirm it points to the production MySQL/MariaDB database that the build environment can reach with migration permissions.
 
 The expected deployment log order is:
 
@@ -221,9 +216,9 @@ The expected deployment log order is:
 2. `npx prisma migrate deploy`
 3. `next build`
 
-Prisma Client generation and migration deployment are separate requirements: generation updates application client artifacts, while `migrate deploy` applies committed schema changes to the actual database. The Hostinger command runs no production seed, demo seed, or owner bootstrap.
+Prisma Client generation and migration deployment are separate requirements: generation updates application client artifacts, while `migrate deploy` applies committed schema changes to the actual database. The `prebuild` hook runs both before `next build` and stops the build if either fails.
 
-If the Hostinger build settings cannot select a custom npm script and invoke only `npm run build`, do not deploy with the current script configuration. Make a focused follow-up change to include `npx prisma migrate deploy` in `prebuild`, then rerun the full release checks. Never substitute `prisma migrate dev` in production.
+`npx prisma migrate deploy` is production-safe and idempotent. It applies committed pending migrations and does not recreate migrations already recorded as applied. The build lifecycle runs no foundation seed, demo seed, or owner bootstrap. Never substitute `prisma migrate dev` in production.
 
 `tsconfig.json` intentionally has:
 
@@ -365,7 +360,7 @@ Recommended deployment order:
 
 ```powershell
 npm ci
-npm run hostinger:build
+npm run build
 # Run the production foundation seed separately only when the launch procedure calls for it:
 npx prisma db seed
 ```
@@ -375,7 +370,7 @@ Then start/deploy the built app, register the first owner, use either `npm run o
 Production rules:
 
 - Use `npx prisma migrate deploy`; never use `prisma migrate dev` in production.
-- Verify Hostinger logs show migration deployment before `next build`; `prisma generate` alone is not sufficient.
+- Verify `npm run build` logs show its `prebuild` generation and migration deployment before `next build`; `prisma generate` alone is not sufficient.
 - Review foundation seed behavior before running it on an existing database.
 - Do not run the demo seed against real customer data unless explicitly intended.
 - Keep `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION=false` or unset until durable object storage is approved.

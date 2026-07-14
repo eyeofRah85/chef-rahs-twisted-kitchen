@@ -4,9 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "npm run prisma:generate",
+    "prebuild": "npm run prisma:generate && npx prisma migrate deploy",
     "build": "next build",
-    "hostinger:build": "npm run prisma:generate && npx prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

@@ -82,38 +82,38 @@ Do not point production at a local database, a development database, a throwaway
 
 Run the current Prisma migrations against the fresh production MySQL/MariaDB database after the production environment is configured and before opening the site to customers.
 
-### Hostinger Build Command
+### Hostinger Build Lifecycle
 
-Set the Hostinger/hPanel build command to:
+Hostinger uses its fixed build command:
 
 ```text
-npm run hostinger:build
-```
-
-The script runs these operations in order:
-
-1. `npm run prisma:generate` generates the Prisma Client used by the application.
-2. `npx prisma migrate deploy` applies pending committed migrations to the production MySQL/MariaDB database.
-3. `next build` compiles the Next.js application only after the database migration command succeeds.
-
-`DATABASE_URL` must be configured in Hostinger and available during the build. The database must be reachable from the build environment, and its MySQL/MariaDB user must have the permissions required by the committed migrations. A successful Prisma Client generation does not update the database schema.
-
-The Hostinger build script intentionally does not run `npx prisma db seed`, `npm run db:seed-demo`, `npm run owner:promote`, or the HTTP owner bootstrap endpoint. Seeding and owner setup remain explicit, separately reviewed launch actions.
-
-Hostinger's Node.js Web App build settings normally allow the build command to be selected or adjusted. Confirm the deployment log shows `prisma generate`, `prisma migrate deploy`, and then `next build`. If the active Hostinger setup cannot select `npm run hostinger:build` and always invokes only `npm run build`, stop the launch and make a follow-up change that adds `npx prisma migrate deploy` to the `prebuild` lifecycle. Do not assume `npm run build` migrates the database in the current release.
-
-### Manual Or Console Deployment
-
-The equivalent explicit production sequence is:
-
-```powershell
-npm ci
-npm run prisma:generate
-npx prisma migrate deploy
 npm run build
 ```
 
-The direct Windows executable form is also available when needed:
+The npm lifecycle now runs these operations in order:
+
+1. The `prebuild` hook runs `npm run prisma:generate` to generate the Prisma Client.
+2. The same `prebuild` hook runs `npx prisma migrate deploy` to apply pending committed migrations to the production MySQL/MariaDB database.
+3. The `build` script runs `next build` only after `prebuild` succeeds.
+
+`DATABASE_URL` must point to the production MySQL/MariaDB database and be available in Hostinger during the build. The database must be reachable from the build environment, and its user must have the permissions required by the committed migrations. A successful Prisma Client generation does not update the database schema.
+
+`npx prisma migrate deploy` is production-safe and idempotent: it applies committed pending migrations and reports success without reapplying migrations already recorded in the database. If generation or migration fails, npm stops and `next build` does not run.
+
+The build lifecycle intentionally does not run `npx prisma db seed`, `npm run db:seed-demo`, `npm run owner:promote`, or the HTTP owner bootstrap endpoint. Seeding and owner setup remain explicit, separately reviewed launch actions.
+
+Confirm every Hostinger deployment log shows `prisma generate`, `prisma migrate deploy`, and then `next build`. Because migrations now run in `prebuild`, local and CI uses of `npm run build` also require a valid, reachable `DATABASE_URL`; use only a database appropriate for that environment.
+
+### Manual Or Console Deployment
+
+The same npm lifecycle applies from a console:
+
+```powershell
+npm ci
+npm run build
+```
+
+For migration diagnostics or an explicit migration-only operation, use `npx prisma migrate deploy`. The direct Windows executable form is also available:
 
 ```powershell
 .\node_modules\.bin\prisma.cmd migrate deploy

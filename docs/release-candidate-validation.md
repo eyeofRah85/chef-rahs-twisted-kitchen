@@ -36,12 +36,15 @@ Code and build validation:
 
 ```powershell
 npm run prisma:generate
+npx prisma migrate deploy
 Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
 npm run check
 npm run build
 npx tsc --noEmit --pretty false
 git diff --check
 ```
+
+`npm run build` requires a reachable MySQL/MariaDB `DATABASE_URL`. Its `prebuild` hook runs Prisma generation and `npx prisma migrate deploy` before `next build`; it does not run any seed or owner bootstrap.
 
 Release-candidate searches:
 
@@ -134,14 +137,14 @@ Remaining launch gates are operational, not code blockers:
 3. Provision a fresh production MySQL/MariaDB database.
 4. Set `DATABASE_URL` to the production MySQL/MariaDB URL.
 5. Run `npm ci`.
-6. Run `npm run prisma:generate`.
-7. Run `npx prisma migrate deploy`.
+6. Confirm the production `DATABASE_URL` is available during the build and its MySQL/MariaDB user has migration permissions.
+7. Run `npm run build` and confirm `prebuild` logs show Prisma generation followed by `npx prisma migrate deploy` before `next build`.
 8. Seed foundation data only if required by the runbook.
 9. Run `npm run db:seed-demo` only for local, demo, staging, or disposable rehearsal databases, not real production customer data unless intentionally desired.
 10. Verify BusinessSettings after migration/seed: scheduling disabled, Sunday fixed fulfillment with no public time, Wednesday open, Friday 5:00 PM late start, and Friday 10:00 PM close.
 11. Remove `.next` before the final clean validation if generated route types may be stale.
 12. Confirm `strict: true`, `noImplicitAny: true`, and no `ignoreBuildErrors` override.
-13. Build and deploy the app.
+13. Confirm Hostinger completes deployment and starts the app after the migration-aware build succeeds.
 14. Register the first owner account through the deployed production site.
 15. Set `OWNER_EMAIL` and run `npm run owner:promote`.
 16. Configure Resend sender domain and DNS.
