@@ -6,6 +6,7 @@
     "dev": "next dev",
     "prebuild": "npm run prisma:generate",
     "build": "next build",
+    "hostinger:build": "npm run prisma:generate && npx prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",

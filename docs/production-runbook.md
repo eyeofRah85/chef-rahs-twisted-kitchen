@@ -82,19 +82,41 @@ Do not point production at a local database, a development database, a throwaway
 
 Run the current Prisma migrations against the fresh production MySQL/MariaDB database after the production environment is configured and before opening the site to customers.
 
-Recommended production sequence:
+### Hostinger Build Command
+
+Set the Hostinger/hPanel build command to:
+
+```text
+npm run hostinger:build
+```
+
+The script runs these operations in order:
+
+1. `npm run prisma:generate` generates the Prisma Client used by the application.
+2. `npx prisma migrate deploy` applies pending committed migrations to the production MySQL/MariaDB database.
+3. `next build` compiles the Next.js application only after the database migration command succeeds.
+
+`DATABASE_URL` must be configured in Hostinger and available during the build. The database must be reachable from the build environment, and its MySQL/MariaDB user must have the permissions required by the committed migrations. A successful Prisma Client generation does not update the database schema.
+
+The Hostinger build script intentionally does not run `npx prisma db seed`, `npm run db:seed-demo`, `npm run owner:promote`, or the HTTP owner bootstrap endpoint. Seeding and owner setup remain explicit, separately reviewed launch actions.
+
+Hostinger's Node.js Web App build settings normally allow the build command to be selected or adjusted. Confirm the deployment log shows `prisma generate`, `prisma migrate deploy`, and then `next build`. If the active Hostinger setup cannot select `npm run hostinger:build` and always invokes only `npm run build`, stop the launch and make a follow-up change that adds `npx prisma migrate deploy` to the `prebuild` lifecycle. Do not assume `npm run build` migrates the database in the current release.
+
+### Manual Or Console Deployment
+
+The equivalent explicit production sequence is:
 
 ```powershell
 npm ci
 npm run prisma:generate
-.\node_modules\.bin\prisma.cmd migrate deploy
+npx prisma migrate deploy
 npm run build
 ```
 
-If the host uses Linux shell commands instead of PowerShell, the Prisma deploy command is:
+The direct Windows executable form is also available when needed:
 
-```bash
-npx prisma migrate deploy
+```powershell
+.\node_modules\.bin\prisma.cmd migrate deploy
 ```
 
 After migrations, confirm the app can boot with the production environment. Do not use `prisma migrate dev` in production.

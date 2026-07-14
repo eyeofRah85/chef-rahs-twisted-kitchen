@@ -179,6 +179,14 @@ npm run build
 npm run start
 ```
 
+Hostinger production deployment uses a separate migration-aware build command:
+
+```powershell
+npm run hostinger:build
+```
+
+Use the Hostinger command only with the intended production `DATABASE_URL`. It generates Prisma Client, runs `npx prisma migrate deploy` against that MySQL/MariaDB database, and then runs `next build`. Normal `npm run build` retains its existing local behavior and does not deploy database migrations.
+
 The default origin is `http://localhost:3000`. When using another port, update all three local URL variables so Auth.js redirects and generated links use the same origin.
 
 ## 8. Validation Commands
@@ -204,6 +212,18 @@ Notes:
 - The demo seed changes the configured database. Run it only against cleanup-safe data.
 
 ## 9. TypeScript And Hostinger Notes
+
+Set the Hostinger/hPanel build command to `npm run hostinger:build`. Before deployment, configure `DATABASE_URL` in the Hostinger environment and confirm the build environment can reach the production MySQL/MariaDB database with migration permissions.
+
+The expected deployment log order is:
+
+1. `npm run prisma:generate`
+2. `npx prisma migrate deploy`
+3. `next build`
+
+Prisma Client generation and migration deployment are separate requirements: generation updates application client artifacts, while `migrate deploy` applies committed schema changes to the actual database. The Hostinger command runs no production seed, demo seed, or owner bootstrap.
+
+If the Hostinger build settings cannot select a custom npm script and invoke only `npm run build`, do not deploy with the current script configuration. Make a focused follow-up change to include `npx prisma migrate deploy` in `prebuild`, then rerun the full release checks. Never substitute `prisma migrate dev` in production.
 
 `tsconfig.json` intentionally has:
 
@@ -345,10 +365,9 @@ Recommended deployment order:
 
 ```powershell
 npm ci
-npm run prisma:generate
-npx prisma migrate deploy
+npm run hostinger:build
+# Run the production foundation seed separately only when the launch procedure calls for it:
 npx prisma db seed
-npm run build
 ```
 
 Then start/deploy the built app, register the first owner, use either `npm run owner:promote` or the temporary-token endpoint, configure Resend, and complete production smoke tests. On a host without console access, remove `OWNER_BOOTSTRAP_TOKEN` and restart/redeploy before normal production operation.
@@ -356,6 +375,7 @@ Then start/deploy the built app, register the first owner, use either `npm run o
 Production rules:
 
 - Use `npx prisma migrate deploy`; never use `prisma migrate dev` in production.
+- Verify Hostinger logs show migration deployment before `next build`; `prisma generate` alone is not sufficient.
 - Review foundation seed behavior before running it on an existing database.
 - Do not run the demo seed against real customer data unless explicitly intended.
 - Keep `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION=false` or unset until durable object storage is approved.

@@ -172,9 +172,13 @@ Build:
 
 ```powershell
 Remove-Item -Recurse -Force .next -ErrorAction SilentlyContinue
-npm run build
+npm run hostinger:build
 npx tsc --noEmit --pretty false
 ```
+
+This intentionally rehearses the exact Hostinger build command after the explicit migration and seed steps above. The repeated `prisma migrate deploy` is idempotent and should report that no pending migrations remain before `next build` starts. `DATABASE_URL` must remain available throughout the build.
+
+The Hostinger build command does not run the foundation seed, demo seed, or owner bootstrap. Do not add `npm run db:seed-demo` to a production build; it is only for intentionally disposable demo/staging/local data.
 
 Start:
 
@@ -184,6 +188,7 @@ npm run start
 
 Expected result:
 
+- The build log shows Prisma Client generation, `prisma migrate deploy`, and then `next build` in that order.
 - The app starts without migration or Prisma adapter errors.
 - Public routes load at the configured app origin.
 - `/dev/email-preview` remains development-only and must not be reachable in `NODE_ENV=production`.
@@ -413,7 +418,7 @@ Before approving production launch:
 ## 16. Remaining Risks
 
 - This rehearsal still needs an actual disposable MySQL/MariaDB database to prove host connectivity, database privileges, and migration execution in the target environment.
-- Hostinger-specific deployment mechanics and process-manager behavior should be confirmed with the final hosting setup.
+- Hostinger build settings must be confirmed to use `npm run hostinger:build`. If the active plan exposes only `npm run build`, a follow-up `prebuild` change is required before launch.
 - Resend live delivery remains a launch blocker until the sender domain DNS is verified and the Phase 2 internal delivery test passes with `EMAIL_DRY_RUN=false`.
 - Final client menu data, payment wording, and image hosting choices remain operational launch inputs.
 - Direct production uploads remain intentionally disabled unless durable storage is selected later.
