@@ -36,32 +36,11 @@ import {
 } from "@/lib/weekly-menu-dates";
 import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
 import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
+import type { Prisma } from "@prisma/client";
 
 type AdminAllergen = {
   id: string;
   name: string;
-};
-
-type WeeklyFulfillmentSelection = {
-  id: string;
-  packageName: string;
-  offeringName: string;
-  spiceLevel: string | null;
-  proteinSubstitution: string | null;
-  requestOnly: boolean;
-  requiresApproval: boolean;
-  orderItem: {
-    quantity: number;
-    allergenAcknowledged: boolean;
-    allergenConflictSnapshot: unknown;
-    order: {
-      id: string;
-      customerName: string;
-      status: string;
-      approvalStatus: string;
-      requestedDateTime: Date | null;
-    };
-  };
 };
 
 type FulfillmentCountRow = {
@@ -69,6 +48,104 @@ type FulfillmentCountRow = {
   quantity: number;
   orderCount: number;
 };
+
+const weeklyMenuPeriodQuery = {
+  orderBy: [
+    {
+      startDate: "desc",
+    },
+    {
+      createdAt: "desc",
+    },
+  ],
+  include: {
+    packages: {
+      orderBy: [
+        {
+          displayOrder: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+    },
+    offerings: {
+      orderBy: [
+        {
+          displayOrder: "asc",
+        },
+        {
+          createdAt: "asc",
+        },
+      ],
+      include: {
+        allergens: {
+          include: {
+            allergen: true,
+          },
+        },
+        options: {
+          orderBy: [
+            {
+              optionType: "asc",
+            },
+            {
+              displayOrder: "asc",
+            },
+            {
+              createdAt: "asc",
+            },
+          ],
+        },
+      },
+    },
+    _count: {
+      select: {
+        orderSelections: true,
+      },
+    },
+    orderSelections: {
+      orderBy: {
+        createdAt: "asc",
+      },
+      select: {
+        id: true,
+        packageName: true,
+        offeringName: true,
+        spiceLevel: true,
+        proteinSubstitution: true,
+        requestOnly: true,
+        requiresApproval: true,
+        orderItem: {
+          select: {
+            quantity: true,
+            allergenAcknowledged: true,
+            allergenConflictSnapshot: true,
+            order: {
+              select: {
+                id: true,
+                customerName: true,
+                status: true,
+                approvalStatus: true,
+                requestedDateTime: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.WeeklyMenuPeriodFindManyArgs;
+
+type AdminWeeklyMenuPeriod = Prisma.WeeklyMenuPeriodGetPayload<
+  typeof weeklyMenuPeriodQuery
+>;
+
+type AdminWeeklyMenuPackage = AdminWeeklyMenuPeriod["packages"][number];
+type AdminWeeklyMenuOffering = AdminWeeklyMenuPeriod["offerings"][number];
+type AdminWeeklyMenuOption = AdminWeeklyMenuOffering["options"][number];
+type WeeklyFulfillmentSelection =
+  AdminWeeklyMenuPeriod["orderSelections"][number];
 
 function formatDateInput(date: Date) {
   return formatWeeklyMenuDateInput(date);
@@ -107,22 +184,9 @@ function addDays(date: Date, days: number) {
   return nextDate;
 }
 
-function toPeriodFormData(period: {
-  id: string;
-  label: string;
-  startDate: Date;
-  endDate: Date;
-  orderCutoffAt: Date | null;
-  orderingOpenAt: Date | null;
-  lateFeeStartsAt: Date | null;
-  orderingClosesAt: Date | null;
-  fixedFulfillmentAt: Date | null;
-  customerSchedulingEnabled: boolean | null;
-  deliveryWindowLabel: string | null;
-  fulfillmentNotes: string | null;
-  status: string;
-  capacity: number;
-}): WeeklyMenuPeriodFormData {
+function toPeriodFormData(
+  period: AdminWeeklyMenuPeriod,
+): WeeklyMenuPeriodFormData {
   return {
     id: period.id,
     label: period.label,
@@ -141,23 +205,7 @@ function toPeriodFormData(period: {
   };
 }
 
-function toCloneSource(period: {
-  id: string;
-  label: string;
-  startDate: Date;
-  endDate: Date;
-  orderCutoffAt: Date | null;
-  orderingOpenAt: Date | null;
-  lateFeeStartsAt: Date | null;
-  orderingClosesAt: Date | null;
-  fixedFulfillmentAt: Date | null;
-  customerSchedulingEnabled: boolean | null;
-  deliveryWindowLabel: string | null;
-  fulfillmentNotes: string | null;
-  capacity: number;
-  packages: unknown[];
-  offerings: unknown[];
-}): WeeklyMenuCloneSource {
+function toCloneSource(period: AdminWeeklyMenuPeriod): WeeklyMenuCloneSource {
   return {
     id: period.id,
     label: period.label,
@@ -188,19 +236,9 @@ function toCloneSource(period: {
   };
 }
 
-function toPackageFormData(pkg: {
-  id: string;
-  name: string;
-  days: number;
-  mealsPerDay: number;
-  price: unknown;
-  available: boolean;
-  requiresChefApproval: boolean;
-  isSeasonal: boolean;
-  mealSlotLabels: unknown;
-  displayOrder: number;
-  notes: string | null;
-}): WeeklyMealPlanPackageFormData {
+function toPackageFormData(
+  pkg: AdminWeeklyMenuPackage,
+): WeeklyMealPlanPackageFormData {
   return {
     id: pkg.id,
     name: pkg.name,
@@ -219,16 +257,9 @@ function toPackageFormData(pkg: {
   };
 }
 
-function toOfferingFormData(offering: {
-  id: string;
-  name: string;
-  description: string;
-  imageUrl: string | null;
-  dietaryInfo: string | null;
-  available: boolean;
-  breakfastOnly: boolean;
-  displayOrder: number;
-}): WeeklyMealPlanOfferingFormData {
+function toOfferingFormData(
+  offering: AdminWeeklyMenuOffering,
+): WeeklyMealPlanOfferingFormData {
   return {
     id: offering.id,
     name: offering.name,
@@ -241,18 +272,9 @@ function toOfferingFormData(offering: {
   };
 }
 
-function toOptionFormData(option: {
-  id: string;
-  optionType: string;
-  name: string;
-  description: string | null;
-  dietaryInfo: string | null;
-  priceDelta: unknown;
-  requestOnly: boolean;
-  requiresApproval: boolean;
-  available: boolean;
-  displayOrder: number;
-}): WeeklyMealPlanAllowedOptionFormData {
+function toOptionFormData(
+  option: AdminWeeklyMenuOption,
+): WeeklyMealPlanAllowedOptionFormData {
   return {
     id: option.id,
     optionType: option.optionType,
@@ -381,105 +403,20 @@ function FulfillmentCountList({ rows }: { rows: FulfillmentCountRow[] }) {
 export default async function AdminWeeklyMenuPage() {
   await requireAdminPage();
 
-  const [periods, allergens] = await Promise.all([
-    prisma.weeklyMenuPeriod.findMany({
-      orderBy: [
-        {
-          startDate: "desc",
+  const [periods, allergens]: [AdminWeeklyMenuPeriod[], AdminAllergen[]] =
+    await Promise.all([
+      prisma.weeklyMenuPeriod.findMany(weeklyMenuPeriodQuery),
+      prisma.allergen.findMany({
+        orderBy: {
+          name: "asc",
         },
-        {
-          createdAt: "desc",
+        select: {
+          id: true,
+          name: true,
         },
-      ],
-      include: {
-        packages: {
-          orderBy: [
-            {
-              displayOrder: "asc",
-            },
-            {
-              createdAt: "asc",
-            },
-          ],
-        },
-        offerings: {
-          orderBy: [
-            {
-              displayOrder: "asc",
-            },
-            {
-              createdAt: "asc",
-            },
-          ],
-          include: {
-            allergens: {
-              include: {
-                allergen: true,
-              },
-            },
-            options: {
-              orderBy: [
-                {
-                  optionType: "asc",
-                },
-                {
-                  displayOrder: "asc",
-                },
-                {
-                  createdAt: "asc",
-                },
-              ],
-            },
-          },
-        },
-        _count: {
-          select: {
-            orderSelections: true,
-          },
-        },
-        orderSelections: {
-          orderBy: {
-            createdAt: "asc",
-          },
-          select: {
-            id: true,
-            packageName: true,
-            offeringName: true,
-            spiceLevel: true,
-            proteinSubstitution: true,
-            requestOnly: true,
-            requiresApproval: true,
-            orderItem: {
-              select: {
-                quantity: true,
-                allergenAcknowledged: true,
-                allergenConflictSnapshot: true,
-                order: {
-                  select: {
-                    id: true,
-                    customerName: true,
-                    status: true,
-                    approvalStatus: true,
-                    requestedDateTime: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    }),
-    prisma.allergen.findMany({
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-    }),
-  ]);
-  const allergenOptions: AdminAllergen[] = allergens;
+      }),
+    ]);
+  const allergenOptions = allergens;
 
   return (
     <main className="admin-page">
@@ -517,8 +454,7 @@ export default async function AdminWeeklyMenuPage() {
                 period.capacity - period.ordersPlaced,
                 0,
               );
-              const fulfillmentSelections =
-                period.orderSelections as WeeklyFulfillmentSelection[];
+              const fulfillmentSelections = period.orderSelections;
               const activeFulfillmentSelections = fulfillmentSelections.filter(
                 isActiveFulfillmentSelection,
               );
