@@ -35,6 +35,7 @@ import {
   formatWeeklyMenuDisplayDate,
 } from "@/lib/weekly-menu-dates";
 import { normalizeWeeklyMealSlotLabels } from "@/lib/weekly-package-labels";
+import { DEFAULT_WEEKLY_FIXED_MESSAGE } from "@/lib/weekly-ordering-window";
 
 type AdminAllergen = {
   id: string;
@@ -826,9 +827,7 @@ export default async function AdminWeeklyMenuPage() {
                                             <p className="mt-1 text-xs text-[#6b5a50]">
                                               Weekly fulfillment:{" "}
                                               {period.deliveryWindowLabel ??
-                                                formatDisplayDateTime(
-                                                  order.requestedDateTime,
-                                                )}
+                                                DEFAULT_WEEKLY_FIXED_MESSAGE}
                                             </p>
                                           </div>
 
