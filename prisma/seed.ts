@@ -1,28 +1,10 @@
 import { prisma } from "./script-prisma";
-
-const baselineAllergenNames = [
-  "Dairy",
-  "Egg",
-  "Fish",
-  "Shellfish",
-  "Peanut",
-  "Tree Nut",
-  "Soy",
-  "Wheat",
-  "Gluten",
-  "Sesame",
-] as const;
+import { seedFoundationAllergens } from "../lib/foundation-seed";
 
 async function main() {
-  for (const name of baselineAllergenNames) {
-    await prisma.allergen.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-  }
+  const result = await seedFoundationAllergens(prisma);
 
-  console.log(`Seeded ${baselineAllergenNames.length} baseline allergens.`);
+  console.log(`Seeded ${result.seededAllergenCount} baseline allergens.`);
 }
 
 main()

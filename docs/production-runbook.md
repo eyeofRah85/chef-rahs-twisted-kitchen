@@ -48,6 +48,7 @@ Workflow-specific variables:
 | --- | --- |
 | `OWNER_EMAIL` | Exact email of the first registered owner account. The bootstrap process never creates this user. |
 | `OWNER_BOOTSTRAP_TOKEN` | Temporary long random secret for `POST /api/setup/promote-owner` when production has no console. Remove it and restart/redeploy immediately after bootstrap; it is not a permanent runtime variable. |
+| `FOUNDATION_SEED_TOKEN` | Temporary long random secret for `POST /api/setup/seed-foundation` when production has no console. Remove it and restart/redeploy immediately after foundation seeding. |
 | `ADMIN_EMAIL` | Legacy single-account input for `npm run admin:promote`; not required for normal role management. |
 | `ADMIN_ROLE` | Legacy role for `npm run admin:promote`; defaults to `ADMIN`. |
 
@@ -158,11 +159,34 @@ Current migration inventory:
 
 The production-safe foundation seed is configured in `prisma.config.ts` and `package.json`. It upserts only the baseline allergen names and leaves existing records unchanged. It does not create business settings, users, orders, menu content, or service requests.
 
-Run it once after the first production migration. It is idempotent and can be rerun safely when needed:
+Run it once after the first production migration. It is idempotent and can be rerun safely when needed. A console command is the preferred method when one is available:
 
 ```powershell
 npm run db:seed
 ```
+
+When Hostinger does not provide a usable production console:
+
+1. Generate a temporary random token of at least 32 characters and set it as `FOUNDATION_SEED_TOKEN` in Hostinger.
+2. Restart or redeploy so the running app receives the token.
+3. Send the POST request from a trusted PowerShell session. The request has no body:
+
+```powershell
+$env:FOUNDATION_SEED_TOKEN = "temporary-long-random-secret-from-secure-storage"
+$headers = @{
+  "x-foundation-seed-token" = $env:FOUNDATION_SEED_TOKEN
+}
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "https://rahstwistedkitchen.com/api/setup/seed-foundation" `
+  -Headers $headers
+```
+
+4. Confirm the response reports `success: true`, `seededAllergenCount: 10`, and the expected allergen names.
+5. Remove `FOUNDATION_SEED_TOKEN` from Hostinger and restart or redeploy again. Removing the variable disables the endpoint.
+
+The endpoint accepts no seed data and runs the same fixed allergen upserts as `npm run db:seed`. It does not create users, orders, service requests, menus, weekly content, or business settings.
 
 `npm run db:seed-demo` is intended for local, demo, staging, or disposable rehearsal databases. Do not run it against real production customer data unless the owner intentionally wants the demo catalog and understands that the script recreates demo weekly data.
 

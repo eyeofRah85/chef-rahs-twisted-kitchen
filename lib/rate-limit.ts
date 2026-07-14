@@ -107,4 +107,9 @@ export const rateLimits = {
     limit: 10,
     windowMs: 15 * 60 * 1000,
   },
+  foundationSeed: {
+    keyPrefix: "setup:foundation-seed",
+    limit: 10,
+    windowMs: 15 * 60 * 1000,
+  },
 };

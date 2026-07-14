@@ -108,6 +108,21 @@ Run the production-safe foundation seed once after the first migration when the 
 npm run db:seed
 ```
 
+When a production host has no usable console, temporarily set a random `FOUNDATION_SEED_TOKEN` of at least 32 characters, restart/redeploy, and call the fixed POST-only setup endpoint:
+
+```powershell
+$headers = @{
+  "x-foundation-seed-token" = $env:FOUNDATION_SEED_TOKEN
+}
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "https://rahstwistedkitchen.com/api/setup/seed-foundation" `
+  -Headers $headers
+```
+
+Confirm the response, remove `FOUNDATION_SEED_TOKEN`, and restart/redeploy again. Prefer `npm run db:seed` whenever a console is available. The endpoint and command share the same allergen-only logic.
+
 For local, demo, staging, or a disposable rehearsal database, the demo seed adds showcase users, menu data, weekly packages, offerings, options, and launch scheduling defaults:
 
 ```powershell
@@ -137,6 +152,7 @@ Start from `.env.example`.
 | `ALLOW_LOCAL_UPLOADS_IN_PRODUCTION` | Keep `false` or unset for launch; local production uploads are not durable. |
 | `OWNER_EMAIL` | Existing registered user's email for the one-time owner bootstrap. It is never a user-creation input. |
 | `OWNER_BOOTSTRAP_TOKEN` | Temporary long random secret for `POST /api/setup/promote-owner` when the host has no console. Remove it and restart/redeploy immediately after success. |
+| `FOUNDATION_SEED_TOKEN` | Temporary long random secret for `POST /api/setup/seed-foundation` when the host has no console. Remove it and restart/redeploy immediately after success. |
 | `ADMIN_EMAIL` | Legacy single-user input for `npm run admin:promote`. Not needed for owner-managed admins. |
 | `ADMIN_ROLE` | Legacy role for `npm run admin:promote`; defaults to `ADMIN`. |
 
