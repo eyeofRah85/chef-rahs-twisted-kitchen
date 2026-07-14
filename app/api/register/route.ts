@@ -57,5 +57,8 @@ export async function POST(request: NextRequest) {
       },
   });
 
-  return NextResponse.redirect(new URL("/login", request.url));
+  return new NextResponse(null, {
+    status: 303,
+    headers: { Location: "/login" },
+  });
 }
