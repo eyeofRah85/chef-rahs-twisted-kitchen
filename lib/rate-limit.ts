@@ -102,6 +102,11 @@ export const rateLimits = {
     limit: 5,
     windowMs: 60 * 60 * 1000,
   },
+  accountPasswordChange: {
+    keyPrefix: "accounts:password-change",
+    limit: 5,
+    windowMs: 15 * 60 * 1000,
+  },
   ownerBootstrap: {
     keyPrefix: "setup:owner-bootstrap",
     limit: 10,

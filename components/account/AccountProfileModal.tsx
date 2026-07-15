@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AccountProfileForm } from "@/components/account/AccountProfileForm";
+import { AccountPasswordForm } from "@/components/account/AccountPasswordForm";
 
 type Props = {
   label?: string;
@@ -59,6 +60,7 @@ export function AccountProfileModal({
             </div>
 
             <AccountProfileForm user={user} onSaved={() => setOpen(false)} />
+            <AccountPasswordForm />
           </div>
         </div>
       )}
