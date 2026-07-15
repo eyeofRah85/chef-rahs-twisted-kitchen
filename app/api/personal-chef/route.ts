@@ -8,6 +8,10 @@ import {
   type ServiceRequestErrorCode,
 } from "@/lib/service-request-form-errors";
 import { rateLimitRequest, rateLimits } from "@/lib/rate-limit";
+import {
+  readServiceRequestEventDate,
+  serviceRequestRedirect,
+} from "@/lib/service-request-route";
 
 function serviceRequestValidationError(
   request: Request,
@@ -17,10 +21,7 @@ function serviceRequestValidationError(
   const message = serviceRequestErrorMessages[errorCode];
 
   if (request.headers.get("accept")?.includes("text/html")) {
-    const formUrl = new URL(formPath, request.url);
-    formUrl.searchParams.set("error", errorCode);
-
-    return NextResponse.redirect(formUrl, { status: 303 });
+    return serviceRequestRedirect(formPath, { error: errorCode });
   }
 
   return NextResponse.json({ error: message }, { status: 400 });
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
-  const eventDate = String(formData.get("eventDate") ?? "").trim();
+  const eventDate = readServiceRequestEventDate(formData);
   const guestCountValue = String(formData.get("guestCount") ?? "").trim();
   const location = String(formData.get("location") ?? "").trim();
   const requestedMenu = String(formData.get("requestedMenu") ?? "").trim();
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest) {
     }),
   });
 
-  return NextResponse.redirect(
-    new URL(`/personal-chef/thank-you?id=${requestRecord.id}`, request.url),
-  );
+  return serviceRequestRedirect("/personal-chef/thank-you", {
+    id: requestRecord.id,
+  });
 }

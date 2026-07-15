@@ -2,6 +2,7 @@ import Image from "next/image";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { getServiceRequestErrorMessage } from "@/lib/service-request-form-errors";
+import { ServiceRequestDateTimeFields } from "@/components/service-requests/ServiceRequestDateTimeFields";
 
 type PageProps = {
   searchParams: Promise<{
@@ -129,22 +130,13 @@ export default async function PersonalChefPage({ searchParams }: PageProps) {
               />
             </label>
 
-            <label className={labelClass}>
-              Preferred Service Date
-              <input
-                name="eventDate"
-                type="datetime-local"
-                aria-describedby="personal-chef-event-date-help"
-                className={inputClass}
-              />
-              <span
-                id="personal-chef-event-date-help"
-                className="mt-2 block text-xs font-medium text-[#6b5a50]"
-              >
-                Choose the preferred service date and time if you already know
-                it.
-              </span>
-            </label>
+            <ServiceRequestDateTimeFields
+              dateLabel="Preferred Service Date"
+              helpId="personal-chef-event-date-help"
+              helpText="Choose the preferred service date and time if you already know it."
+              inputClassName={inputClass}
+              labelClassName={labelClass}
+            />
 
             <label className={labelClass}>
               Number of Guests / People Served
