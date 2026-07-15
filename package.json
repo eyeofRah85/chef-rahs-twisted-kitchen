@@ -17,6 +17,11 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-demo": "tsx prisma/seed-demo-data.ts"
   },
+  
+  "overrides": {
+    "@hono/node-server": "1.19.13",
+     "postcss": "8.5.10"
+  },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
     "@prisma/adapter-mariadb": "^7.8.0",
