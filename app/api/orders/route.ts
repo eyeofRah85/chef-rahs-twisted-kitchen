@@ -168,7 +168,23 @@ type ServerRecoveredOrderItem = {
 };
 
 function normalizeSubmittedChoiceName(choiceName: string) {
-  return choiceName.replace(/\s+\(Request Only\)$/i, "").trim();
+  const normalizedChoiceName = choiceName.trim();
+  const requestOnlySuffix = "(Request Only)";
+  const suffixStart = normalizedChoiceName.length - requestOnlySuffix.length;
+
+  if (
+    suffixStart <= 0 ||
+    normalizedChoiceName.slice(suffixStart).toLowerCase() !==
+      requestOnlySuffix.toLowerCase()
+  ) {
+    return normalizedChoiceName;
+  }
+
+  const precedingCharacter = normalizedChoiceName[suffixStart - 1];
+
+  if (precedingCharacter.trim() !== "") return normalizedChoiceName;
+
+  return normalizedChoiceName.slice(0, suffixStart).trimEnd();
 }
 
 function hasRequestedDateAndTime(value: string) {
