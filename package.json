@@ -17,10 +17,10 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-demo": "tsx prisma/seed-demo-data.ts"
   },
-  
   "overrides": {
+    "@babel/core": "7.29.6",
     "@hono/node-server": "1.19.13",
-     "postcss": "8.5.10"
+    "postcss": "8.5.10"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
