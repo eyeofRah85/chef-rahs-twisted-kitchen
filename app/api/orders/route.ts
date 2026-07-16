@@ -180,7 +180,29 @@ function normalizeEmail(value: string) {
 }
 
 function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  const email = value.trim();
+
+  if (!email || email.length > 254) return false;
+
+  for (const character of email) {
+    if (character.trim() === "") return false;
+  }
+
+  const atIndex = email.indexOf("@");
+
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+
+  const localPart = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+
+  if (!domain || localPart.length > 64 || domain.length > 253) return false;
+
+  return (
+    domain.includes(".") &&
+    !domain.startsWith(".") &&
+    !domain.endsWith(".") &&
+    !domain.includes("..")
+  );
 }
 
 class OrderSubmissionError extends Error {

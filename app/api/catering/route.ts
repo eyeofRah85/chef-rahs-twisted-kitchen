@@ -27,6 +27,32 @@ function serviceRequestValidationError(
   return NextResponse.json({ error: message }, { status: 400 });
 }
 
+function isValidEmail(value: string) {
+  const email = value.trim();
+
+  if (!email || email.length > 254) return false;
+
+  for (const character of email) {
+    if (character.trim() === "") return false;
+  }
+
+  const atIndex = email.indexOf("@");
+
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf("@")) return false;
+
+  const localPart = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+
+  if (!domain || localPart.length > 64 || domain.length > 253) return false;
+
+  return (
+    domain.includes(".") &&
+    !domain.startsWith(".") &&
+    !domain.endsWith(".") &&
+    !domain.includes("..")
+  );
+}
+
 export async function POST(request: NextRequest) {
   const rateLimitResponse = rateLimitRequest(
     request,
@@ -58,7 +84,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return serviceRequestValidationError(request, "/catering", "invalid-email");
   }
 
